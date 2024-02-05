@@ -3,7 +3,7 @@ use crate::{Authority, AuthorityRef};
 impl Authority {
     /// Converts the authority to an authority reference.
     pub fn to_ref(&self) -> AuthorityRef {
-        AuthorityRef::new(self.host().to_ref(), self.port())
+        AuthorityRef::new(self.host(), self.port())
     }
 }
 

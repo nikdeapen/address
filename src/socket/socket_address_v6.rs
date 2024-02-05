@@ -42,6 +42,17 @@ mod tests {
     use crate::IPv6Address;
 
     #[test]
+    fn construction() {
+        let socket: SocketAddressV6 = SocketAddressV6::new(IPv6Address::LOCALHOST, 80);
+        assert_eq!(socket.ip, IPv6Address::LOCALHOST);
+        assert_eq!(socket.port, 80);
+
+        let socket: SocketAddressV6 = (IPv6Address::LOCALHOST, 80).into();
+        assert_eq!(socket.ip, IPv6Address::LOCALHOST);
+        assert_eq!(socket.port, 80);
+    }
+
+    #[test]
     fn properties() {
         let socket: SocketAddressV6 = (IPv6Address::LOCALHOST, 80).into();
         assert_eq!(socket.ip(), IPv6Address::LOCALHOST);

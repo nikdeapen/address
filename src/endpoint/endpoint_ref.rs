@@ -1,7 +1,7 @@
 use crate::{DomainRef, HostRef};
 
 /// A domain reference with an associated port.
-#[derive(Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Debug)]
+#[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Debug)]
 pub struct EndpointRef<'a> {
     domain: DomainRef<'a>,
     port: u16,

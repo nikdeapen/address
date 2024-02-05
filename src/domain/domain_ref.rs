@@ -10,12 +10,10 @@ impl<'a> DomainRef<'a> {
     //! Special Domains
 
     /// The localhost domain reference. (localhost)
-    pub const LOCALHOST: Self = Self { name: "localhost" };
+    pub const LOCALHOST: Self = unsafe { Self::new_unchecked("localhost") };
 
     /// The example domain reference. (example.com)
-    pub const EXAMPLE: Self = Self {
-        name: "example.com",
-    };
+    pub const EXAMPLE: Self = unsafe { Self::new_unchecked("example.com") };
 }
 
 impl<'a> DomainRef<'a> {

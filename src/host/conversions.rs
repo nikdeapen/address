@@ -24,7 +24,7 @@ impl<'a> HostRef<'a> {
         }
     }
 
-    /// Converts teh host reference to an authority reference with the port.
+    /// Converts the host reference to an authority reference with the port.
     pub fn to_authority(&self, port: u16) -> AuthorityRef {
         AuthorityRef::new(*self, port)
     }
@@ -32,7 +32,7 @@ impl<'a> HostRef<'a> {
 
 #[cfg(test)]
 mod tests {
-    use crate::{Authority, Domain, DomainRef, Host, HostRef, IPv4Address};
+    use crate::{Authority, AuthorityRef, Domain, DomainRef, Host, HostRef, IPv4Address};
 
     #[test]
     fn host_to_ref() {
@@ -71,6 +71,20 @@ mod tests {
         let host: HostRef = host.to_ref();
         let result: Host = host.to_host();
         let expected: Host = IPv4Address::LOCALHOST.to_host();
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn ref_to_authority() {
+        let host: HostRef = DomainRef::LOCALHOST.to_host();
+        let result: AuthorityRef = host.to_authority(80);
+        let expected: AuthorityRef = AuthorityRef::new(DomainRef::LOCALHOST.to_host(), 80);
+        assert_eq!(result, expected);
+
+        let host: Host = IPv4Address::LOCALHOST.to_host();
+        let host: HostRef = host.to_ref();
+        let result: AuthorityRef = host.to_authority(80);
+        let expected: AuthorityRef = AuthorityRef::new(IPv4Address::LOCALHOST.to_host_ref(), 80);
         assert_eq!(result, expected);
     }
 }

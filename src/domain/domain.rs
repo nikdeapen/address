@@ -11,16 +11,12 @@ impl Domain {
 
     /// Creates the localhost domain. (localhost)
     pub fn localhost() -> Self {
-        Self {
-            name: DomainRef::LOCALHOST.name().to_string(),
-        }
+        DomainRef::LOCALHOST.to_domain()
     }
 
     /// Creates the example domain. (example.com)
     pub fn example() -> Self {
-        Self {
-            name: DomainRef::EXAMPLE.name().to_string(),
-        }
+        DomainRef::EXAMPLE.to_domain()
     }
 }
 
@@ -103,6 +99,12 @@ impl TryFrom<&[u8]> for Domain {
     }
 }
 
+impl From<Domain> for String {
+    fn from(domain: Domain) -> Self {
+        domain.name
+    }
+}
+
 impl Domain {
     //! Properties
 
@@ -151,6 +153,14 @@ mod tests {
         assert_eq!(result, Ok(Domain::localhost()));
         let result: Result<Domain, ()> = Domain::try_from("Local!Host".as_bytes());
         assert_eq!(result, Err(()));
+    }
+
+    #[test]
+    fn deconstruction() {
+        let domain: Domain = Domain::localhost();
+        let result: String = domain.into();
+        let expected: &str = "localhost";
+        assert_eq!(result, expected);
     }
 
     #[test]
