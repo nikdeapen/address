@@ -1,5 +1,6 @@
 use crate::{
-    Host, IPAddress, IPv4Address, IPv6Address, SocketAddress, SocketAddressV4, SocketAddressV6,
+    Host, HostRef, IPAddress, IPv4Address, IPv6Address, SocketAddress, SocketAddressV4,
+    SocketAddressV6,
 };
 
 impl IPv4Address {
@@ -29,10 +30,15 @@ impl IPv4Address {
     pub const fn to_host(&self) -> Host {
         Host::Address(self.to_ip())
     }
+
+    /// Converts the address to a host reference.
+    pub const fn to_host_ref(&self) -> HostRef {
+        HostRef::Address(self.to_ip())
+    }
 }
 
 impl IPv6Address {
-    /// Converts the address to an optional IPv4 address. Returns None if the address is no an IPv4
+    /// Converts the address to an optional IPv4 address. Returns None if the address is not an IPv4
     /// compatible address (::a.b.c.d) or an IPv4 mapped address (::ffff:a.b.c.d).
     pub const fn to_v4(&self) -> Option<IPv4Address> {
         match self.address() {
@@ -59,6 +65,11 @@ impl IPv6Address {
     /// Converts the address to a host.
     pub const fn to_host(&self) -> Host {
         Host::Address(self.to_ip())
+    }
+
+    /// Converts the address to a host reference.
+    pub const fn to_host_ref(&self) -> HostRef {
+        HostRef::Address(self.to_ip())
     }
 }
 
@@ -89,6 +100,11 @@ impl IPAddress {
     /// Converts the address to a host.
     pub const fn to_host(&self) -> Host {
         Host::Address(*self)
+    }
+
+    /// Converts the address to a host reference.
+    pub const fn to_host_ref(&self) -> HostRef {
+        HostRef::Address(*self)
     }
 }
 

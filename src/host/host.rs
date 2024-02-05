@@ -41,6 +41,17 @@ mod tests {
     use crate::{Domain, Host, IPv4Address};
 
     #[test]
+    fn construction() {
+        let result: Host = Domain::localhost().into();
+        let expected: Host = Host::Name(Domain::localhost());
+        assert_eq!(result, expected);
+
+        let result: Host = IPv4Address::LOCALHOST.into();
+        let expected: Host = Host::Address(IPv4Address::LOCALHOST.to_ip());
+        assert_eq!(result, expected);
+    }
+
+    #[test]
     fn matching() {
         let host: Host = Domain::localhost().into();
         assert!(host.is_domain());

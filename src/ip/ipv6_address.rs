@@ -138,8 +138,8 @@ mod tests {
         ];
         let value: u128 = 0x0123456789ABCDEF0123456789ABCDEFu128;
         let ip: IPv6Address = IPv6Address::new(address);
-        assert_eq!(ip, IPv6Address::from_segments(segments));
 
+        assert_eq!(ip, IPv6Address::from_segments(segments));
         assert_eq!(ip, IPv6Address::from(address));
         assert_eq!(ip, IPv6Address::from(segments));
         assert_eq!(ip, IPv6Address::from(value));

@@ -89,7 +89,7 @@ mod tests {
     }
 
     #[test]
-    fn is_valid_nmae() {
+    fn is_valid_name() {
         let test_cases: &[(&str, bool, bool)] = &[
             ("", false, false),
             ("09", true, true),

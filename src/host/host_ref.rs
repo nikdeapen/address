@@ -41,6 +41,9 @@ mod tests {
     use crate::{DomainRef, HostRef, IPv4Address};
 
     #[test]
+    fn construction() {}
+
+    #[test]
     fn matching() {
         let host: HostRef = DomainRef::LOCALHOST.into();
         assert!(host.is_domain());

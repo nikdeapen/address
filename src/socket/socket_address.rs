@@ -42,6 +42,17 @@ mod tests {
     use crate::{IPAddress, IPv4Address};
 
     #[test]
+    fn construction() {
+        let socket: SocketAddress = SocketAddress::new(IPv4Address::LOCALHOST.to_ip(), 80);
+        assert_eq!(socket.ip, IPv4Address::LOCALHOST.to_ip());
+        assert_eq!(socket.port, 80);
+
+        let socket: SocketAddress = (IPv4Address::LOCALHOST, 80).into();
+        assert_eq!(socket.ip, IPv4Address::LOCALHOST.to_ip());
+        assert_eq!(socket.port, 80);
+    }
+
+    #[test]
     fn properties() {
         let socket: SocketAddress = (IPv4Address::LOCALHOST, 80).into();
         assert_eq!(socket.ip(), IPAddress::V4(IPv4Address::LOCALHOST));
