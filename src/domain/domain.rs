@@ -1,4 +1,5 @@
-use crate::DomainRef;
+use crate::ParseError::InvalidDomain;
+use crate::{DomainRef, ParseError};
 
 /// A domain.
 #[derive(Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Debug)]
@@ -33,7 +34,7 @@ impl Domain {
 }
 
 impl TryFrom<String> for Domain {
-    type Error = ();
+    type Error = ParseError;
 
     fn try_from(name: String) -> Result<Self, Self::Error> {
         if Self::is_valid_name_str(name.as_str(), false) {
@@ -42,13 +43,13 @@ impl TryFrom<String> for Domain {
             let name: String = name.to_ascii_lowercase();
             Ok(Self { name })
         } else {
-            Err(())
+            Err(InvalidDomain)
         }
     }
 }
 
 impl TryFrom<&str> for Domain {
-    type Error = ();
+    type Error = ParseError;
 
     fn try_from(name: &str) -> Result<Self, Self::Error> {
         if Self::is_valid_name_str(name, false) {
@@ -59,13 +60,13 @@ impl TryFrom<&str> for Domain {
             let name: String = name.to_ascii_lowercase();
             Ok(Self { name })
         } else {
-            Err(())
+            Err(InvalidDomain)
         }
     }
 }
 
 impl TryFrom<Vec<u8>> for Domain {
-    type Error = ();
+    type Error = ParseError;
 
     fn try_from(name: Vec<u8>) -> Result<Self, Self::Error> {
         if Self::is_valid_name(name.as_slice(), false) {
@@ -76,13 +77,13 @@ impl TryFrom<Vec<u8>> for Domain {
             let name: String = name.to_ascii_lowercase();
             Ok(Self { name })
         } else {
-            Err(())
+            Err(InvalidDomain)
         }
     }
 }
 
 impl TryFrom<&[u8]> for Domain {
-    type Error = ();
+    type Error = ParseError;
 
     fn try_from(name: &[u8]) -> Result<Self, Self::Error> {
         if Self::is_valid_name(name, false) {
@@ -94,7 +95,7 @@ impl TryFrom<&[u8]> for Domain {
             let name: String = name.to_ascii_lowercase();
             Ok(Self { name })
         } else {
-            Err(())
+            Err(InvalidDomain)
         }
     }
 }
@@ -116,7 +117,8 @@ impl Domain {
 
 #[cfg(test)]
 mod tests {
-    use crate::Domain;
+    use crate::ParseError::InvalidDomain;
+    use crate::{Domain, ParseError};
 
     #[test]
     fn specials() {
@@ -126,33 +128,33 @@ mod tests {
 
     #[test]
     fn construction() {
-        let result: Result<Domain, ()> = Domain::try_from("localhost".to_string());
+        let result: Result<Domain, ParseError> = Domain::try_from("localhost".to_string());
         assert_eq!(result, Ok(Domain::localhost()));
-        let result: Result<Domain, ()> = Domain::try_from("LocalHost".to_string());
+        let result: Result<Domain, ParseError> = Domain::try_from("LocalHost".to_string());
         assert_eq!(result, Ok(Domain::localhost()));
-        let result: Result<Domain, ()> = Domain::try_from("Local!Host".to_string());
-        assert_eq!(result, Err(()));
+        let result: Result<Domain, ParseError> = Domain::try_from("Local!Host".to_string());
+        assert_eq!(result, Err(InvalidDomain));
 
-        let result: Result<Domain, ()> = Domain::try_from("localhost");
+        let result: Result<Domain, ParseError> = Domain::try_from("localhost");
         assert_eq!(result, Ok(Domain::localhost()));
-        let result: Result<Domain, ()> = Domain::try_from("LocalHost");
+        let result: Result<Domain, ParseError> = Domain::try_from("LocalHost");
         assert_eq!(result, Ok(Domain::localhost()));
-        let result: Result<Domain, ()> = Domain::try_from("Local!Host");
-        assert_eq!(result, Err(()));
+        let result: Result<Domain, ParseError> = Domain::try_from("Local!Host");
+        assert_eq!(result, Err(InvalidDomain));
 
-        let result: Result<Domain, ()> = Domain::try_from(Vec::from("localhost"));
+        let result: Result<Domain, ParseError> = Domain::try_from(Vec::from("localhost"));
         assert_eq!(result, Ok(Domain::localhost()));
-        let result: Result<Domain, ()> = Domain::try_from(Vec::from("LocalHost"));
+        let result: Result<Domain, ParseError> = Domain::try_from(Vec::from("LocalHost"));
         assert_eq!(result, Ok(Domain::localhost()));
-        let result: Result<Domain, ()> = Domain::try_from(Vec::from("Local!Host"));
-        assert_eq!(result, Err(()));
+        let result: Result<Domain, ParseError> = Domain::try_from(Vec::from("Local!Host"));
+        assert_eq!(result, Err(InvalidDomain));
 
-        let result: Result<Domain, ()> = Domain::try_from("localhost".as_bytes());
+        let result: Result<Domain, ParseError> = Domain::try_from("localhost".as_bytes());
         assert_eq!(result, Ok(Domain::localhost()));
-        let result: Result<Domain, ()> = Domain::try_from("LocalHost".as_bytes());
+        let result: Result<Domain, ParseError> = Domain::try_from("LocalHost".as_bytes());
         assert_eq!(result, Ok(Domain::localhost()));
-        let result: Result<Domain, ()> = Domain::try_from("Local!Host".as_bytes());
-        assert_eq!(result, Err(()));
+        let result: Result<Domain, ParseError> = Domain::try_from("Local!Host".as_bytes());
+        assert_eq!(result, Err(InvalidDomain));
     }
 
     #[test]
