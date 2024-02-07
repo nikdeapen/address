@@ -16,15 +16,6 @@ impl Authority {
     }
 }
 
-impl<H: Into<Host>> From<(H, u16)> for Authority {
-    fn from(tuple: (H, u16)) -> Self {
-        Self {
-            host: tuple.0.into(),
-            port: tuple.1,
-        }
-    }
-}
-
 impl From<Authority> for (Host, u16) {
     fn from(authority: Authority) -> Self {
         (authority.host, authority.port)
@@ -34,7 +25,7 @@ impl From<Authority> for (Host, u16) {
 impl Authority {
     //! Properties
 
-    /// Gets the host.
+    /// Gets the host reference.
     pub fn host(&self) -> HostRef {
         self.host.to_ref()
     }
@@ -50,18 +41,14 @@ mod tests {
     use crate::{Authority, Domain, DomainRef, Host, HostRef};
 
     #[test]
-    fn construction() {
+    fn new() {
         let authority: Authority = Authority::new(Domain::localhost().to_host(), 80);
-        assert_eq!(authority.host, Domain::localhost().to_host());
-        assert_eq!(authority.port, 80);
-
-        let authority: Authority = (Domain::localhost(), 80).into();
         assert_eq!(authority.host, Domain::localhost().to_host());
         assert_eq!(authority.port, 80);
     }
 
     #[test]
-    fn deconstruction() {
+    fn tuple_from_authority() {
         let authority: Authority = (Domain::localhost(), 80).into();
         let (host, port) = authority.into();
         assert_eq!(host, Host::Name(Domain::localhost()));

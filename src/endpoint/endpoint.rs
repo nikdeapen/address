@@ -1,4 +1,4 @@
-use crate::Domain;
+use crate::{Domain, EndpointRef};
 
 /// A domain with an associated port.
 #[derive(Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Debug)]
@@ -25,6 +25,12 @@ impl<D: Into<Domain>> From<(D, u16)> for Endpoint {
     }
 }
 
+impl<'a> From<EndpointRef<'a>> for Endpoint {
+    fn from(endpoint: EndpointRef<'a>) -> Self {
+        endpoint.to_endpoint()
+    }
+}
+
 impl From<Endpoint> for (Domain, u16) {
     fn from(endpoint: Endpoint) -> Self {
         (endpoint.domain, endpoint.port)
@@ -47,7 +53,22 @@ impl Endpoint {
 
 #[cfg(test)]
 mod tests {
-    use crate::{Domain, Endpoint};
+    use crate::{Domain, DomainRef, Endpoint, EndpointRef};
+
+    #[test]
+    fn construction() {
+        let endpoint: Endpoint = Endpoint::new(Domain::localhost(), 80);
+        assert_eq!(endpoint.domain, Domain::localhost());
+        assert_eq!(endpoint.port, 80);
+
+        let endpoint: Endpoint = EndpointRef::new(DomainRef::LOCALHOST, 80).into();
+        assert_eq!(endpoint.domain, Domain::localhost());
+        assert_eq!(endpoint.port, 80);
+
+        let endpoint: Endpoint = (DomainRef::LOCALHOST, 80).into();
+        assert_eq!(endpoint.domain, Domain::localhost());
+        assert_eq!(endpoint.port, 80);
+    }
 
     #[test]
     fn deconstruction() {

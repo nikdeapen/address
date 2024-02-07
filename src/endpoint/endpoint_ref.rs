@@ -49,6 +49,13 @@ mod tests {
     use crate::{DomainRef, EndpointRef};
 
     #[test]
+    fn new() {
+        let result: EndpointRef = EndpointRef::new(DomainRef::LOCALHOST, 80);
+        assert_eq!(result.domain, DomainRef::LOCALHOST);
+        assert_eq!(result.port, 80);
+    }
+
+    #[test]
     fn properties() {
         let endpoint: EndpointRef = (DomainRef::LOCALHOST, 80).into();
         assert_eq!(endpoint.domain(), DomainRef::LOCALHOST);

@@ -1,4 +1,5 @@
-use crate::Domain;
+use crate::ParseError::InvalidDomain;
+use crate::{Domain, ParseError};
 
 /// A domain reference.
 #[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Debug)]
@@ -10,10 +11,12 @@ impl<'a> DomainRef<'a> {
     //! Special Domains
 
     /// The localhost domain reference. (localhost)
-    pub const LOCALHOST: Self = unsafe { Self::new_unchecked("localhost") };
+    pub const LOCALHOST: Self = Self { name: "localhost" };
 
     /// The example domain reference. (example.com)
-    pub const EXAMPLE: Self = unsafe { Self::new_unchecked("example.com") };
+    pub const EXAMPLE: Self = Self {
+        name: "example.com",
+    };
 }
 
 impl<'a> DomainRef<'a> {
@@ -26,26 +29,26 @@ impl<'a> DomainRef<'a> {
 }
 
 impl<'a> TryFrom<&'a str> for DomainRef<'a> {
-    type Error = ();
+    type Error = ParseError;
 
     fn try_from(name: &'a str) -> Result<Self, Self::Error> {
         if Domain::is_valid_name_str(name, false) {
             Ok(Self { name })
         } else {
-            Err(())
+            Err(InvalidDomain)
         }
     }
 }
 
 impl<'a> TryFrom<&'a [u8]> for DomainRef<'a> {
-    type Error = ();
+    type Error = ParseError;
 
     fn try_from(name: &'a [u8]) -> Result<Self, Self::Error> {
         if Domain::is_valid_name(name, false) {
             let name: &str = unsafe { std::str::from_utf8_unchecked(name) };
             Ok(Self { name })
         } else {
-            Err(())
+            Err(InvalidDomain)
         }
     }
 }
@@ -61,7 +64,8 @@ impl<'a> DomainRef<'a> {
 
 #[cfg(test)]
 mod tests {
-    use crate::DomainRef;
+    use crate::ParseError::InvalidDomain;
+    use crate::{DomainRef, ParseError};
 
     #[test]
     fn specials() {
@@ -70,16 +74,19 @@ mod tests {
     }
 
     #[test]
-    fn construction() {
-        let result: Result<DomainRef, ()> = DomainRef::try_from("localhost");
+    fn from_str() {
+        let result: Result<DomainRef, ParseError> = DomainRef::try_from("localhost");
         assert_eq!(result, Ok(DomainRef::LOCALHOST));
-        let result: Result<DomainRef, ()> = DomainRef::try_from("LocalHost");
-        assert_eq!(result, Err(()));
+        let result: Result<DomainRef, ParseError> = DomainRef::try_from("LocalHost");
+        assert_eq!(result, Err(InvalidDomain));
+    }
 
-        let result: Result<DomainRef, ()> = DomainRef::try_from("localhost".as_bytes());
+    #[test]
+    fn from_slice() {
+        let result: Result<DomainRef, ParseError> = DomainRef::try_from("localhost".as_bytes());
         assert_eq!(result, Ok(DomainRef::LOCALHOST));
-        let result: Result<DomainRef, ()> = DomainRef::try_from("LocalHost".as_bytes());
-        assert_eq!(result, Err(()));
+        let result: Result<DomainRef, ParseError> = DomainRef::try_from("LocalHost".as_bytes());
+        assert_eq!(result, Err(InvalidDomain));
     }
 
     #[test]
