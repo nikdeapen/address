@@ -16,15 +16,6 @@ impl<'a> AuthorityRef<'a> {
     }
 }
 
-impl<'a, D: Into<HostRef<'a>>> From<(D, u16)> for AuthorityRef<'a> {
-    fn from(tuple: (D, u16)) -> Self {
-        Self {
-            host: tuple.0.into(),
-            port: tuple.1,
-        }
-    }
-}
-
 impl<'a> AuthorityRef<'a> {
     //! Properties
 
@@ -44,12 +35,8 @@ mod tests {
     use crate::{AuthorityRef, DomainRef, HostRef};
 
     #[test]
-    fn construction() {
+    fn new() {
         let authority: AuthorityRef = AuthorityRef::new(DomainRef::LOCALHOST.to_host(), 80);
-        assert_eq!(authority.host, DomainRef::LOCALHOST.to_host());
-        assert_eq!(authority.port, 80);
-
-        let authority: AuthorityRef = (DomainRef::LOCALHOST, 80).into();
         assert_eq!(authority.host, DomainRef::LOCALHOST.to_host());
         assert_eq!(authority.port, 80);
     }

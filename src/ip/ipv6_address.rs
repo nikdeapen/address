@@ -137,7 +137,9 @@ mod tests {
             0x0123, 0x4567, 0x89AB, 0xCDEF, 0x0123, 0x4567, 0x89AB, 0xCDEF,
         ];
         let value: u128 = 0x0123456789ABCDEF0123456789ABCDEFu128;
+
         let ip: IPv6Address = IPv6Address::new(address);
+        assert_eq!(ip.address, address);
 
         assert_eq!(ip, IPv6Address::from_segments(segments));
         assert_eq!(ip, IPv6Address::from(address));

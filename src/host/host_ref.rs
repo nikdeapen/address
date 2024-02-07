@@ -38,10 +38,19 @@ impl<'a> HostRef<'a> {
 
 #[cfg(test)]
 mod tests {
-    use crate::{DomainRef, HostRef, IPv4Address};
+    use crate::{DomainRef, Host, HostRef, IPv4Address};
 
     #[test]
-    fn construction() {}
+    fn construction() {
+        let result: HostRef = DomainRef::LOCALHOST.into();
+        let expected: HostRef = HostRef::Name(DomainRef::LOCALHOST);
+        assert_eq!(result, expected);
+
+        let host: Host = IPv4Address::LOCALHOST.to_host();
+        let result: HostRef = host.to_ref();
+        let expected: HostRef = HostRef::Address(IPv4Address::LOCALHOST.to_ip());
+        assert_eq!(result, expected);
+    }
 
     #[test]
     fn matching() {

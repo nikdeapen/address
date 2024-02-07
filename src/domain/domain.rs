@@ -33,6 +33,12 @@ impl Domain {
     }
 }
 
+impl<'a> From<DomainRef<'a>> for Domain {
+    fn from(domain: DomainRef) -> Self {
+        domain.to_domain()
+    }
+}
+
 impl TryFrom<String> for Domain {
     type Error = ParseError;
 
@@ -40,7 +46,8 @@ impl TryFrom<String> for Domain {
         if Self::is_valid_name_str(name.as_str(), false) {
             Ok(Self { name })
         } else if Self::is_valid_name_str(name.as_str(), true) {
-            let name: String = name.to_ascii_lowercase();
+            let mut name: String = name;
+            name.make_ascii_lowercase();
             Ok(Self { name })
         } else {
             Err(InvalidDomain)
@@ -53,9 +60,8 @@ impl TryFrom<&str> for Domain {
 
     fn try_from(name: &str) -> Result<Self, Self::Error> {
         if Self::is_valid_name_str(name, false) {
-            Ok(Self {
-                name: name.to_string(),
-            })
+            let name: String = name.to_string();
+            Ok(Self { name })
         } else if Self::is_valid_name_str(name, true) {
             let name: String = name.to_ascii_lowercase();
             Ok(Self { name })
@@ -73,8 +79,8 @@ impl TryFrom<Vec<u8>> for Domain {
             let name: String = unsafe { String::from_utf8_unchecked(name) };
             Ok(Self { name })
         } else if Self::is_valid_name(name.as_slice(), true) {
-            let name: String = unsafe { String::from_utf8_unchecked(name) };
-            let name: String = name.to_ascii_lowercase();
+            let mut name: String = unsafe { String::from_utf8_unchecked(name) };
+            name.make_ascii_lowercase();
             Ok(Self { name })
         } else {
             Err(InvalidDomain)
@@ -118,7 +124,7 @@ impl Domain {
 #[cfg(test)]
 mod tests {
     use crate::ParseError::InvalidDomain;
-    use crate::{Domain, ParseError};
+    use crate::{Domain, DomainRef, ParseError};
 
     #[test]
     fn specials() {
@@ -127,28 +133,51 @@ mod tests {
     }
 
     #[test]
-    fn construction() {
+    fn new() {
+        let domain: Domain = unsafe { Domain::new_unchecked("localhost") };
+        assert_eq!(domain.name, "localhost");
+    }
+
+    #[test]
+    fn from_ref() {
+        let domain: DomainRef = DomainRef::LOCALHOST;
+        let result: Domain = domain.into();
+        let expected: Domain = Domain::localhost();
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn try_from_string() {
         let result: Result<Domain, ParseError> = Domain::try_from("localhost".to_string());
         assert_eq!(result, Ok(Domain::localhost()));
         let result: Result<Domain, ParseError> = Domain::try_from("LocalHost".to_string());
         assert_eq!(result, Ok(Domain::localhost()));
         let result: Result<Domain, ParseError> = Domain::try_from("Local!Host".to_string());
         assert_eq!(result, Err(InvalidDomain));
+    }
 
+    #[test]
+    fn try_from_str() {
         let result: Result<Domain, ParseError> = Domain::try_from("localhost");
         assert_eq!(result, Ok(Domain::localhost()));
         let result: Result<Domain, ParseError> = Domain::try_from("LocalHost");
         assert_eq!(result, Ok(Domain::localhost()));
         let result: Result<Domain, ParseError> = Domain::try_from("Local!Host");
         assert_eq!(result, Err(InvalidDomain));
+    }
 
+    #[test]
+    fn try_from_vec() {
         let result: Result<Domain, ParseError> = Domain::try_from(Vec::from("localhost"));
         assert_eq!(result, Ok(Domain::localhost()));
         let result: Result<Domain, ParseError> = Domain::try_from(Vec::from("LocalHost"));
         assert_eq!(result, Ok(Domain::localhost()));
         let result: Result<Domain, ParseError> = Domain::try_from(Vec::from("Local!Host"));
         assert_eq!(result, Err(InvalidDomain));
+    }
 
+    #[test]
+    fn try_from_slice() {
         let result: Result<Domain, ParseError> = Domain::try_from("localhost".as_bytes());
         assert_eq!(result, Ok(Domain::localhost()));
         let result: Result<Domain, ParseError> = Domain::try_from("LocalHost".as_bytes());

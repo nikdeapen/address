@@ -35,7 +35,7 @@ mod tests {
     use std::str::FromStr;
 
     use crate::ParseError::{InvalidAuthority, InvalidHost, InvalidPort};
-    use crate::{Authority, IPv4Address, IPv6Address, ParseError};
+    use crate::{Authority, Domain, IPv4Address, IPv6Address, ParseError};
 
     #[test]
     fn from_str() {
@@ -52,6 +52,10 @@ mod tests {
             (
                 "[::1]:80",
                 Ok(IPv6Address::LOCALHOST.to_host().to_authority(80)),
+            ),
+            (
+                "localhost:80",
+                Ok(Domain::localhost().to_host().to_authority(80)),
             ),
         ];
         for (input, expected) in test_cases {

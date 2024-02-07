@@ -102,7 +102,9 @@ mod tests {
         let address: [u8; 4] = [0x12, 0x34, 0x56, 0x78];
         let bytes: (u8, u8, u8, u8) = (0x12, 0x34, 0x56, 0x78);
         let value: u32 = 0x12345678u32;
+
         let ip: IPv4Address = IPv4Address::new(address);
+        assert_eq!(ip.address, address);
 
         assert_eq!(ip, IPv4Address::from(address));
         assert_eq!(ip, IPv4Address::from(bytes));
