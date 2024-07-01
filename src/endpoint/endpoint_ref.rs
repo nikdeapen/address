@@ -1,4 +1,4 @@
-use crate::{DomainRef};
+use crate::DomainRef;
 
 /// A domain reference with an associated port.
 #[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Debug)]
