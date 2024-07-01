@@ -4,4 +4,5 @@ pub use domain_ref::*;
 mod conversions;
 mod domain;
 mod domain_ref;
+mod from_str;
 mod validation;

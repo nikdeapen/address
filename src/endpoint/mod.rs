@@ -4,3 +4,4 @@ pub use endpoint_ref::*;
 mod conversions;
 mod endpoint;
 mod endpoint_ref;
+mod from_str;

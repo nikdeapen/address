@@ -4,6 +4,7 @@ pub use ipv6_address::*;
 
 mod conversions;
 mod conversions_std;
+mod from_str;
 mod ip_address;
 mod ipv4_address;
 mod ipv6_address;
