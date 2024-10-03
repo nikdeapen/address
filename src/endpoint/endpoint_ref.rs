@@ -1,4 +1,4 @@
-use crate::DomainRef;
+use crate::{DomainRef, HostRef};
 
 /// A domain reference with an associated port.
 #[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Debug)]
@@ -33,6 +33,11 @@ impl<'a> EndpointRef<'a> {
         self.domain
     }
 
+    /// Gets the host reference.
+    pub const fn host(&self) -> HostRef<'a> {
+        HostRef::Name(self.domain)
+    }
+
     /// Gets the port.
     pub const fn port(&self) -> u16 {
         self.port
@@ -41,7 +46,7 @@ impl<'a> EndpointRef<'a> {
 
 #[cfg(test)]
 mod tests {
-    use crate::{DomainRef, EndpointRef};
+    use crate::{DomainRef, EndpointRef, HostRef};
 
     #[test]
     fn construction() {
@@ -58,6 +63,7 @@ mod tests {
     fn properties() {
         let endpoint: EndpointRef = (DomainRef::LOCALHOST, 80).into();
         assert_eq!(endpoint.domain(), DomainRef::LOCALHOST);
+        assert_eq!(endpoint.host(), HostRef::Name(DomainRef::LOCALHOST));
         assert_eq!(endpoint.port(), 80);
     }
 }
