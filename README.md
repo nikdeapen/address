@@ -7,7 +7,7 @@ This library aids in processing network addresses.
 There are currently no features. You can use all address types with the following dependency:
 
     [dependencies]
-    address = "0.11.0"
+    address = "0.0.0" # todo -- release version
 
 ## Address Types
 
@@ -28,12 +28,11 @@ There are 6 core address types:
 
 ## Owned & Reference Types
 
-Address types that are not `Copy` have owned and `Ref` types (example: `Domain` & `DomainRef`).
-This allows both owned types and types that do not require allocation. They can be easily converted
-between each other. `Cow` is not used to avoid complicated ownership.
+Address types that are not `Copy` have owned and `Ref` types (example: `Domain` & `DomainRef`). This allows both owned
+types and types that do not require allocation. These types can be easily converted between one another.
 
 ## Standard Library Types
 
-IP addresses and socket addresses are different from the standard library counterparts. They can be
-easily converted between each other. There is a difference in IPv6 socket addresses where the
-`flow_info` and `scope_id` are not included as part of the address.
+IP addresses and socket addresses are different from their standard library counterparts. They can be easily converted
+between each other. There is a difference in IPv6 socket addresses where the `flow_info` and `scope_id` are not included
+as part of the address.

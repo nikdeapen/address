@@ -25,7 +25,7 @@ impl<A: Into<IPv6Address>> From<(A, u16)> for SocketAddressV6 {
 impl SocketAddressV6 {
     //! Properties
 
-    /// Gets the IP address.
+    /// Gets the IPv6 address.
     pub const fn ip(&self) -> IPv6Address {
         self.ip
     }

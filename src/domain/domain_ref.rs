@@ -1,7 +1,7 @@
 use crate::ParseError::InvalidDomain;
 use crate::{Domain, ParseError};
 
-/// A domain reference.
+/// A domain name reference.
 #[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Debug)]
 pub struct DomainRef<'a> {
     name: &'a str,
@@ -10,10 +10,10 @@ pub struct DomainRef<'a> {
 impl<'a> DomainRef<'a> {
     //! Special Domains
 
-    /// The localhost domain reference. (localhost)
+    /// The `localhost` domain reference.
     pub const LOCALHOST: Self = Self { name: "localhost" };
 
-    /// The example domain reference. (example.com)
+    /// The `example.com` domain reference.
     pub const EXAMPLE: Self = Self {
         name: "example.com",
     };
@@ -79,7 +79,7 @@ mod tests {
     }
 
     #[test]
-    fn from_str() {
+    fn try_from_str() {
         let result: Result<DomainRef, ParseError> = DomainRef::try_from("localhost");
         assert_eq!(result, Ok(DomainRef::LOCALHOST));
         let result: Result<DomainRef, ParseError> = DomainRef::try_from("LocalHost");
@@ -87,7 +87,7 @@ mod tests {
     }
 
     #[test]
-    fn from_slice() {
+    fn try_from_slice() {
         let result: Result<DomainRef, ParseError> = DomainRef::try_from("localhost".as_bytes());
         assert_eq!(result, Ok(DomainRef::LOCALHOST));
         let result: Result<DomainRef, ParseError> = DomainRef::try_from("LocalHost".as_bytes());

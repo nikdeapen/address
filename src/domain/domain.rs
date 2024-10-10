@@ -1,7 +1,7 @@
 use crate::ParseError::InvalidDomain;
 use crate::{DomainRef, ParseError};
 
-/// A domain.
+/// A domain name.
 #[derive(Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Debug)]
 pub struct Domain {
     name: String,
@@ -10,12 +10,12 @@ pub struct Domain {
 impl Domain {
     //! Special Domains
 
-    /// Creates the localhost domain. (localhost)
+    /// Creates the `localhost` domain.
     pub fn localhost() -> Self {
         DomainRef::LOCALHOST.to_domain()
     }
 
-    /// Creates the example domain. (example.com)
+    /// Creates the `example.com` domain.
     pub fn example() -> Self {
         DomainRef::EXAMPLE.to_domain()
     }
