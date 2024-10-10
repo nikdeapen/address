@@ -7,8 +7,7 @@ impl Domain {
     pub const MAX_LABEL_LEN: usize = 63;
 
     /// Checks if the char is valid. (excludes dots and dashes)
-    #[inline(always)]
-    pub const fn is_valid_char(c: u8, ignore_case: bool) -> bool {
+    const fn is_valid_char(c: u8, ignore_case: bool) -> bool {
         c.is_ascii_lowercase() || c.is_ascii_digit() || (ignore_case && c.is_ascii_uppercase())
     }
 
