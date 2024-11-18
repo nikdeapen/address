@@ -38,8 +38,8 @@ impl SocketAddress {
 
 #[cfg(test)]
 mod tests {
-    use crate::{IPAddress, IPv4Address};
     use crate::socket::SocketAddress;
+    use crate::{IPAddress, IPv4Address};
 
     #[test]
     fn construction() {
