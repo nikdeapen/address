@@ -1,7 +1,7 @@
 on: [ pull_request ]
 name: Pull Request
 jobs:
-  format:
+  check:
     name: Check
     runs-on: ubuntu-latest
     steps:
@@ -11,12 +11,12 @@ jobs:
           profile: minimal
           toolchain: stable
           override: true
-      - name: Format
-        run: |
-          cargo fmt --all -- --check
       - name: Build
         run: |
           cargo check
       - name: Test
         run: |
           cargo test
+      - name: Format
+        run: |
+          cargo fmt --all -- --check
