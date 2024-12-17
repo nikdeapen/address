@@ -5,4 +5,5 @@ mod domain;
 mod domain_ref;
 
 mod conversions;
+mod from_str;
 mod validation;
