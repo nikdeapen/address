@@ -21,6 +21,7 @@ mod tests {
     #[test]
     fn display() {
         let domain: Domain = Domain::localhost();
+
         let result: String = domain.to_string();
         let expected: &str = "localhost";
         assert_eq!(result, expected);

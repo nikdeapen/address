@@ -16,8 +16,8 @@ impl<'a> AuthorityRef<'a> {
     }
 }
 
-impl<'a, D: Into<HostRef<'a>>> From<(D, u16)> for AuthorityRef<'a> {
-    fn from(tuple: (D, u16)) -> Self {
+impl<'a, H: Into<HostRef<'a>>> From<(H, u16)> for AuthorityRef<'a> {
+    fn from(tuple: (H, u16)) -> Self {
         Self::new(tuple.0.into(), tuple.1)
     }
 }
@@ -47,8 +47,8 @@ mod tests {
         assert_eq!(authority.port, 80);
 
         let authority: AuthorityRef = (DomainRef::LOCALHOST, 80).into();
-        assert_eq!(authority.host(), HostRef::Name(DomainRef::LOCALHOST));
-        assert_eq!(authority.port(), 80);
+        assert_eq!(authority.host, HostRef::Name(DomainRef::LOCALHOST));
+        assert_eq!(authority.port, 80);
     }
 
     #[test]

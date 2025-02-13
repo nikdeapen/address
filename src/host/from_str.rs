@@ -33,6 +33,7 @@ mod tests {
             ("::1", Ok(IPv6Address::LOCALHOST.to_host())),
             ("[::1]", Err(InvalidHost)),
         ];
+
         for (input, expected) in test_cases {
             let result: Result<Host, ParseError> = Host::from_str(*input);
             assert_eq!(result, *expected);

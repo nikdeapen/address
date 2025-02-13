@@ -40,6 +40,7 @@ mod tests {
                 "[::1]:80",
             ),
         ];
+
         for (host, expected) in test_cases {
             let result: String = host.to_string();
             assert_eq!(result, *expected);

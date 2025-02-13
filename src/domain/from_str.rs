@@ -21,8 +21,10 @@ mod tests {
     fn from_str() {
         let result: Result<Domain, ParseError> = Domain::from_str("localhost");
         assert_eq!(result, Ok(Domain::localhost()));
+
         let result: Result<Domain, ParseError> = Domain::from_str("LocalHost");
         assert_eq!(result, Ok(Domain::localhost()));
+
         let result: Result<Domain, ParseError> = Domain::from_str("Local!Host");
         assert_eq!(result, Err(InvalidDomain));
     }

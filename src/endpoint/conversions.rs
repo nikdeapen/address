@@ -36,6 +36,7 @@ mod tests {
     #[test]
     fn endpoint_to_ref() {
         let endpoint: Endpoint = Endpoint::new(Domain::localhost(), 80);
+
         let result: EndpointRef = endpoint.to_ref();
         let expected: EndpointRef = EndpointRef::new(DomainRef::LOCALHOST, 80);
         assert_eq!(result, expected);
@@ -44,6 +45,7 @@ mod tests {
     #[test]
     fn endpoint_to_authority() {
         let endpoint: Endpoint = Endpoint::new(Domain::localhost(), 80);
+
         let result: Authority = endpoint.to_authority();
         let expected: Authority = Authority::new(Domain::localhost().to_host(), 80);
         assert_eq!(result, expected);
@@ -52,6 +54,7 @@ mod tests {
     #[test]
     fn ref_to_endpoint() {
         let endpoint: EndpointRef = EndpointRef::new(DomainRef::LOCALHOST, 80);
+
         let result: Endpoint = endpoint.to_endpoint();
         let expected: Endpoint = Endpoint::new(Domain::localhost(), 80);
         assert_eq!(result, expected);
@@ -60,6 +63,7 @@ mod tests {
     #[test]
     fn ref_to_authority() {
         let endpoint: EndpointRef = EndpointRef::new(DomainRef::LOCALHOST, 80);
+
         let result: AuthorityRef = endpoint.to_authority();
         let expected: AuthorityRef = AuthorityRef::new(DomainRef::LOCALHOST.to_host(), 80);
         assert_eq!(result, expected);

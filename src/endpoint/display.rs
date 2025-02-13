@@ -21,6 +21,7 @@ mod tests {
     #[test]
     fn display() {
         let endpoint: Endpoint = Domain::localhost().to_endpoint(80);
+
         let result: String = endpoint.to_string();
         let expected: &str = "localhost:80";
         assert_eq!(result, expected);

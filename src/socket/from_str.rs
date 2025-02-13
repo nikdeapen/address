@@ -68,6 +68,7 @@ mod tests {
             ("xx:80", Err(InvalidIPv4Address)),
             ("127.0.0.1:80", Ok(IPv4Address::LOCALHOST.to_socket(80))),
         ];
+
         for (input, expected) in test_cases {
             let result: Result<SocketAddressV4, ParseError> = SocketAddressV4::from_str(*input);
             assert_eq!(result, *expected, "input={}", *input);
@@ -85,6 +86,7 @@ mod tests {
             ("[xx]:80", Err(InvalidIPv6Address)),
             ("[::1]:80", Ok(IPv6Address::LOCALHOST.to_socket(80))),
         ];
+
         for (input, expected) in test_cases {
             let result: Result<SocketAddressV6, ParseError> = SocketAddressV6::from_str(*input);
             assert_eq!(result, *expected, "input={}", *input);
@@ -107,6 +109,7 @@ mod tests {
                 Ok(IPv6Address::LOCALHOST.to_socket(80).to_socket()),
             ),
         ];
+
         for (input, expected) in test_cases {
             let result: Result<SocketAddress, ParseError> = SocketAddress::from_str(*input);
             assert_eq!(result, *expected, "input={}", *input);

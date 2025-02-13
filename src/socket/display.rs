@@ -30,6 +30,7 @@ mod tests {
     #[test]
     fn v4() {
         let socket: SocketAddressV4 = IPv4Address::LOCALHOST.to_socket(80);
+
         let result: String = socket.to_string();
         let expected: &str = "127.0.0.1:80";
         assert_eq!(result, expected);
@@ -38,6 +39,7 @@ mod tests {
     #[test]
     fn v6() {
         let socket: SocketAddressV6 = IPv6Address::LOCALHOST.to_socket(80);
+
         let result: String = socket.to_string();
         let expected: &str = "[::1]:80";
         assert_eq!(result, expected);

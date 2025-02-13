@@ -53,6 +53,7 @@ mod tests {
             ("127.0.0.1", Ok(IPv4Address::LOCALHOST)),
             ("255.255.255.255", Ok(IPv4Address::BROADCAST)),
         ];
+
         for (input, expected) in test_cases {
             let result: Result<IPv4Address, ParseError> = IPv4Address::from_str(*input);
             assert_eq!(result, *expected);
@@ -66,6 +67,7 @@ mod tests {
             ("::", Ok(IPv6Address::UNSPECIFIED)),
             ("::1", Ok(IPv6Address::LOCALHOST)),
         ];
+
         for (input, expected) in test_cases {
             let result: Result<IPv6Address, ParseError> = IPv6Address::from_str(*input);
             assert_eq!(result, *expected);
@@ -79,6 +81,7 @@ mod tests {
             ("127.0.0.1", Ok(IPv4Address::LOCALHOST.to_ip())),
             ("::1", Ok(IPv6Address::LOCALHOST.to_ip())),
         ];
+
         for (input, expected) in test_cases {
             let result: Result<IPAddress, ParseError> = IPAddress::from_str(*input);
             assert_eq!(result, *expected);

@@ -35,6 +35,7 @@ mod tests {
             (IPv4Address::LOCALHOST, "127.0.0.1"),
             (IPv4Address::BROADCAST, "255.255.255.255"),
         ];
+
         for (ip, expected) in test_cases {
             let result: String = ip.to_string();
             assert_eq!(result, *expected);
@@ -47,6 +48,7 @@ mod tests {
             (IPv6Address::UNSPECIFIED, "::"),
             (IPv6Address::LOCALHOST, "::1"),
         ];
+
         for (ip, expected) in test_cases {
             let result: String = ip.to_string();
             assert_eq!(result, *expected);
@@ -59,6 +61,7 @@ mod tests {
             (IPv4Address::LOCALHOST.to_ip(), "127.0.0.1"),
             (IPv6Address::LOCALHOST.to_ip(), "::1"),
         ];
+
         for (ip, expected) in test_cases {
             let result: String = ip.to_string();
             assert_eq!(result, *expected);

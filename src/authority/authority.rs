@@ -62,10 +62,11 @@ mod tests {
         assert_eq!(authority.port, 80);
 
         let authority: Authority = (Domain::localhost(), 80).into();
-        assert_eq!(authority.host(), HostRef::Name(DomainRef::LOCALHOST));
-        assert_eq!(authority.port(), 80);
+        assert_eq!(authority.host, Host::Name(Domain::localhost()));
+        assert_eq!(authority.port, 80);
 
         let authority: Authority = Authority::new(Host::Name(Domain::localhost()), 80);
+        let authority: Authority = authority.to_ref().into();
         assert_eq!(authority.host, Host::Name(Domain::localhost()));
         assert_eq!(authority.port, 80);
     }

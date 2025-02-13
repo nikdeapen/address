@@ -28,6 +28,7 @@ mod tests {
             (IPv4Address::LOCALHOST.to_host(), "127.0.0.1"),
             (IPv6Address::LOCALHOST.to_host(), "::1"),
         ];
+
         for (host, expected) in test_cases {
             let result: String = host.to_string();
             assert_eq!(result, *expected);

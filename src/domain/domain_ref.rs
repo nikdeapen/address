@@ -26,7 +26,7 @@ impl<'a> DomainRef<'a> {
     ///
     /// # Unsafe
     /// The `name` must be valid.
-    pub unsafe fn new_unchecked(name: &'a str) -> Self {
+    pub unsafe fn new(name: &'a str) -> Self {
         debug_assert!(Domain::is_valid_name_str(name, false));
 
         Self { name }
@@ -82,6 +82,7 @@ mod tests {
     fn try_from_str() {
         let result: Result<DomainRef, ParseError> = DomainRef::try_from("localhost");
         assert_eq!(result, Ok(DomainRef::LOCALHOST));
+
         let result: Result<DomainRef, ParseError> = DomainRef::try_from("LocalHost");
         assert_eq!(result, Err(InvalidDomain));
     }
@@ -90,6 +91,7 @@ mod tests {
     fn try_from_slice() {
         let result: Result<DomainRef, ParseError> = DomainRef::try_from("localhost".as_bytes());
         assert_eq!(result, Ok(DomainRef::LOCALHOST));
+
         let result: Result<DomainRef, ParseError> = DomainRef::try_from("LocalHost".as_bytes());
         assert_eq!(result, Err(InvalidDomain));
     }

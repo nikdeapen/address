@@ -28,18 +28,20 @@ impl Domain {
     ///
     /// # Unsafe
     /// The `name` must be valid.
-    pub unsafe fn new_unchecked<S>(name: S) -> Self
+    pub unsafe fn new<S>(name: S) -> Self
     where
         S: Into<String>,
     {
         let name: String = name.into();
+
         debug_assert!(Self::is_valid_name_str(name.as_str(), false));
+
         Self { name }
     }
 }
 
 impl TryFrom<String> for Domain {
-    type Error = ParseError;
+    type Error = ParseError; // todo -- the error should contain the original String
 
     fn try_from(name: String) -> Result<Self, Self::Error> {
         if Self::is_valid_name_str(name.as_str(), false) {
@@ -71,7 +73,7 @@ impl TryFrom<&str> for Domain {
 }
 
 impl TryFrom<Vec<u8>> for Domain {
-    type Error = ParseError;
+    type Error = ParseError; // todo -- the error should contain the original Vec
 
     fn try_from(name: Vec<u8>) -> Result<Self, Self::Error> {
         if Self::is_valid_name(name.as_slice(), false) {
@@ -141,8 +143,10 @@ mod tests {
     fn try_from_string() {
         let result: Result<Domain, ParseError> = Domain::try_from("localhost".to_string());
         assert_eq!(result, Ok(Domain::localhost()));
+
         let result: Result<Domain, ParseError> = Domain::try_from("LocalHost".to_string());
         assert_eq!(result, Ok(Domain::localhost()));
+
         let result: Result<Domain, ParseError> = Domain::try_from("Local!Host".to_string());
         assert_eq!(result, Err(InvalidDomain));
     }
@@ -151,8 +155,10 @@ mod tests {
     fn try_from_str() {
         let result: Result<Domain, ParseError> = Domain::try_from("localhost");
         assert_eq!(result, Ok(Domain::localhost()));
+
         let result: Result<Domain, ParseError> = Domain::try_from("LocalHost");
         assert_eq!(result, Ok(Domain::localhost()));
+
         let result: Result<Domain, ParseError> = Domain::try_from("Local!Host");
         assert_eq!(result, Err(InvalidDomain));
     }
@@ -161,8 +167,10 @@ mod tests {
     fn try_from_vec() {
         let result: Result<Domain, ParseError> = Domain::try_from(Vec::from("localhost"));
         assert_eq!(result, Ok(Domain::localhost()));
+
         let result: Result<Domain, ParseError> = Domain::try_from(Vec::from("LocalHost"));
         assert_eq!(result, Ok(Domain::localhost()));
+
         let result: Result<Domain, ParseError> = Domain::try_from(Vec::from("Local!Host"));
         assert_eq!(result, Err(InvalidDomain));
     }
@@ -171,8 +179,10 @@ mod tests {
     fn try_from_slice() {
         let result: Result<Domain, ParseError> = Domain::try_from("localhost".as_bytes());
         assert_eq!(result, Ok(Domain::localhost()));
+
         let result: Result<Domain, ParseError> = Domain::try_from("LocalHost".as_bytes());
         assert_eq!(result, Ok(Domain::localhost()));
+
         let result: Result<Domain, ParseError> = Domain::try_from("Local!Host".as_bytes());
         assert_eq!(result, Err(InvalidDomain));
     }
@@ -180,6 +190,7 @@ mod tests {
     #[test]
     fn from_ref() {
         let domain: DomainRef = DomainRef::LOCALHOST;
+
         let result: Domain = domain.into();
         let expected: Domain = Domain::localhost();
         assert_eq!(result, expected);
@@ -188,6 +199,7 @@ mod tests {
     #[test]
     fn deconstruction() {
         let domain: Domain = Domain::localhost();
+
         let result: String = domain.into();
         let expected: &str = "localhost";
         assert_eq!(result, expected);

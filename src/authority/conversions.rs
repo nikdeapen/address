@@ -25,6 +25,7 @@ mod tests {
     #[test]
     fn authority_to_ref() {
         let authority: Authority = Authority::new(Host::Name(Domain::localhost()), 80);
+
         let result: AuthorityRef = authority.to_ref();
         let expected: AuthorityRef = AuthorityRef::new(HostRef::Name(DomainRef::LOCALHOST), 80);
         assert_eq!(result, expected);
@@ -34,8 +35,9 @@ mod tests {
     fn ref_to_authority() {
         let host: HostRef = HostRef::Name(DomainRef::LOCALHOST);
         let authority: AuthorityRef = AuthorityRef::new(host, 80);
+
         let result: Authority = authority.to_authority();
-        let expected: Authority = Authority::new(Host::Name(Domain::localhost()), 80);
+        let expected: Authority = Authority::new(host.to_host(), 80);
         assert_eq!(result, expected);
     }
 }

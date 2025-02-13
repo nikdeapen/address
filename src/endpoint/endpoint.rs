@@ -40,7 +40,7 @@ impl From<Endpoint> for (Domain, u16) {
 impl Endpoint {
     //! Properties
 
-    /// Gets the domain.
+    /// Gets the domain reference.
     pub fn domain(&self) -> DomainRef {
         self.domain.to_ref()
     }
@@ -73,6 +73,7 @@ mod tests {
     #[test]
     fn deconstruction() {
         let endpoint: Endpoint = Endpoint::new(Domain::localhost(), 80);
+
         let (domain, port) = endpoint.into();
         assert_eq!(domain, Domain::localhost());
         assert_eq!(port, 80);
