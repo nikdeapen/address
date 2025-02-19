@@ -7,7 +7,7 @@ This library aids in processing network addresses.
 There are currently no features. You can use all address types with the following dependency:
 
     [dependencies]
-    address = "0.0.0" # todo -- current version
+    address = "0.13.0"
 
 ## Address Types
 
