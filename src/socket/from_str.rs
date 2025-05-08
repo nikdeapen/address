@@ -70,8 +70,8 @@ mod tests {
         ];
 
         for (input, expected) in test_cases {
-            let result: Result<SocketAddressV4, ParseError> = SocketAddressV4::from_str(*input);
-            assert_eq!(result, *expected, "input={}", *input);
+            let result: Result<SocketAddressV4, ParseError> = SocketAddressV4::from_str(input);
+            assert_eq!(result, *expected, "input={}", input);
         }
     }
 
@@ -88,8 +88,8 @@ mod tests {
         ];
 
         for (input, expected) in test_cases {
-            let result: Result<SocketAddressV6, ParseError> = SocketAddressV6::from_str(*input);
-            assert_eq!(result, *expected, "input={}", *input);
+            let result: Result<SocketAddressV6, ParseError> = SocketAddressV6::from_str(input);
+            assert_eq!(result, *expected, "input={}", input);
         }
     }
 
@@ -111,8 +111,8 @@ mod tests {
         ];
 
         for (input, expected) in test_cases {
-            let result: Result<SocketAddress, ParseError> = SocketAddress::from_str(*input);
-            assert_eq!(result, *expected, "input={}", *input);
+            let result: Result<SocketAddress, ParseError> = SocketAddress::from_str(input);
+            assert_eq!(result, *expected, "input={}", input);
         }
     }
 }

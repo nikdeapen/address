@@ -13,9 +13,9 @@ impl Domain {
 
     /// Checks if the domain `label` is valid.
     pub fn is_valid_label(label: &[u8], ignore_case: bool) -> bool {
-        if label.is_empty() || label.len() > Self::MAX_LABEL_LEN {
-            false
-        } else if label[0] == b'-' || label[label.len() - 1] == b'-' {
+        if (label.is_empty() || label.len() > Self::MAX_LABEL_LEN)
+            || (label[0] == b'-' || label[label.len() - 1] == b'-')
+        {
             false
         } else {
             for (i, c) in label.iter().enumerate() {
@@ -79,11 +79,11 @@ mod tests {
             ("a-a-a", true, true),
         ];
         for (label, expected, expected_ignore_case) in test_cases {
-            let result: bool = Domain::is_valid_label_str(*label, false);
-            assert_eq!(result, *expected, "label={}", *label);
+            let result: bool = Domain::is_valid_label_str(label, false);
+            assert_eq!(result, *expected, "label={}", label);
 
-            let result: bool = Domain::is_valid_label_str(*label, true);
-            assert_eq!(result, *expected_ignore_case, "label={}", *label);
+            let result: bool = Domain::is_valid_label_str(label, true);
+            assert_eq!(result, *expected_ignore_case, "label={}", label);
         }
     }
 
@@ -102,11 +102,11 @@ mod tests {
             ("a-a.a-a.a-a", true, true),
         ];
         for (label, expected, expected_ignore_case) in test_cases {
-            let result: bool = Domain::is_valid_name_str(*label, false);
-            assert_eq!(result, *expected, "label={}", *label);
+            let result: bool = Domain::is_valid_name_str(label, false);
+            assert_eq!(result, *expected, "label={}", label);
 
-            let result: bool = Domain::is_valid_name_str(*label, true);
-            assert_eq!(result, *expected_ignore_case, "label={}", *label);
+            let result: bool = Domain::is_valid_name_str(label, true);
+            assert_eq!(result, *expected_ignore_case, "label={}", label);
         }
     }
 }

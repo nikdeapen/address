@@ -55,7 +55,7 @@ mod tests {
         ];
 
         for (input, expected) in test_cases {
-            let result: Result<IPv4Address, ParseError> = IPv4Address::from_str(*input);
+            let result: Result<IPv4Address, ParseError> = IPv4Address::from_str(input);
             assert_eq!(result, *expected);
         }
     }
@@ -69,7 +69,7 @@ mod tests {
         ];
 
         for (input, expected) in test_cases {
-            let result: Result<IPv6Address, ParseError> = IPv6Address::from_str(*input);
+            let result: Result<IPv6Address, ParseError> = IPv6Address::from_str(input);
             assert_eq!(result, *expected);
         }
     }
@@ -83,7 +83,7 @@ mod tests {
         ];
 
         for (input, expected) in test_cases {
-            let result: Result<IPAddress, ParseError> = IPAddress::from_str(*input);
+            let result: Result<IPAddress, ParseError> = IPAddress::from_str(input);
             assert_eq!(result, *expected);
         }
     }

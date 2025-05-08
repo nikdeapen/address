@@ -55,7 +55,7 @@ mod tests {
         ];
 
         for (input, expected) in test_cases {
-            let result: Result<Authority, ParseError> = Authority::from_str(*input);
+            let result: Result<Authority, ParseError> = Authority::from_str(input);
             assert_eq!(result, *expected, "input={}", *input);
         }
     }
