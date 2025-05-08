@@ -39,8 +39,8 @@ mod tests {
         ];
 
         for (input, expected) in test_cases {
-            let result: Result<Endpoint, ParseError> = Endpoint::from_str(*input);
-            assert_eq!(result, *expected, "input={}", *input);
+            let result: Result<Endpoint, ParseError> = Endpoint::from_str(input);
+            assert_eq!(result, *expected, "input={}", input);
         }
     }
 }

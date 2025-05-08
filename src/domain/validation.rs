@@ -79,11 +79,11 @@ mod tests {
             ("a-a-a", true, true),
         ];
         for (label, expected, expected_ignore_case) in test_cases {
-            let result: bool = Domain::is_valid_label_str(*label, false);
-            assert_eq!(result, *expected, "label={}", *label);
+            let result: bool = Domain::is_valid_label_str(label, false);
+            assert_eq!(result, *expected, "label={}", label);
 
-            let result: bool = Domain::is_valid_label_str(*label, true);
-            assert_eq!(result, *expected_ignore_case, "label={}", *label);
+            let result: bool = Domain::is_valid_label_str(label, true);
+            assert_eq!(result, *expected_ignore_case, "label={}", label);
         }
     }
 
@@ -102,11 +102,11 @@ mod tests {
             ("a-a.a-a.a-a", true, true),
         ];
         for (label, expected, expected_ignore_case) in test_cases {
-            let result: bool = Domain::is_valid_name_str(*label, false);
-            assert_eq!(result, *expected, "label={}", *label);
+            let result: bool = Domain::is_valid_name_str(label, false);
+            assert_eq!(result, *expected, "label={}", label);
 
-            let result: bool = Domain::is_valid_name_str(*label, true);
-            assert_eq!(result, *expected_ignore_case, "label={}", *label);
+            let result: bool = Domain::is_valid_name_str(label, true);
+            assert_eq!(result, *expected_ignore_case, "label={}", label);
         }
     }
 }
