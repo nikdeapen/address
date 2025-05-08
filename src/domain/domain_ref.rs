@@ -24,7 +24,7 @@ impl<'a> DomainRef<'a> {
 
     /// Creates a new domain reference.
     ///
-    /// # Unsafe
+    /// # Safety
     /// The `name` must be valid.
     pub unsafe fn new(name: &'a str) -> Self {
         debug_assert!(Domain::is_valid_name_str(name, false));

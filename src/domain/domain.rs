@@ -26,7 +26,7 @@ impl Domain {
 
     /// Creates a new domain.
     ///
-    /// # Unsafe
+    /// # Safety
     /// The `name` must be valid.
     pub unsafe fn new<S>(name: S) -> Self
     where

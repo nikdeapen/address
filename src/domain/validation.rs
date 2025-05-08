@@ -13,9 +13,9 @@ impl Domain {
 
     /// Checks if the domain `label` is valid.
     pub fn is_valid_label(label: &[u8], ignore_case: bool) -> bool {
-        if label.is_empty() || label.len() > Self::MAX_LABEL_LEN {
-            false
-        } else if label[0] == b'-' || label[label.len() - 1] == b'-' {
+        if (label.is_empty() || label.len() > Self::MAX_LABEL_LEN)
+            || (label[0] == b'-' || label[label.len() - 1] == b'-')
+        {
             false
         } else {
             for (i, c) in label.iter().enumerate() {

@@ -1,3 +1,6 @@
+#![allow(clippy::needless_lifetimes)]
+#![allow(clippy::module_inception)]
+
 pub use authority::*;
 pub use domain::*;
 pub use endpoint::*;
