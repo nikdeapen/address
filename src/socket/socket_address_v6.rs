@@ -1,6 +1,6 @@
 use crate::IPv6Address;
 
-// An IPv6 address with an associated port.
+/// An IPv6 address with an associated port.
 #[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Debug)]
 pub struct SocketAddressV6 {
     ip: IPv6Address,

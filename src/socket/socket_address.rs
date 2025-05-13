@@ -1,6 +1,6 @@
 use crate::IPAddress;
 
-// An IP address with an associated port.
+/// An IP address with an associated port.
 #[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Debug)]
 pub struct SocketAddress {
     ip: IPAddress,
