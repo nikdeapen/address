@@ -1,6 +1,6 @@
 use crate::IPv4Address;
 
-// An IPv4 address with an associated port.
+/// An IPv4 address with an associated port.
 #[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Debug)]
 pub struct SocketAddressV4 {
     ip: IPv4Address,
