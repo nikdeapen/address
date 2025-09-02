@@ -7,7 +7,7 @@ This library aids in processing network addresses.
 There are currently no features. You can use all address types with the following dependency:
 
     [dependencies]
-    address = "0.14.0"
+    address = "0.15.0"
 
 ## Address Types
 
