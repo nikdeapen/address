@@ -9,3 +9,4 @@ mod ipv6_address;
 mod conversions;
 mod conversions_std;
 mod display;
+mod from_str;
