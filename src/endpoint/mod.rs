@@ -6,3 +6,4 @@ mod endpoint_ref;
 
 mod conversions;
 mod display;
+mod from_str;
