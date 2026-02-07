@@ -1,6 +1,5 @@
-use std::fmt::{Display, Formatter};
-
 use crate::{Authority, AuthorityRef, HostRef, IPAddress};
+use std::fmt::{Display, Formatter};
 
 impl Display for Authority {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {

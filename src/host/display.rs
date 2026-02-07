@@ -1,6 +1,5 @@
-use std::fmt::{Display, Formatter};
-
 use crate::{Host, HostRef};
+use std::fmt::{Display, Formatter};
 
 impl Display for Host {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {

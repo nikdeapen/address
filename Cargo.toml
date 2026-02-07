@@ -1,6 +1,6 @@
 [package]
 name = "address"
-version = "0.17.0-rc.2"
+version = "0.17.0"
 description = "This library aids in processing network addresses."
 readme = "README.md"
 repository = "https://github.com/nikdeapen/address"

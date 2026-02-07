@@ -1,8 +1,7 @@
-use std::str::FromStr;
-
 use crate::parse_port;
 use crate::ParseError::InvalidAuthority;
 use crate::{Authority, Host, IPv6Address, ParseError};
+use std::str::FromStr;
 
 impl FromStr for Authority {
     type Err = ParseError;
@@ -27,10 +26,9 @@ impl FromStr for Authority {
 
 #[cfg(test)]
 mod tests {
-    use std::str::FromStr;
-
     use crate::ParseError::{InvalidAuthority, InvalidHost, InvalidPort};
     use crate::{Authority, Domain, IPv4Address, IPv6Address, ParseError};
+    use std::str::FromStr;
 
     #[test]
     fn from_str() {

@@ -1,8 +1,7 @@
-use std::net::{Ipv4Addr, Ipv6Addr};
-use std::str::FromStr;
-
 use crate::ParseError::{InvalidIPAddress, InvalidIPv4Address, InvalidIPv6Address};
 use crate::{IPAddress, IPv4Address, IPv6Address, ParseError};
+use std::net::{Ipv4Addr, Ipv6Addr};
+use std::str::FromStr;
 
 impl FromStr for IPv4Address {
     type Err = ParseError;
@@ -40,10 +39,9 @@ impl FromStr for IPAddress {
 
 #[cfg(test)]
 mod tests {
-    use std::str::FromStr;
-
     use crate::ParseError::{InvalidIPAddress, InvalidIPv4Address, InvalidIPv6Address};
     use crate::{IPAddress, IPv4Address, IPv6Address, ParseError};
+    use std::str::FromStr;
 
     #[test]
     fn v4() {

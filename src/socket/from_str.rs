@@ -1,10 +1,9 @@
-use std::str::FromStr;
-
 use crate::parse_port;
 use crate::ParseError::InvalidSocketAddressV6;
 use crate::{
     IPv4Address, IPv6Address, ParseError, SocketAddress, SocketAddressV4, SocketAddressV6,
 };
+use std::str::FromStr;
 
 impl FromStr for SocketAddressV4 {
     type Err = ParseError;

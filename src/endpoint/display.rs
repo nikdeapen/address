@@ -1,6 +1,5 @@
-use std::fmt::{Display, Formatter};
-
 use crate::{Endpoint, EndpointRef};
+use std::fmt::{Display, Formatter};
 
 impl Display for Endpoint {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {

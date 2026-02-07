@@ -1,7 +1,6 @@
-use std::str::FromStr;
-
 use crate::ParseError::InvalidHost;
 use crate::{Domain, Host, IPAddress, ParseError};
+use std::str::FromStr;
 
 impl FromStr for Host {
     type Err = ParseError;

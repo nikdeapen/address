@@ -1,7 +1,6 @@
-use std::str::FromStr;
-
 use crate::parse_port;
 use crate::{Domain, Endpoint, ParseError};
+use std::str::FromStr;
 
 impl FromStr for Endpoint {
     type Err = ParseError;
@@ -15,10 +14,9 @@ impl FromStr for Endpoint {
 
 #[cfg(test)]
 mod tests {
-    use std::str::FromStr;
-
     use crate::ParseError::{InvalidDomain, InvalidPort};
     use crate::{DomainRef, Endpoint, ParseError};
+    use std::str::FromStr;
 
     #[test]
     fn from_str() {

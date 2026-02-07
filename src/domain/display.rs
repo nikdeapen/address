@@ -1,6 +1,5 @@
-use std::fmt::{Display, Formatter};
-
 use crate::{Domain, DomainRef};
+use std::fmt::{Display, Formatter};
 
 impl Display for Domain {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
