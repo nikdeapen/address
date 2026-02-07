@@ -1,6 +1,5 @@
-use std::fmt::{Display, Formatter};
-
 use crate::{IPAddress, IPv4Address, IPv6Address};
+use std::fmt::{Display, Formatter};
 
 impl Display for IPv4Address {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
