@@ -4,16 +4,19 @@ impl Domain {
     //! Conversions
 
     /// Converts the domain to a domain reference.
+    #[must_use]
     pub fn to_ref(&self) -> DomainRef<'_> {
         unsafe { DomainRef::new(self.name()) }
     }
 
     /// Converts the domain to an endpoint with the `port`.
+    #[must_use]
     pub fn to_endpoint(self, port: u16) -> Endpoint {
         Endpoint::new(self, port)
     }
 
     /// Converts the domain to a host.
+    #[must_use]
     pub fn to_host(self) -> Host {
         Host::Name(self)
     }
@@ -23,16 +26,19 @@ impl<'a> DomainRef<'a> {
     //! Conversions
 
     /// Converts the domain reference to a domain.
+    #[must_use]
     pub fn to_domain(&self) -> Domain {
         unsafe { Domain::new(self.name()) }
     }
 
     /// Converts the domain reference to an endpoint reference with the `port`.
+    #[must_use]
     pub const fn to_endpoint(&self, port: u16) -> EndpointRef<'_> {
         EndpointRef::new(*self, port)
     }
 
     /// Converts the domain reference to a host reference.
+    #[must_use]
     pub const fn to_host(&self) -> HostRef<'_> {
         HostRef::Name(*self)
     }

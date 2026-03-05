@@ -4,11 +4,13 @@ impl Endpoint {
     //! Conversions
 
     /// Converts the endpoint to an endpoint reference.
+    #[must_use]
     pub fn to_ref(&self) -> EndpointRef<'_> {
         EndpointRef::new(self.domain(), self.port())
     }
 
     /// Converts the endpoint to an authority.
+    #[must_use]
     pub fn to_authority(self) -> Authority {
         let (domain, port) = self.into();
         Authority::new(Host::Name(domain), port)
@@ -19,11 +21,13 @@ impl<'a> EndpointRef<'a> {
     //! Conversions
 
     /// Converts the endpoint reference to an endpoint.
+    #[must_use]
     pub fn to_endpoint(&self) -> Endpoint {
         Endpoint::new(self.domain().to_domain(), self.port())
     }
 
     /// Converts the endpoint reference to an authority reference.
+    #[must_use]
     pub fn to_authority(&self) -> AuthorityRef<'_> {
         AuthorityRef::new(HostRef::Name(self.domain()), self.port())
     }

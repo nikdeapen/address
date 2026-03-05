@@ -4,6 +4,7 @@ impl SocketAddressV4 {
     //! Conversions
 
     /// Converts the IPv4 socket address to a socket address.
+    #[must_use]
     pub const fn to_socket(&self) -> SocketAddress {
         SocketAddress::new(self.ip().to_ip(), self.port())
     }
@@ -22,6 +23,7 @@ impl SocketAddress {
     //! Conversions
 
     /// Converts the socket address to an optional IPv4 socket address.
+    #[must_use]
     pub const fn to_v4(&self) -> Option<SocketAddressV4> {
         if let IPAddress::V4(v4) = self.ip() {
             Some(SocketAddressV4::new(v4, self.port()))
@@ -31,6 +33,7 @@ impl SocketAddress {
     }
 
     /// Converts the socket address to an optional IPv6 socket address.
+    #[must_use]
     pub const fn to_v6(&self) -> Option<SocketAddressV6> {
         if let IPAddress::V6(v6) = self.ip() {
             Some(SocketAddressV6::new(v6, self.port()))
@@ -40,6 +43,7 @@ impl SocketAddress {
     }
 
     /// Converts the socket address to an authority.
+    #[must_use]
     pub const fn to_authority(&self) -> Authority {
         Authority::new(self.ip().to_host(), self.port())
     }
