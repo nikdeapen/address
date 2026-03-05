@@ -4,6 +4,7 @@ impl Authority {
     //! Conversions
 
     /// Converts the authority to an authority reference.
+    #[must_use]
     pub fn to_ref(&self) -> AuthorityRef<'_> {
         AuthorityRef::new(self.host(), self.port())
     }
@@ -13,6 +14,7 @@ impl<'a> AuthorityRef<'a> {
     //! Conversions
 
     /// Converts the authority reference to an authority.
+    #[must_use]
     pub fn to_authority(&self) -> Authority {
         Authority::new(self.host().to_host(), self.port())
     }

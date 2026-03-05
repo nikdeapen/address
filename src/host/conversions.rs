@@ -4,6 +4,7 @@ impl Host {
     //! Conversions
 
     /// Converts the host to a host reference.
+    #[must_use]
     pub fn to_ref(&self) -> HostRef<'_> {
         match self {
             Self::Name(domain) => HostRef::Name(domain.to_ref()),
@@ -12,6 +13,7 @@ impl Host {
     }
 
     /// Converts the host to an authority with the `port`.
+    #[must_use]
     pub fn to_authority(self, port: u16) -> Authority {
         Authority::new(self, port)
     }
@@ -21,6 +23,7 @@ impl<'a> HostRef<'a> {
     //! Conversions
 
     /// Converts the host reference to a host.
+    #[must_use]
     pub fn to_host(&self) -> Host {
         match self {
             Self::Name(domain) => Host::Name(domain.to_domain()),
@@ -29,6 +32,7 @@ impl<'a> HostRef<'a> {
     }
 
     /// Converts the host reference to an authority reference with the `port`.
+    #[must_use]
     pub fn to_authority(&self, port: u16) -> AuthorityRef<'_> {
         AuthorityRef::new(*self, port)
     }
