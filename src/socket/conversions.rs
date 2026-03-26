@@ -14,6 +14,7 @@ impl SocketAddressV6 {
     //! Conversions
 
     /// Converts the IPv6 socket address to a socket address.
+    #[must_use]
     pub const fn to_socket(&self) -> SocketAddress {
         SocketAddress::new(self.ip().to_ip(), self.port())
     }

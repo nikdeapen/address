@@ -4,7 +4,7 @@ This library aids in processing network addresses.
 
 ## Features & Dependencies
 
-    address = "0.18.0-rc.1"
+    address = "0.18.0"
 
 This crate has no features or dependencies.
 

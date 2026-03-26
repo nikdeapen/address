@@ -25,7 +25,7 @@ impl Display for ParseError {
             Self::InvalidHost => "invalid host",
             Self::InvalidAuthority => "invalid authority",
         };
-        write!(f, "{}", s)
+        f.write_str(s)
     }
 }
 
