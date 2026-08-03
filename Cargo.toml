@@ -11,3 +11,9 @@ rust-version = "1.69"
 license = "MIT"
 keywords = ["address", "ip", "domain", "socket", "network"]
 categories = ["network-programming", "parser-implementations"]
+
+[dependencies]
+idna = { version = "0.5", optional = true }
+
+[features]
+idna = ["dep:idna"]

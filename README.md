@@ -6,7 +6,9 @@ This library aids in processing network addresses.
 
     address = "0.18.0"
 
-This crate has no features or dependencies.
+This crate has no dependencies by default.
+
+- `idna`: Adds `Domain::from_unicode` & `to_unicode` for international domain names. Uses the `idna` crate.
 
 ## Address Types
 
