@@ -9,6 +9,7 @@ This library aids in processing network addresses.
 This crate has no dependencies by default.
 
 - `idna`: Adds `Domain::from_unicode` & `to_unicode` for international domain names. Uses the `idna` crate.
+- `serde`: Adds `Serialize` & `Deserialize` implementations via `Display` & `FromStr`. Uses the `serde` crate.
 
 ## Address Types
 

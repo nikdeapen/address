@@ -10,3 +10,6 @@ mod conversions;
 mod conversions_std;
 mod display;
 mod from_str;
+
+#[cfg(feature = "serde")]
+mod serde;
