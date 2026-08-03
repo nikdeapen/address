@@ -1,4 +1,4 @@
-use crate::{Authority, AuthorityRef};
+use crate::{Authority, AuthorityRef, Endpoint, EndpointRef, Host, HostRef, SocketAddress};
 
 impl Authority {
     //! Conversions
@@ -7,6 +7,28 @@ impl Authority {
     #[must_use]
     pub fn to_ref(&self) -> AuthorityRef<'_> {
         AuthorityRef::new(self.host(), self.port())
+    }
+
+    /// Converts the authority to an optional endpoint.
+    #[must_use]
+    pub fn to_endpoint(self) -> Option<Endpoint> {
+        let (host, port) = self.into();
+        if let Host::Name(domain) = host {
+            Some(Endpoint::new(domain, port))
+        } else {
+            None
+        }
+    }
+
+    /// Converts the authority to an optional socket address.
+    #[must_use]
+    pub fn to_socket(self) -> Option<SocketAddress> {
+        let (host, port) = self.into();
+        if let Host::Address(ip) = host {
+            Some(SocketAddress::new(ip, port))
+        } else {
+            None
+        }
     }
 }
 
@@ -17,6 +39,44 @@ impl<'a> AuthorityRef<'a> {
     #[must_use]
     pub fn to_authority(self) -> Authority {
         Authority::new(self.host().to_host(), self.port())
+    }
+
+    /// Converts the authority reference to an optional endpoint reference.
+    #[must_use]
+    pub const fn to_endpoint_ref(self) -> Option<EndpointRef<'a>> {
+        if let HostRef::Name(domain) = self.host() {
+            Some(EndpointRef::new(domain, self.port()))
+        } else {
+            None
+        }
+    }
+
+    /// Converts the authority reference to an optional socket address.
+    #[must_use]
+    pub const fn to_socket(self) -> Option<SocketAddress> {
+        if let HostRef::Address(ip) = self.host() {
+            Some(SocketAddress::new(ip, self.port()))
+        } else {
+            None
+        }
+    }
+}
+
+impl<'a> From<&'a Authority> for AuthorityRef<'a> {
+    fn from(authority: &'a Authority) -> Self {
+        authority.to_ref()
+    }
+}
+
+impl<'a> PartialEq<AuthorityRef<'a>> for Authority {
+    fn eq(&self, other: &AuthorityRef<'a>) -> bool {
+        self.to_ref() == *other
+    }
+}
+
+impl<'a> PartialEq<Authority> for AuthorityRef<'a> {
+    fn eq(&self, other: &Authority) -> bool {
+        *self == other.to_ref()
     }
 }
 

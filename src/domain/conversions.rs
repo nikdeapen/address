@@ -1,4 +1,5 @@
 use crate::{Domain, DomainRef, Endpoint, EndpointRef, Host, HostRef};
+use std::borrow::Borrow;
 
 impl Domain {
     //! Conversions
@@ -41,6 +42,36 @@ impl<'a> DomainRef<'a> {
     #[must_use]
     pub const fn to_host_ref(self) -> HostRef<'a> {
         HostRef::Name(self)
+    }
+}
+
+impl<'a> From<&'a Domain> for DomainRef<'a> {
+    fn from(domain: &'a Domain) -> Self {
+        domain.to_ref()
+    }
+}
+
+impl AsRef<str> for Domain {
+    fn as_ref(&self) -> &str {
+        self.name()
+    }
+}
+
+impl Borrow<str> for Domain {
+    fn borrow(&self) -> &str {
+        self.name()
+    }
+}
+
+impl<'a> PartialEq<DomainRef<'a>> for Domain {
+    fn eq(&self, other: &DomainRef<'a>) -> bool {
+        self.to_ref() == *other
+    }
+}
+
+impl<'a> PartialEq<Domain> for DomainRef<'a> {
+    fn eq(&self, other: &Domain) -> bool {
+        *self == other.to_ref()
     }
 }
 
