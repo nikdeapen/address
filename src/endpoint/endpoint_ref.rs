@@ -1,4 +1,5 @@
-use crate::DomainRef;
+use crate::parse_port;
+use crate::{DomainRef, ParseError};
 
 /// A domain reference with an associated port.
 #[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Debug)]
@@ -19,6 +20,18 @@ impl<'a> EndpointRef<'a> {
 impl<'a, D: Into<DomainRef<'a>>> From<(D, u16)> for EndpointRef<'a> {
     fn from(tuple: (D, u16)) -> Self {
         Self::new(tuple.0.into(), tuple.1)
+    }
+}
+
+impl<'a> TryFrom<&'a str> for EndpointRef<'a> {
+    type Error = ParseError;
+
+    /// The domain name must already be lowercase, since a borrowed name cannot be normalized. Use
+    /// `Endpoint::from_str` to parse mixed-case domain names.
+    fn try_from(endpoint: &'a str) -> Result<Self, Self::Error> {
+        let (domain, port) = parse_port(endpoint)?;
+        let domain: DomainRef = DomainRef::try_from(domain)?;
+        Ok(Self::new(domain, port))
     }
 }
 
