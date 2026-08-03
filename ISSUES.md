@@ -2,7 +2,6 @@
 
 ## Future Work
 
-- Add support for international domain names.
 - Add an optional `serde` feature serializing via `Display`/`FromStr`. Off by default to keep the crate
   dependency-free.
 - Add `TryFrom<&'a str>` to `HostRef`, `EndpointRef`, and `AuthorityRef` so they can parse without
