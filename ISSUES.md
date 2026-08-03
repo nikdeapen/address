@@ -2,8 +2,6 @@
 
 ## Future Work
 
-- Add an optional `serde` feature serializing via `Display`/`FromStr`. Off by default to keep the crate
-  dependency-free.
 - Add `TryFrom<&'a str>` to `HostRef`, `EndpointRef`, and `AuthorityRef` so they can parse without
   allocating. `FromStr` cannot borrow from its input, which is why `DomainRef` already uses `TryFrom`.
 
