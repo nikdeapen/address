@@ -1,5 +1,5 @@
-use crate::parse_port;
 use crate::ParseError::InvalidAuthority;
+use crate::{parse_port, strip_brackets};
 use crate::{Authority, Host, IPv6Address, ParseError};
 use std::str::FromStr;
 
@@ -8,8 +8,7 @@ impl FromStr for Authority {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let (s, port) = parse_port(s)?;
-        if !s.is_empty() && s.as_bytes()[0] == b'[' && s.as_bytes()[s.len() - 1] == b']' {
-            let s: &str = &s[1..(s.len() - 1)];
+        if let Some(s) = strip_brackets(s) {
             let host: Host = IPv6Address::from_str(s)?.to_host();
             Ok(host.to_authority(port))
         } else {

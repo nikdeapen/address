@@ -7,7 +7,7 @@ impl SocketAddressV4 {
 
     /// Converts the address to a standard library address.
     #[must_use]
-    pub const fn to_std(&self) -> SocketAddrV4 {
+    pub const fn to_std(self) -> SocketAddrV4 {
         SocketAddrV4::new(self.ip().to_std(), self.port())
     }
 }
@@ -29,8 +29,22 @@ impl SocketAddressV6 {
 
     /// Converts the address to a standard library address.
     #[must_use]
-    pub const fn to_std(&self, flow_info: u32, scope_id: u32) -> SocketAddrV6 {
+    pub const fn to_std(self, flow_info: u32, scope_id: u32) -> SocketAddrV6 {
         SocketAddrV6::new(self.ip().to_std(), self.port(), flow_info, scope_id)
+    }
+}
+
+impl From<SocketAddrV6> for SocketAddressV6 {
+    /// The `flow_info` and `scope_id` are not part of the address and are discarded.
+    fn from(std: SocketAddrV6) -> Self {
+        Self::new((*std.ip()).into(), std.port())
+    }
+}
+
+impl From<SocketAddressV6> for SocketAddrV6 {
+    /// The `flow_info` and `scope_id` are set to zero. Use `to_std` to supply them.
+    fn from(socket: SocketAddressV6) -> Self {
+        socket.to_std(0, 0)
     }
 }
 
@@ -39,7 +53,7 @@ impl SocketAddress {
 
     /// Converts the address to a standard library address.
     #[must_use]
-    pub const fn to_std(&self, flow_info: u32, scope_id: u32) -> SocketAddr {
+    pub const fn to_std(self, flow_info: u32, scope_id: u32) -> SocketAddr {
         match self.ip() {
             IPAddress::V4(ip) => SocketAddr::V4(SocketAddrV4::new(ip.to_std(), self.port())),
             IPAddress::V6(ip) => SocketAddr::V6(SocketAddrV6::new(
@@ -49,6 +63,22 @@ impl SocketAddress {
                 scope_id,
             )),
         }
+    }
+}
+
+impl From<SocketAddr> for SocketAddress {
+    /// For IPv6 addresses the `flow_info` and `scope_id` are not part of the address and are
+    /// discarded.
+    fn from(std: SocketAddr) -> Self {
+        Self::new(std.ip().into(), std.port())
+    }
+}
+
+impl From<SocketAddress> for SocketAddr {
+    /// For IPv6 addresses the `flow_info` and `scope_id` are set to zero. Use `to_std` to supply
+    /// them.
+    fn from(socket: SocketAddress) -> Self {
+        socket.to_std(0, 0)
     }
 }
 

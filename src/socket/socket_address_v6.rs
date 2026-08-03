@@ -26,20 +26,19 @@ impl SocketAddressV6 {
     //! Properties
 
     /// Gets the IPv6 address.
-    pub const fn ip(&self) -> IPv6Address {
+    pub const fn ip(self) -> IPv6Address {
         self.ip
     }
 
     /// Gets the port.
-    pub const fn port(&self) -> u16 {
+    pub const fn port(self) -> u16 {
         self.port
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::socket::SocketAddressV6;
-    use crate::IPv6Address;
+    use crate::{IPv6Address, SocketAddressV6};
 
     #[test]
     fn construction() {

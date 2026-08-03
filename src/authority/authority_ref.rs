@@ -26,12 +26,12 @@ impl<'a> AuthorityRef<'a> {
     //! Properties
 
     /// Gets the host reference.
-    pub const fn host(&self) -> HostRef<'a> {
+    pub const fn host(self) -> HostRef<'a> {
         self.host
     }
 
     /// Gets the port.
-    pub const fn port(&self) -> u16 {
+    pub const fn port(self) -> u16 {
         self.port
     }
 }

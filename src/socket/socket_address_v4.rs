@@ -26,20 +26,19 @@ impl SocketAddressV4 {
     //! Properties
 
     /// Gets the IPv4 address.
-    pub const fn ip(&self) -> IPv4Address {
+    pub const fn ip(self) -> IPv4Address {
         self.ip
     }
 
     /// Gets the port.
-    pub const fn port(&self) -> u16 {
+    pub const fn port(self) -> u16 {
         self.port
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::socket::SocketAddressV4;
-    use crate::IPv4Address;
+    use crate::{IPv4Address, SocketAddressV4};
 
     #[test]
     fn construction() {

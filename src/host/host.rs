@@ -1,4 +1,4 @@
-use crate::{Domain, IPAddress};
+use crate::{Domain, HostRef, IPAddress};
 
 /// Either a domain or an IP address.
 #[derive(Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Debug)]
@@ -19,6 +19,12 @@ impl From<Domain> for Host {
 impl<A: Into<IPAddress>> From<A> for Host {
     fn from(ip: A) -> Self {
         Self::Address(ip.into())
+    }
+}
+
+impl<'a> From<HostRef<'a>> for Host {
+    fn from(host: HostRef<'a>) -> Self {
+        host.to_host()
     }
 }
 

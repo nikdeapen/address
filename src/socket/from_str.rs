@@ -1,5 +1,5 @@
-use crate::parse_port;
-use crate::ParseError::InvalidSocketAddressV6;
+use crate::ParseError::{InvalidSocketAddress, InvalidSocketAddressV6};
+use crate::{parse_port, strip_brackets};
 use crate::{
     IPv4Address, IPv6Address, ParseError, SocketAddress, SocketAddressV4, SocketAddressV6,
 };
@@ -20,13 +20,9 @@ impl FromStr for SocketAddressV6 {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let (s, port) = parse_port(s)?;
-        if s.is_empty() || s.as_bytes()[0] != b'[' || s.as_bytes()[s.len() - 1] != b']' {
-            Err(InvalidSocketAddressV6)
-        } else {
-            let s: &str = &s[1..s.len() - 1];
-            let ip: IPv6Address = IPv6Address::from_str(s)?;
-            Ok(SocketAddressV6::new(ip, port))
-        }
+        let s: &str = strip_brackets(s).ok_or(InvalidSocketAddressV6)?;
+        let ip: IPv6Address = IPv6Address::from_str(s)?;
+        Ok(SocketAddressV6::new(ip, port))
     }
 }
 
@@ -35,12 +31,11 @@ impl FromStr for SocketAddress {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let (s, port) = parse_port(s)?;
-        if s.is_empty() || s.as_bytes()[0] != b'[' || s.as_bytes()[s.len() - 1] != b']' {
-            let ip: IPv4Address = IPv4Address::from_str(s)?;
+        if let Some(s) = strip_brackets(s) {
+            let ip: IPv6Address = IPv6Address::from_str(s)?;
             Ok(ip.to_socket(port).to_socket())
         } else {
-            let s: &str = &s[1..s.len() - 1];
-            let ip: IPv6Address = IPv6Address::from_str(s)?;
+            let ip: IPv4Address = IPv4Address::from_str(s).map_err(|_| InvalidSocketAddress)?;
             Ok(ip.to_socket(port).to_socket())
         }
     }
@@ -51,7 +46,8 @@ mod tests {
     use std::str::FromStr;
 
     use crate::ParseError::{
-        InvalidIPv4Address, InvalidIPv6Address, InvalidPort, InvalidSocketAddressV6,
+        InvalidIPv4Address, InvalidIPv6Address, InvalidPort, InvalidSocketAddress,
+        InvalidSocketAddressV6,
     };
     use crate::{
         IPv4Address, IPv6Address, ParseError, SocketAddress, SocketAddressV4, SocketAddressV6,
@@ -98,9 +94,9 @@ mod tests {
             ("", Err(InvalidPort)),
             ("[::1]:", Err(InvalidPort)),
             ("[::1]:xx", Err(InvalidPort)),
-            (":80", Err(InvalidIPv4Address)),
-            ("xx:80", Err(InvalidIPv4Address)),
-            ("::1:80", Err(InvalidIPv4Address)),
+            (":80", Err(InvalidSocketAddress)),
+            ("xx:80", Err(InvalidSocketAddress)),
+            ("::1:80", Err(InvalidSocketAddress)),
             ("[]:80", Err(InvalidIPv6Address)),
             ("[xx]:80", Err(InvalidIPv6Address)),
             (

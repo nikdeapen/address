@@ -62,12 +62,12 @@ impl IPAddress {
     //! Matching
 
     /// Checks if the address is an IPv4 address.
-    pub const fn is_v4(&self) -> bool {
+    pub const fn is_v4(self) -> bool {
         matches!(self, Self::V4(_))
     }
 
     /// Checks if the address is an IPv6 address.
-    pub const fn is_v6(&self) -> bool {
+    pub const fn is_v6(self) -> bool {
         matches!(self, Self::V6(_))
     }
 }

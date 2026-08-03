@@ -18,12 +18,9 @@ impl Domain {
         {
             false
         } else {
-            for (i, c) in label.iter().enumerate() {
-                if !Self::is_valid_char(*c, ignore_case) && (*c != b'-' || label[i - 1] == b'-') {
-                    return false;
-                }
-            }
-            true
+            label
+                .iter()
+                .all(|c| Self::is_valid_char(*c, ignore_case) || *c == b'-')
         }
     }
 
@@ -74,7 +71,7 @@ mod tests {
             ("AZ", false, true),
             ("-a", false, false),
             ("a-", false, false),
-            ("a--a", false, false),
+            ("a--a", true, true),
             ("a-a", true, true),
             ("a-a-a", true, true),
         ];
