@@ -4,7 +4,9 @@ This library aids in processing network addresses.
 
 ## Features & Dependencies
 
-    address = "0.18.0"
+```toml
+address = "0.18.0"
+```
 
 This crate has no dependencies by default.
 

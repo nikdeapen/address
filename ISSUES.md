@@ -18,18 +18,6 @@
 - `TryFrom<String>`/`TryFrom<Vec<u8>>` for `Domain` return tuple errors that implement neither `Display` nor
   `Error`. Replace with a dedicated value-recovering error struct like `std::string::FromUtf8Error`.
 
-## Documentation
-
-- `lib.rs` has no crate-level docs so the docs.rs landing page is empty. Add `//!` docs or include the
-  README via `#![doc = include_str!("../README.md")]`; consider `#![warn(missing_docs)]` as well.
-
-## Testing
-
-- Missing edge tests: `MAX_LABEL_LEN`/`MAX_NAME_LEN` boundaries, port overflow, and the IPv6/socket std `From`
-  conversions. `parse_port` doc examples never run since it is `pub(crate)`; its edges are only covered indirectly.
-- Add round-trip tests: `FromStr(Display(x)) == x` for the parseable types and parse-then-display for
-  canonical strings, to cover the bracket and port edges systematically.
-
 ## Validation
 
 - `Domain` allows an all-numeric final label (e.g. `999.1.1.1`), so malformed IPv4 strings parse as domains in
