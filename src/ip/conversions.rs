@@ -66,6 +66,21 @@ impl IPv6Address {
         }
     }
 
+    /// Converts the address to an optional IPv4 address. Returns `None` if the address is not an
+    /// IPv4 mapped address (::ffff:a.b.c.d).
+    ///
+    /// This matches the standard library's `Ipv6Addr::to_ipv4_mapped`; unlike `to_v4` it does not
+    /// convert IPv4 compatible addresses (::a.b.c.d).
+    #[must_use]
+    pub const fn to_v4_mapped(self) -> Option<IPv4Address> {
+        match self.address() {
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xFF, 0xFF, a, b, c, d] => {
+                Some(IPv4Address::new([a, b, c, d]))
+            }
+            _ => None,
+        }
+    }
+
     /// Converts the address to an IP address.
     #[must_use]
     pub const fn to_ip(self) -> IPAddress {

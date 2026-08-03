@@ -27,9 +27,15 @@ impl From<SocketAddressV4> for SocketAddrV4 {
 impl SocketAddressV6 {
     //! Standard Library Conversions
 
-    /// Converts the address to a standard library address.
+    /// Converts the address to a standard library address with a zero `flow_info` and `scope_id`.
     #[must_use]
-    pub const fn to_std(self, flow_info: u32, scope_id: u32) -> SocketAddrV6 {
+    pub const fn to_std(self) -> SocketAddrV6 {
+        self.to_std_with(0, 0)
+    }
+
+    /// Converts the address to a standard library address with the `flow_info` and `scope_id`.
+    #[must_use]
+    pub const fn to_std_with(self, flow_info: u32, scope_id: u32) -> SocketAddrV6 {
         SocketAddrV6::new(self.ip().to_std(), self.port(), flow_info, scope_id)
     }
 }
@@ -42,18 +48,26 @@ impl From<SocketAddrV6> for SocketAddressV6 {
 }
 
 impl From<SocketAddressV6> for SocketAddrV6 {
-    /// The `flow_info` and `scope_id` are set to zero. Use `to_std` to supply them.
+    /// The `flow_info` and `scope_id` are set to zero. Use `to_std_with` to supply them.
     fn from(socket: SocketAddressV6) -> Self {
-        socket.to_std(0, 0)
+        socket.to_std()
     }
 }
 
 impl SocketAddress {
     //! Standard Library Conversions
 
-    /// Converts the address to a standard library address.
+    /// Converts the address to a standard library address. For IPv6 addresses the `flow_info` and
+    /// `scope_id` are set to zero.
     #[must_use]
-    pub const fn to_std(self, flow_info: u32, scope_id: u32) -> SocketAddr {
+    pub const fn to_std(self) -> SocketAddr {
+        self.to_std_with(0, 0)
+    }
+
+    /// Converts the address to a standard library address with the `flow_info` and `scope_id`.
+    /// For IPv4 addresses the `flow_info` and `scope_id` are ignored.
+    #[must_use]
+    pub const fn to_std_with(self, flow_info: u32, scope_id: u32) -> SocketAddr {
         match self.ip() {
             IPAddress::V4(ip) => SocketAddr::V4(SocketAddrV4::new(ip.to_std(), self.port())),
             IPAddress::V6(ip) => SocketAddr::V6(SocketAddrV6::new(
@@ -75,10 +89,10 @@ impl From<SocketAddr> for SocketAddress {
 }
 
 impl From<SocketAddress> for SocketAddr {
-    /// For IPv6 addresses the `flow_info` and `scope_id` are set to zero. Use `to_std` to supply
-    /// them.
+    /// For IPv6 addresses the `flow_info` and `scope_id` are set to zero. Use `to_std_with` to
+    /// supply them.
     fn from(socket: SocketAddress) -> Self {
-        socket.to_std(0, 0)
+        socket.to_std()
     }
 }
 
@@ -109,8 +123,13 @@ mod tests {
     #[test]
     fn v6() {
         let socket: SocketAddressV6 = SocketAddressV6::new(IPv6Address::LOCALHOST, 80);
-        let result: SocketAddrV6 = socket.to_std(123, 456);
+        let result: SocketAddrV6 = socket.to_std_with(123, 456);
         let expected: SocketAddrV6 = SocketAddrV6::new(Ipv6Addr::LOCALHOST, 80, 123, 456);
+        assert_eq!(result, expected);
+
+        let socket: SocketAddressV6 = SocketAddressV6::new(IPv6Address::LOCALHOST, 80);
+        let result: SocketAddrV6 = socket.to_std();
+        let expected: SocketAddrV6 = SocketAddrV6::new(Ipv6Addr::LOCALHOST, 80, 0, 0);
         assert_eq!(result, expected);
 
         let socket: SocketAddressV6 = SocketAddressV6::new(IPv6Address::LOCALHOST, 80);
@@ -127,14 +146,19 @@ mod tests {
     #[test]
     fn socket() {
         let socket: SocketAddress = SocketAddress::new(IPv4Address::LOCALHOST.to_ip(), 80);
-        let result: SocketAddr = socket.to_std(123, 456);
+        let result: SocketAddr = socket.to_std_with(123, 456);
         let expected: SocketAddr = SocketAddr::V4(SocketAddrV4::new(Ipv4Addr::LOCALHOST, 80));
         assert_eq!(result, expected);
 
         let socket: SocketAddress = SocketAddress::new(IPv6Address::LOCALHOST.to_ip(), 80);
-        let result: SocketAddr = socket.to_std(123, 456);
+        let result: SocketAddr = socket.to_std_with(123, 456);
         let expected: SocketAddr =
             SocketAddr::V6(SocketAddrV6::new(Ipv6Addr::LOCALHOST, 80, 123, 456));
+        assert_eq!(result, expected);
+
+        let socket: SocketAddress = SocketAddress::new(IPv6Address::LOCALHOST.to_ip(), 80);
+        let result: SocketAddr = socket.to_std();
+        let expected: SocketAddr = SocketAddr::V6(SocketAddrV6::new(Ipv6Addr::LOCALHOST, 80, 0, 0));
         assert_eq!(result, expected);
 
         let socket: SocketAddress = SocketAddress::new(IPv4Address::LOCALHOST.to_ip(), 80);

@@ -1,4 +1,4 @@
-use crate::{Authority, AuthorityRef, Host, HostRef};
+use crate::{Authority, AuthorityRef, Domain, DomainRef, Host, HostRef, IPAddress};
 
 impl Host {
     //! Conversions
@@ -16,6 +16,26 @@ impl Host {
     #[must_use]
     pub const fn to_authority(self, port: u16) -> Authority {
         Authority::new(self, port)
+    }
+
+    /// Converts the host to an optional domain.
+    #[must_use]
+    pub fn to_domain(self) -> Option<Domain> {
+        if let Self::Name(domain) = self {
+            Some(domain)
+        } else {
+            None
+        }
+    }
+
+    /// Converts the host to an optional IP address.
+    #[must_use]
+    pub fn to_ip(self) -> Option<IPAddress> {
+        if let Self::Address(ip) = self {
+            Some(ip)
+        } else {
+            None
+        }
     }
 }
 
@@ -35,6 +55,44 @@ impl<'a> HostRef<'a> {
     #[must_use]
     pub const fn to_authority_ref(self, port: u16) -> AuthorityRef<'a> {
         AuthorityRef::new(self, port)
+    }
+
+    /// Converts the host reference to an optional domain reference.
+    #[must_use]
+    pub const fn to_domain_ref(self) -> Option<DomainRef<'a>> {
+        if let Self::Name(domain) = self {
+            Some(domain)
+        } else {
+            None
+        }
+    }
+
+    /// Converts the host reference to an optional IP address.
+    #[must_use]
+    pub const fn to_ip(self) -> Option<IPAddress> {
+        if let Self::Address(ip) = self {
+            Some(ip)
+        } else {
+            None
+        }
+    }
+}
+
+impl<'a> From<&'a Host> for HostRef<'a> {
+    fn from(host: &'a Host) -> Self {
+        host.to_ref()
+    }
+}
+
+impl<'a> PartialEq<HostRef<'a>> for Host {
+    fn eq(&self, other: &HostRef<'a>) -> bool {
+        self.to_ref() == *other
+    }
+}
+
+impl<'a> PartialEq<Host> for HostRef<'a> {
+    fn eq(&self, other: &Host) -> bool {
+        *self == other.to_ref()
     }
 }
 

@@ -33,6 +33,24 @@ impl<'a> EndpointRef<'a> {
     }
 }
 
+impl<'a> From<&'a Endpoint> for EndpointRef<'a> {
+    fn from(endpoint: &'a Endpoint) -> Self {
+        endpoint.to_ref()
+    }
+}
+
+impl<'a> PartialEq<EndpointRef<'a>> for Endpoint {
+    fn eq(&self, other: &EndpointRef<'a>) -> bool {
+        self.to_ref() == *other
+    }
+}
+
+impl<'a> PartialEq<Endpoint> for EndpointRef<'a> {
+    fn eq(&self, other: &Endpoint) -> bool {
+        *self == other.to_ref()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::{Authority, AuthorityRef, Domain, DomainRef, Endpoint, EndpointRef};
