@@ -1,10 +1,5 @@
 # Issues
 
-## Future Work
-
-- Add `TryFrom<&'a str>` to `HostRef`, `EndpointRef`, and `AuthorityRef` so they can parse without
-  allocating. `FromStr` cannot borrow from its input, which is why `DomainRef` already uses `TryFrom`.
-
 ## API
 
 - `SocketAddress::to_std` requires `flow_info` and `scope_id` even for IPv4, where both are ignored.

@@ -1,4 +1,6 @@
-use crate::{DomainRef, IPAddress};
+use crate::ParseError::InvalidHost;
+use crate::{DomainRef, IPAddress, ParseError};
+use std::str::FromStr;
 
 /// Either a domain reference or an IP address.
 #[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Debug)]
@@ -19,6 +21,22 @@ impl<'a> From<DomainRef<'a>> for HostRef<'a> {
 impl<'a, A: Into<IPAddress>> From<A> for HostRef<'a> {
     fn from(ip: A) -> Self {
         Self::Address(ip.into())
+    }
+}
+
+impl<'a> TryFrom<&'a str> for HostRef<'a> {
+    type Error = ParseError;
+
+    /// A domain name must already be lowercase, since a borrowed name cannot be normalized. Use
+    /// `Host::from_str` to parse mixed-case domain names.
+    fn try_from(host: &'a str) -> Result<Self, Self::Error> {
+        if let Ok(ip) = IPAddress::from_str(host) {
+            Ok(ip.to_host_ref())
+        } else if let Ok(domain) = DomainRef::try_from(host) {
+            Ok(domain.to_host_ref())
+        } else {
+            Err(InvalidHost)
+        }
     }
 }
 
