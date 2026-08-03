@@ -3,13 +3,13 @@ use std::fmt::{Display, Formatter};
 
 impl Display for Domain {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.to_ref())
+        self.to_ref().fmt(f)
     }
 }
 
 impl<'a> Display for DomainRef<'a> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.name())
+        f.pad(self.name())
     }
 }
 

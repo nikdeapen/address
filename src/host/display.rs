@@ -3,15 +3,15 @@ use std::fmt::{Display, Formatter};
 
 impl Display for Host {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.to_ref())
+        self.to_ref().fmt(f)
     }
 }
 
 impl<'a> Display for HostRef<'a> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::Name(domain) => write!(f, "{}", domain),
-            Self::Address(ip) => write!(f, "{}", ip),
+            Self::Name(domain) => domain.fmt(f),
+            Self::Address(ip) => ip.fmt(f),
         }
     }
 }

@@ -1,20 +1,17 @@
-use crate::{Authority, AuthorityRef, HostRef, IPAddress};
+use crate::{Authority, AuthorityRef, EndpointRef, HostRef};
 use std::fmt::{Display, Formatter};
 
 impl Display for Authority {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.to_ref())
+        self.to_ref().fmt(f)
     }
 }
 
 impl<'a> Display for AuthorityRef<'a> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self.host() {
-            HostRef::Name(domain) => write!(f, "{}:{}", domain, self.port()),
-            HostRef::Address(ip) => match ip {
-                IPAddress::V4(ip) => write!(f, "{}:{}", ip, self.port()),
-                IPAddress::V6(ip) => write!(f, "[{}]:{}", ip, self.port()),
-            },
+            HostRef::Name(domain) => EndpointRef::new(domain, self.port()).fmt(f),
+            HostRef::Address(ip) => ip.to_socket(self.port()).fmt(f),
         }
     }
 }
