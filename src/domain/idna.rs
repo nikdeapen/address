@@ -10,7 +10,7 @@ impl Domain {
     /// ASCII. (example: `Bücher.example` becomes `xn--bcher-kva.example`)
     pub fn from_unicode(name: &str) -> Result<Self, ParseError> {
         let name: String = idna::domain_to_ascii(name).map_err(|_| InvalidDomain)?;
-        Self::try_from(name).map_err(|(error, _)| error)
+        Self::try_from(name).map_err(ParseError::from)
     }
 
     /// Converts the domain name to its unicode representation.

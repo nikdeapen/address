@@ -3,13 +3,17 @@ use std::fmt::{Display, Formatter};
 
 impl Display for Endpoint {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.to_ref())
+        self.to_ref().fmt(f)
     }
 }
 
 impl<'a> Display for EndpointRef<'a> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}:{}", self.domain(), self.port())
+        if f.width().is_none() && f.precision().is_none() {
+            write!(f, "{}:{}", self.domain(), self.port())
+        } else {
+            f.pad(&format!("{}:{}", self.domain(), self.port()))
+        }
     }
 }
 

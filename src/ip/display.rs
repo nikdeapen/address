@@ -3,22 +3,21 @@ use std::fmt::{Display, Formatter};
 
 impl Display for IPv4Address {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        let (a, b, c, d) = self.bytes();
-        write!(f, "{}.{}.{}.{}", a, b, c, d)
+        self.to_std().fmt(f)
     }
 }
 
 impl Display for IPv6Address {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.to_std())
+        self.to_std().fmt(f)
     }
 }
 
 impl Display for IPAddress {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::V4(ip) => write!(f, "{}", ip),
-            Self::V6(ip) => write!(f, "{}", ip),
+            Self::V4(ip) => ip.fmt(f),
+            Self::V6(ip) => ip.fmt(f),
         }
     }
 }

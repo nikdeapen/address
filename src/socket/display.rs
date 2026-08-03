@@ -1,24 +1,21 @@
-use crate::{IPAddress, SocketAddress, SocketAddressV4, SocketAddressV6};
+use crate::{SocketAddress, SocketAddressV4, SocketAddressV6};
 use std::fmt::{Display, Formatter};
 
 impl Display for SocketAddressV4 {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}:{}", self.ip(), self.port())
+        self.to_std().fmt(f)
     }
 }
 
 impl Display for SocketAddressV6 {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "[{}]:{}", self.ip(), self.port())
+        self.to_std().fmt(f)
     }
 }
 
 impl Display for SocketAddress {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        match self.ip() {
-            IPAddress::V4(ip) => write!(f, "{}:{}", ip, self.port()),
-            IPAddress::V6(ip) => write!(f, "[{}]:{}", ip, self.port()),
-        }
+        self.to_std().fmt(f)
     }
 }
 
