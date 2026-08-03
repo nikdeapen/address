@@ -62,6 +62,11 @@ mod tests {
             (":80", Err(InvalidIPv4Address)),
             ("xx:80", Err(InvalidIPv4Address)),
             ("127.0.0.1:80", Ok(IPv4Address::LOCALHOST.to_socket(80))),
+            (
+                "127.0.0.1:65535",
+                Ok(IPv4Address::LOCALHOST.to_socket(65535)),
+            ),
+            ("127.0.0.1:65536", Err(InvalidPort)),
         ];
 
         for (input, expected) in test_cases {

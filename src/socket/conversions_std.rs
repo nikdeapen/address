@@ -112,6 +112,16 @@ mod tests {
         let result: SocketAddrV6 = socket.to_std(123, 456);
         let expected: SocketAddrV6 = SocketAddrV6::new(Ipv6Addr::LOCALHOST, 80, 123, 456);
         assert_eq!(result, expected);
+
+        let socket: SocketAddressV6 = SocketAddressV6::new(IPv6Address::LOCALHOST, 80);
+        let result: SocketAddrV6 = socket.into();
+        let expected: SocketAddrV6 = SocketAddrV6::new(Ipv6Addr::LOCALHOST, 80, 0, 0);
+        assert_eq!(result, expected);
+
+        let socket: SocketAddrV6 = SocketAddrV6::new(Ipv6Addr::LOCALHOST, 80, 123, 456);
+        let result: SocketAddressV6 = socket.into();
+        let expected: SocketAddressV6 = SocketAddressV6::new(IPv6Address::LOCALHOST, 80);
+        assert_eq!(result, expected);
     }
 
     #[test]
@@ -125,6 +135,26 @@ mod tests {
         let result: SocketAddr = socket.to_std(123, 456);
         let expected: SocketAddr =
             SocketAddr::V6(SocketAddrV6::new(Ipv6Addr::LOCALHOST, 80, 123, 456));
+        assert_eq!(result, expected);
+
+        let socket: SocketAddress = SocketAddress::new(IPv4Address::LOCALHOST.to_ip(), 80);
+        let result: SocketAddr = socket.into();
+        let expected: SocketAddr = SocketAddr::V4(SocketAddrV4::new(Ipv4Addr::LOCALHOST, 80));
+        assert_eq!(result, expected);
+
+        let socket: SocketAddress = SocketAddress::new(IPv6Address::LOCALHOST.to_ip(), 80);
+        let result: SocketAddr = socket.into();
+        let expected: SocketAddr = SocketAddr::V6(SocketAddrV6::new(Ipv6Addr::LOCALHOST, 80, 0, 0));
+        assert_eq!(result, expected);
+
+        let std: SocketAddr = SocketAddr::V4(SocketAddrV4::new(Ipv4Addr::LOCALHOST, 80));
+        let result: SocketAddress = std.into();
+        let expected: SocketAddress = SocketAddress::new(IPv4Address::LOCALHOST.to_ip(), 80);
+        assert_eq!(result, expected);
+
+        let std: SocketAddr = SocketAddr::V6(SocketAddrV6::new(Ipv6Addr::LOCALHOST, 80, 123, 456));
+        let result: SocketAddress = std.into();
+        let expected: SocketAddress = SocketAddress::new(IPv6Address::LOCALHOST.to_ip(), 80);
         assert_eq!(result, expected);
     }
 }

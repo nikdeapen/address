@@ -85,6 +85,28 @@ mod tests {
     }
 
     #[test]
+    fn label_length_boundaries() {
+        let max: String = "a".repeat(Domain::MAX_LABEL_LEN);
+        assert!(Domain::is_valid_label_str(max.as_str(), false));
+
+        let too_long: String = "a".repeat(Domain::MAX_LABEL_LEN + 1);
+        assert!(!Domain::is_valid_label_str(too_long.as_str(), false));
+    }
+
+    #[test]
+    fn name_length_boundaries() {
+        let label: String = "a".repeat(Domain::MAX_LABEL_LEN);
+
+        let max: String = format!("{}.{}.{}.{}", label, label, label, "a".repeat(61));
+        assert_eq!(max.len(), Domain::MAX_NAME_LEN);
+        assert!(Domain::is_valid_name_str(max.as_str(), false));
+
+        let too_long: String = format!("{}.{}.{}.{}", label, label, label, "a".repeat(62));
+        assert_eq!(too_long.len(), Domain::MAX_NAME_LEN + 1);
+        assert!(!Domain::is_valid_name_str(too_long.as_str(), false));
+    }
+
+    #[test]
     fn is_valid_name() {
         let test_cases: &[(&str, bool, bool)] = &[
             ("", false, false),
