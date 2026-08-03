@@ -25,8 +25,8 @@ impl<'a> DomainRef<'a> {
     /// Creates a new domain reference.
     ///
     /// # Safety
-    /// The `name` must be valid.
-    pub unsafe fn new(name: &'a str) -> Self {
+    /// The `name` must be valid. Validity is a struct invariant that unsafe code may rely on.
+    pub unsafe fn new_unchecked(name: &'a str) -> Self {
         debug_assert!(Domain::is_valid_name_str(name, false));
 
         Self { name }
@@ -36,6 +36,8 @@ impl<'a> DomainRef<'a> {
 impl<'a> TryFrom<&'a str> for DomainRef<'a> {
     type Error = ParseError;
 
+    /// The `name` must already be lowercase, since a borrowed name cannot be normalized. Use
+    /// `Domain::try_from` to parse mixed-case names.
     fn try_from(name: &'a str) -> Result<Self, Self::Error> {
         if Domain::is_valid_name_str(name, false) {
             Ok(Self { name })
@@ -48,6 +50,8 @@ impl<'a> TryFrom<&'a str> for DomainRef<'a> {
 impl<'a> TryFrom<&'a [u8]> for DomainRef<'a> {
     type Error = ParseError;
 
+    /// The `name` must already be lowercase, since a borrowed name cannot be normalized. Use
+    /// `Domain::try_from` to parse mixed-case names.
     fn try_from(name: &'a [u8]) -> Result<Self, Self::Error> {
         if Domain::is_valid_name(name, false) {
             let name: &str = unsafe { std::str::from_utf8_unchecked(name) };
@@ -62,7 +66,7 @@ impl<'a> DomainRef<'a> {
     //! Properties
 
     /// Gets the name.
-    pub const fn name(&self) -> &str {
+    pub const fn name(self) -> &'a str {
         self.name
     }
 }

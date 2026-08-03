@@ -87,12 +87,12 @@ impl IPv6Address {
     //! Properties
 
     /// Gets the address. [a-high, a-low, b-high, b-low, ..., h-high, h-low]
-    pub const fn address(&self) -> [u8; 16] {
+    pub const fn address(self) -> [u8; 16] {
         self.address
     }
 
     /// Gets the segments. [a, b, c, d, e, f, g, h]
-    pub const fn segments(&self) -> [u16; 8] {
+    pub const fn segments(self) -> [u16; 8] {
         [
             ((self.address[0] as u16) << 8) | (self.address[1] as u16),
             ((self.address[2] as u16) << 8) | (self.address[3] as u16),

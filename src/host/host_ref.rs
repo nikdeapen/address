@@ -26,12 +26,12 @@ impl<'a> HostRef<'a> {
     //! Matching
 
     /// Checks if the host is a domain.
-    pub const fn is_domain(&self) -> bool {
+    pub const fn is_domain(self) -> bool {
         matches!(self, Self::Name(_))
     }
 
     /// Checks if the host is an IP address.
-    pub const fn is_ip(&self) -> bool {
+    pub const fn is_ip(self) -> bool {
         matches!(self, Self::Address(_))
     }
 }

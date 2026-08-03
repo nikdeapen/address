@@ -66,12 +66,12 @@ impl IPv4Address {
     //! Properties
 
     /// Gets the address. [a, b, c, d]
-    pub const fn address(&self) -> [u8; 4] {
+    pub const fn address(self) -> [u8; 4] {
         self.address
     }
 
     /// Gets the bytes. (a, b, c, d)
-    pub const fn bytes(&self) -> (u8, u8, u8, u8) {
+    pub const fn bytes(self) -> (u8, u8, u8, u8) {
         (
             self.address[0],
             self.address[1],
@@ -83,7 +83,7 @@ impl IPv4Address {
 
 #[cfg(test)]
 mod tests {
-    use crate::ip::ipv4_address::IPv4Address;
+    use crate::IPv4Address;
 
     #[test]
     fn default() {

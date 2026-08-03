@@ -15,7 +15,7 @@ impl<'a> AuthorityRef<'a> {
 
     /// Converts the authority reference to an authority.
     #[must_use]
-    pub fn to_authority(&self) -> Authority {
+    pub fn to_authority(self) -> Authority {
         Authority::new(self.host().to_host(), self.port())
     }
 }

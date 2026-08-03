@@ -27,8 +27,8 @@ impl Domain {
     /// Creates a new domain.
     ///
     /// # Safety
-    /// The `name` must be valid.
-    pub unsafe fn new<S>(name: S) -> Self
+    /// The `name` must be valid. Validity is a struct invariant that unsafe code may rely on.
+    pub unsafe fn new_unchecked<S>(name: S) -> Self
     where
         S: Into<String>,
     {

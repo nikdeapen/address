@@ -18,10 +18,7 @@ impl<'a> EndpointRef<'a> {
 
 impl<'a, D: Into<DomainRef<'a>>> From<(D, u16)> for EndpointRef<'a> {
     fn from(tuple: (D, u16)) -> Self {
-        Self {
-            domain: tuple.0.into(),
-            port: tuple.1,
-        }
+        Self::new(tuple.0.into(), tuple.1)
     }
 }
 
@@ -29,12 +26,12 @@ impl<'a> EndpointRef<'a> {
     //! Properties
 
     /// Gets the domain reference.
-    pub const fn domain(&self) -> DomainRef<'a> {
+    pub const fn domain(self) -> DomainRef<'a> {
         self.domain
     }
 
     /// Gets the port.
-    pub const fn port(&self) -> u16 {
+    pub const fn port(self) -> u16 {
         self.port
     }
 }

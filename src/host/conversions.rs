@@ -14,7 +14,7 @@ impl Host {
 
     /// Converts the host to an authority with the `port`.
     #[must_use]
-    pub fn to_authority(self, port: u16) -> Authority {
+    pub const fn to_authority(self, port: u16) -> Authority {
         Authority::new(self, port)
     }
 }
@@ -24,17 +24,17 @@ impl<'a> HostRef<'a> {
 
     /// Converts the host reference to a host.
     #[must_use]
-    pub fn to_host(&self) -> Host {
+    pub fn to_host(self) -> Host {
         match self {
             Self::Name(domain) => Host::Name(domain.to_domain()),
-            Self::Address(ip) => Host::Address(*ip),
+            Self::Address(ip) => Host::Address(ip),
         }
     }
 
     /// Converts the host reference to an authority reference with the `port`.
     #[must_use]
-    pub fn to_authority(&self, port: u16) -> AuthorityRef<'_> {
-        AuthorityRef::new(*self, port)
+    pub const fn to_authority_ref(self, port: u16) -> AuthorityRef<'a> {
+        AuthorityRef::new(self, port)
     }
 }
 
@@ -85,14 +85,14 @@ mod tests {
 
     #[test]
     fn ref_to_authority() {
-        let host: HostRef = DomainRef::LOCALHOST.to_host();
-        let result: AuthorityRef = host.to_authority(80);
-        let expected: AuthorityRef = AuthorityRef::new(DomainRef::LOCALHOST.to_host(), 80);
+        let host: HostRef = DomainRef::LOCALHOST.to_host_ref();
+        let result: AuthorityRef = host.to_authority_ref(80);
+        let expected: AuthorityRef = AuthorityRef::new(DomainRef::LOCALHOST.to_host_ref(), 80);
         assert_eq!(result, expected);
 
         let host: Host = IPv4Address::LOCALHOST.to_host();
         let host: HostRef = host.to_ref();
-        let result: AuthorityRef = host.to_authority(80);
+        let result: AuthorityRef = host.to_authority_ref(80);
         let expected: AuthorityRef = AuthorityRef::new(IPv4Address::LOCALHOST.to_host_ref(), 80);
         assert_eq!(result, expected);
     }

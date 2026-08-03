@@ -22,13 +22,13 @@ impl<'a> EndpointRef<'a> {
 
     /// Converts the endpoint reference to an endpoint.
     #[must_use]
-    pub fn to_endpoint(&self) -> Endpoint {
+    pub fn to_endpoint(self) -> Endpoint {
         Endpoint::new(self.domain().to_domain(), self.port())
     }
 
     /// Converts the endpoint reference to an authority reference.
     #[must_use]
-    pub fn to_authority(&self) -> AuthorityRef<'_> {
+    pub const fn to_authority_ref(self) -> AuthorityRef<'a> {
         AuthorityRef::new(HostRef::Name(self.domain()), self.port())
     }
 }
@@ -68,8 +68,8 @@ mod tests {
     fn ref_to_authority() {
         let endpoint: EndpointRef = EndpointRef::new(DomainRef::LOCALHOST, 80);
 
-        let result: AuthorityRef = endpoint.to_authority();
-        let expected: AuthorityRef = AuthorityRef::new(DomainRef::LOCALHOST.to_host(), 80);
+        let result: AuthorityRef = endpoint.to_authority_ref();
+        let expected: AuthorityRef = AuthorityRef::new(DomainRef::LOCALHOST.to_host_ref(), 80);
         assert_eq!(result, expected);
     }
 }

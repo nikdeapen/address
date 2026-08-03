@@ -6,18 +6,18 @@ impl Domain {
     /// Converts the domain to a domain reference.
     #[must_use]
     pub fn to_ref(&self) -> DomainRef<'_> {
-        unsafe { DomainRef::new(self.name()) }
+        unsafe { DomainRef::new_unchecked(self.name()) }
     }
 
     /// Converts the domain to an endpoint with the `port`.
     #[must_use]
-    pub fn to_endpoint(self, port: u16) -> Endpoint {
+    pub const fn to_endpoint(self, port: u16) -> Endpoint {
         Endpoint::new(self, port)
     }
 
     /// Converts the domain to a host.
     #[must_use]
-    pub fn to_host(self) -> Host {
+    pub const fn to_host(self) -> Host {
         Host::Name(self)
     }
 }
@@ -27,20 +27,20 @@ impl<'a> DomainRef<'a> {
 
     /// Converts the domain reference to a domain.
     #[must_use]
-    pub fn to_domain(&self) -> Domain {
-        unsafe { Domain::new(self.name()) }
+    pub fn to_domain(self) -> Domain {
+        unsafe { Domain::new_unchecked(self.name()) }
     }
 
     /// Converts the domain reference to an endpoint reference with the `port`.
     #[must_use]
-    pub const fn to_endpoint(&self, port: u16) -> EndpointRef<'_> {
-        EndpointRef::new(*self, port)
+    pub const fn to_endpoint_ref(self, port: u16) -> EndpointRef<'a> {
+        EndpointRef::new(self, port)
     }
 
     /// Converts the domain reference to a host reference.
     #[must_use]
-    pub const fn to_host(&self) -> HostRef<'_> {
-        HostRef::Name(*self)
+    pub const fn to_host_ref(self) -> HostRef<'a> {
+        HostRef::Name(self)
     }
 }
 
@@ -88,7 +88,7 @@ mod tests {
     fn ref_to_endpoint() {
         let domain: DomainRef = DomainRef::LOCALHOST;
 
-        let result: EndpointRef = domain.to_endpoint(80);
+        let result: EndpointRef = domain.to_endpoint_ref(80);
         let expected: EndpointRef = EndpointRef::new(DomainRef::LOCALHOST, 80);
         assert_eq!(result, expected);
     }
@@ -97,7 +97,7 @@ mod tests {
     fn ref_to_host() {
         let domain: DomainRef = DomainRef::LOCALHOST;
 
-        let result: HostRef = domain.to_host();
+        let result: HostRef = domain.to_host_ref();
         let expected: HostRef = HostRef::Name(DomainRef::LOCALHOST);
         assert_eq!(result, expected);
     }

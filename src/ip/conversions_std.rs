@@ -7,7 +7,7 @@ impl IPv4Address {
 
     /// Converts the address to a standard library address.
     #[must_use]
-    pub const fn to_std(&self) -> Ipv4Addr {
+    pub const fn to_std(self) -> Ipv4Addr {
         let (a, b, c, d) = self.bytes();
         Ipv4Addr::new(a, b, c, d)
     }
@@ -30,7 +30,7 @@ impl IPv6Address {
 
     /// Converts the address to a standard library address.
     #[must_use]
-    pub const fn to_std(&self) -> Ipv6Addr {
+    pub const fn to_std(self) -> Ipv6Addr {
         let segments: [u16; 8] = self.segments();
         Ipv6Addr::new(
             segments[0],
@@ -62,7 +62,7 @@ impl IPAddress {
 
     /// Converts the address to a standard library address.
     #[must_use]
-    pub const fn to_std(&self) -> IpAddr {
+    pub const fn to_std(self) -> IpAddr {
         match self {
             Self::V4(ip) => IpAddr::V4(ip.to_std()),
             Self::V6(ip) => IpAddr::V6(ip.to_std()),

@@ -7,4 +7,7 @@ repository = "https://github.com/nikdeapen/address"
 homepage = "https://github.com/nikdeapen/address"
 authors = ["Nik Deapen <nik@deapen.com>"]
 edition = "2021"
+rust-version = "1.69"
 license = "MIT"
+keywords = ["address", "ip", "domain", "socket", "network"]
+categories = ["network-programming", "parser-implementations"]

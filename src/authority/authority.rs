@@ -24,10 +24,7 @@ impl<H: Into<Host>> From<(H, u16)> for Authority {
 
 impl<'a> From<AuthorityRef<'a>> for Authority {
     fn from(authority: AuthorityRef<'a>) -> Self {
-        Self {
-            host: authority.host().to_host(),
-            port: authority.port(),
-        }
+        Self::new(authority.host().to_host(), authority.port())
     }
 }
 

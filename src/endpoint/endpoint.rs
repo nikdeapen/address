@@ -18,10 +18,7 @@ impl Endpoint {
 
 impl<D: Into<Domain>> From<(D, u16)> for Endpoint {
     fn from(tuple: (D, u16)) -> Self {
-        Self {
-            domain: tuple.0.into(),
-            port: tuple.1,
-        }
+        Self::new(tuple.0.into(), tuple.1)
     }
 }
 
