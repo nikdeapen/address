@@ -5,7 +5,7 @@ This library aids in processing network addresses.
 ## Features & Dependencies
 
 ```toml
-address = "0.18.0"
+address = "0.19.0-rc.1"
 ```
 
 This crate has no dependencies by default.
