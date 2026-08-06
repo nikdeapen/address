@@ -2,6 +2,10 @@ use crate::ParseError::InvalidDomain;
 use crate::{DomainRef, InvalidDomainName, ParseError};
 
 /// A domain name.
+///
+/// Domain names are lowercase ASCII letters, digits, and dashes: dot-separated labels that must
+/// not start or end with a dash. (see `Domain::is_valid_name`) Mixed-case input is normalized to
+/// lowercase when parsed.
 #[derive(Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Debug)]
 pub struct Domain {
     name: String,
@@ -27,7 +31,8 @@ impl Domain {
     /// Creates a new domain.
     ///
     /// # Safety
-    /// The `name` must be valid. Validity is a struct invariant that unsafe code may rely on.
+    /// The `name` must be valid and lowercase. Validity is a struct invariant that unsafe code
+    /// may rely on.
     pub unsafe fn new_unchecked<S>(name: S) -> Self
     where
         S: Into<String>,

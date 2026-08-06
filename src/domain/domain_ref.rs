@@ -2,6 +2,9 @@ use crate::ParseError::InvalidDomain;
 use crate::{Domain, ParseError};
 
 /// A domain name reference.
+///
+/// See `Domain` for the domain name validation rules. A borrowed name cannot be normalized, so
+/// the name must already be lowercase.
 #[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Debug)]
 pub struct DomainRef<'a> {
     name: &'a str,
@@ -25,7 +28,8 @@ impl<'a> DomainRef<'a> {
     /// Creates a new domain reference.
     ///
     /// # Safety
-    /// The `name` must be valid. Validity is a struct invariant that unsafe code may rely on.
+    /// The `name` must be valid and lowercase. Validity is a struct invariant that unsafe code
+    /// may rely on.
     pub unsafe fn new_unchecked(name: &'a str) -> Self {
         debug_assert!(Domain::is_valid_name_str(name, false));
 

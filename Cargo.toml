@@ -18,3 +18,7 @@ serde = { version = "1.0", optional = true, default-features = false }
 [features]
 idna = ["dep:idna"]
 serde = ["dep:serde"]
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]

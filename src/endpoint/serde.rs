@@ -1,4 +1,5 @@
 use crate::{Endpoint, EndpointRef, FromStrVisitor};
+use serde::de::Error;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 impl Serialize for Endpoint {
@@ -25,5 +26,17 @@ impl<'a> Serialize for EndpointRef<'a> {
         S: Serializer,
     {
         serializer.collect_str(self)
+    }
+}
+
+impl<'de: 'a, 'a> Deserialize<'de> for EndpointRef<'a> {
+    /// The domain name is borrowed from the input, so it must be lowercase and must not contain
+    /// escape sequences. Use `Endpoint` to deserialize mixed-case or escaped names.
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let endpoint: &str = Deserialize::deserialize(deserializer)?;
+        Self::try_from(endpoint).map_err(Error::custom)
     }
 }

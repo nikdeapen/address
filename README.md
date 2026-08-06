@@ -11,7 +11,9 @@ address = "0.19.0-rc.1"
 This crate has no dependencies by default.
 
 - `idna`: Adds `Domain::from_unicode` & `to_unicode` for international domain names. Uses the `idna` crate.
-- `serde`: Adds `Serialize` & `Deserialize` implementations via `Display` & `FromStr`. Uses the `serde` crate.
+- `serde`: Adds `Serialize` & `Deserialize` implementations via the `serde` crate. Human-readable formats use the
+  `Display` & `FromStr` strings. Binary formats use compact binary forms for the IP & socket address types, matching
+  the wire format of the standard library types. The `Ref` types deserialize by borrowing from the input.
 
 ## Address Types
 
@@ -34,6 +36,13 @@ There are 6 core address types:
 
 Address types that are not `Copy` have owned and Ref types (example: `Domain` & `DomainRef`). This allows both owned
 types and types that do not require allocation. These types can be easily converted between one another.
+
+## Domain Names
+
+Domain names are restricted to lowercase ASCII letters, digits, and dashes: dot-separated labels of up to 63 bytes
+that do not start or end with a dash, with a total name length of up to 253 bytes. Mixed-case input is normalized to
+lowercase when parsing owned types. Underscores, empty labels, and the trailing root dot are invalid. Unicode names
+can be converted to their ASCII form with the `idna` feature.
 
 ## Standard Library Types
 
