@@ -4,7 +4,7 @@ use crate::{Domain, DomainRef, ParseError};
 impl Domain {
     //! International Domain Names
 
-    /// Creates a domain from the unicode `name`.
+    /// Creates a domain from the Unicode `name`.
     ///
     /// Unicode labels are converted to their ASCII A-label form, so the domain will only contain
     /// ASCII. (example: `Bücher.example` becomes `xn--bcher-kva.example`)
@@ -13,8 +13,10 @@ impl Domain {
         Self::try_from(name).map_err(ParseError::from)
     }
 
-    /// Converts the domain name to its unicode representation.
-    pub fn to_unicode(&self) -> String {
+    /// Converts the domain name to its Unicode representation.
+    ///
+    /// Returns an error if a label contains invalid punycode. (example: `xn--a.example`)
+    pub fn to_unicode(&self) -> Result<String, ParseError> {
         self.to_ref().to_unicode()
     }
 }
@@ -22,8 +24,12 @@ impl Domain {
 impl<'a> DomainRef<'a> {
     //! International Domain Names
 
-    /// Converts the domain name to its unicode representation.
-    pub fn to_unicode(self) -> String {
-        idna::domain_to_unicode(self.name()).0
+    /// Converts the domain name to its Unicode representation.
+    ///
+    /// Returns an error if a label contains invalid punycode. (example: `xn--a.example`)
+    pub fn to_unicode(self) -> Result<String, ParseError> {
+        let (name, result) = idna::domain_to_unicode(self.name());
+        result.map_err(|_| InvalidDomain)?;
+        Ok(name)
     }
 }

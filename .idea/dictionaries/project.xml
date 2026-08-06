@@ -2,6 +2,8 @@
   <dictionary name="project">
     <words>
       <w>idna</w>
+      <w>rustfmt</w>
+      <w>serde</w>
     </words>
   </dictionary>
 </component>
