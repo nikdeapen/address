@@ -1,4 +1,4 @@
-use serde::de::{Error, Visitor};
+use serde::de::{Error, Unexpected, Visitor};
 use std::fmt::{Display, Formatter};
 use std::marker::PhantomData;
 use std::str::FromStr;
@@ -12,7 +12,7 @@ pub(crate) struct FromStrVisitor<T: FromStr> {
 impl<T: FromStr> FromStrVisitor<T> {
     //! Construction
 
-    /// Creates a new visitor that expects the `expecting` description.
+    /// Creates a new visitor with the `expecting` message.
     pub(crate) const fn new(expecting: &'static str) -> Self {
         Self {
             expecting,
@@ -37,5 +37,15 @@ where
         E: Error,
     {
         T::from_str(v).map_err(E::custom)
+    }
+
+    fn visit_bytes<E>(self, v: &[u8]) -> Result<Self::Value, E>
+    where
+        E: Error,
+    {
+        match std::str::from_utf8(v) {
+            Ok(s) => self.visit_str(s),
+            Err(_) => Err(E::invalid_value(Unexpected::Bytes(v), &self)),
+        }
     }
 }

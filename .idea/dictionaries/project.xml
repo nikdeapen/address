@@ -2,6 +2,7 @@
   <dictionary name="project">
     <words>
       <w>idna</w>
+      <w>rustdocflags</w>
       <w>rustfmt</w>
       <w>serde</w>
     </words>
