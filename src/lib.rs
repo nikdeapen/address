@@ -17,3 +17,6 @@ mod host;
 mod ip;
 mod parse;
 mod socket;
+
+#[cfg(feature = "serde")]
+mod serde;

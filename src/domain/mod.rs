@@ -13,5 +13,3 @@ mod validation;
 
 #[cfg(feature = "idna")]
 mod idna;
-#[cfg(feature = "serde")]
-mod serde;
