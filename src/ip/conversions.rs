@@ -48,11 +48,10 @@ impl IPv4Address {
 impl IPv6Address {
     //! Conversions
 
-    /// Converts the address to an optional IPv4 address. Returns `None` if the address is not an
-    /// IPv4 compatible address (::a.b.c.d) or an IPv4 mapped address (::ffff:a.b.c.d).
+    /// Converts the address to an optional IPv4 address.
     ///
-    /// This matches the standard library's `Ipv6Addr::to_ipv4`: the loopback address (::1) becomes
-    /// 0.0.0.1 and the unspecified address (::) becomes 0.0.0.0.
+    /// Returns `None` if the address is not an IPv4 compatible address (::a.b.c.d) or an IPv4 mapped address
+    /// (::ffff:a.b.c.d).
     #[must_use]
     pub const fn to_v4(self) -> Option<IPv4Address> {
         match self.address() {
@@ -66,11 +65,9 @@ impl IPv6Address {
         }
     }
 
-    /// Converts the address to an optional IPv4 address. Returns `None` if the address is not an
-    /// IPv4 mapped address (::ffff:a.b.c.d).
+    /// Converts the address to an optional IPv4 address.
     ///
-    /// This matches the standard library's `Ipv6Addr::to_ipv4_mapped`; unlike `to_v4` it does not
-    /// convert IPv4 compatible addresses (::a.b.c.d).
+    /// Returns `None` if the address is not an IPv4 mapped address (::ffff:a.b.c.d).
     #[must_use]
     pub const fn to_v4_mapped(self) -> Option<IPv4Address> {
         match self.address() {
@@ -215,6 +212,16 @@ mod tests {
 
         let ip: IPv6Address = IPv6Address::from([0, 0, 0, 0, 0, 1, 0, 0]);
         let result: Option<IPv4Address> = ip.to_v4();
+        let expected: Option<IPv4Address> = None;
+        assert_eq!(result, expected);
+
+        let ip: IPv6Address = IPv6Address::from([0, 0, 0, 0, 0, 0xFFFF, 0x7F00, 1]);
+        let result: Option<IPv4Address> = ip.to_v4_mapped();
+        let expected: Option<IPv4Address> = Some(IPv4Address::LOCALHOST);
+        assert_eq!(result, expected);
+
+        let ip: IPv6Address = IPv6Address::from([0, 0, 0, 0, 0, 0, 0x7F00, 1]);
+        let result: Option<IPv4Address> = ip.to_v4_mapped();
         let expected: Option<IPv4Address> = None;
         assert_eq!(result, expected);
     }

@@ -22,6 +22,12 @@ impl<A: Into<IPv4Address>> From<(A, u16)> for SocketAddressV4 {
     }
 }
 
+impl From<SocketAddressV4> for (IPv4Address, u16) {
+    fn from(socket: SocketAddressV4) -> Self {
+        (socket.ip, socket.port)
+    }
+}
+
 impl SocketAddressV4 {
     //! Properties
 
@@ -49,6 +55,14 @@ mod tests {
         let socket: SocketAddressV4 = (IPv4Address::LOCALHOST, 80).into();
         assert_eq!(socket.ip, IPv4Address::LOCALHOST);
         assert_eq!(socket.port, 80);
+    }
+
+    #[test]
+    fn deconstruction() {
+        let socket: SocketAddressV4 = (IPv4Address::LOCALHOST, 80).into();
+        let (ip, port) = socket.into();
+        assert_eq!(ip, IPv4Address::LOCALHOST);
+        assert_eq!(port, 80);
     }
 
     #[test]

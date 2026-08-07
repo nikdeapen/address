@@ -35,6 +35,12 @@ impl<'a> TryFrom<&'a str> for EndpointRef<'a> {
     }
 }
 
+impl<'a> From<EndpointRef<'a>> for (DomainRef<'a>, u16) {
+    fn from(endpoint: EndpointRef<'a>) -> Self {
+        (endpoint.domain, endpoint.port)
+    }
+}
+
 impl<'a> EndpointRef<'a> {
     //! Properties
 
@@ -62,6 +68,14 @@ mod tests {
         let result: EndpointRef = (DomainRef::LOCALHOST, 80).into();
         assert_eq!(result.domain, DomainRef::LOCALHOST);
         assert_eq!(result.port, 80);
+    }
+
+    #[test]
+    fn deconstruction() {
+        let endpoint: EndpointRef = (DomainRef::LOCALHOST, 80).into();
+        let (domain, port) = endpoint.into();
+        assert_eq!(domain, DomainRef::LOCALHOST);
+        assert_eq!(port, 80);
     }
 
     #[test]

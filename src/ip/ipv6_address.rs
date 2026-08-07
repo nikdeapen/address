@@ -1,7 +1,7 @@
 /// An IPv6 address. (a:b:c:d:e:f:g:h)
 #[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Debug, Default)]
 pub struct IPv6Address {
-    address: [u8; 16],
+    pub(super) address: [u8; 16],
 }
 
 impl IPv6Address {
@@ -72,12 +72,14 @@ impl From<IPv6Address> for [u16; 8] {
 }
 
 impl From<u128> for IPv6Address {
+    /// The `value` is in network byte order. (big-endian: `::1` is `0x1`)
     fn from(value: u128) -> Self {
         Self::new(value.to_be_bytes())
     }
 }
 
 impl From<IPv6Address> for u128 {
+    /// The returned value is in network byte order. (big-endian: `::1` is `0x1`)
     fn from(ip: IPv6Address) -> Self {
         u128::from_be_bytes(ip.address)
     }

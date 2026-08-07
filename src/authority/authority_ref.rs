@@ -47,6 +47,12 @@ impl<'a> TryFrom<&'a str> for AuthorityRef<'a> {
     }
 }
 
+impl<'a> From<AuthorityRef<'a>> for (HostRef<'a>, u16) {
+    fn from(authority: AuthorityRef<'a>) -> Self {
+        (authority.host, authority.port)
+    }
+}
+
 impl<'a> AuthorityRef<'a> {
     //! Properties
 
@@ -74,6 +80,14 @@ mod tests {
         let authority: AuthorityRef = (DomainRef::LOCALHOST, 80).into();
         assert_eq!(authority.host, HostRef::Name(DomainRef::LOCALHOST));
         assert_eq!(authority.port, 80);
+    }
+
+    #[test]
+    fn deconstruction() {
+        let authority: AuthorityRef = (DomainRef::LOCALHOST, 80).into();
+        let (host, port) = authority.into();
+        assert_eq!(host, HostRef::Name(DomainRef::LOCALHOST));
+        assert_eq!(port, 80);
     }
 
     #[test]
