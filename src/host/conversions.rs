@@ -107,6 +107,32 @@ mod tests {
     }
 
     #[test]
+    fn host_to_domain() {
+        let host: Host = Domain::localhost().to_host();
+        let result: Option<Domain> = host.to_domain();
+        let expected: Option<Domain> = Some(Domain::localhost());
+        assert_eq!(result, expected);
+
+        let host: Host = IPv4Address::LOCALHOST.to_host();
+        let result: Option<Domain> = host.to_domain();
+        let expected: Option<Domain> = None;
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn host_to_ip() {
+        let host: Host = IPv4Address::LOCALHOST.to_host();
+        let result: Option<IPAddress> = host.to_ip();
+        let expected: Option<IPAddress> = Some(IPv4Address::LOCALHOST.to_ip());
+        assert_eq!(result, expected);
+
+        let host: Host = Domain::localhost().to_host();
+        let result: Option<IPAddress> = host.to_ip();
+        let expected: Option<IPAddress> = None;
+        assert_eq!(result, expected);
+    }
+
+    #[test]
     fn ref_to_host() {
         let host: HostRef = HostRef::Name(DomainRef::LOCALHOST);
         let result: Host = host.to_host();
@@ -130,6 +156,32 @@ mod tests {
         let host: HostRef = host.to_ref();
         let result: AuthorityRef = host.to_authority_ref(80);
         let expected: AuthorityRef = AuthorityRef::new(IPv4Address::LOCALHOST.to_host_ref(), 80);
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn ref_to_domain() {
+        let host: HostRef = DomainRef::LOCALHOST.to_host_ref();
+        let result: Option<DomainRef> = host.to_domain_ref();
+        let expected: Option<DomainRef> = Some(DomainRef::LOCALHOST);
+        assert_eq!(result, expected);
+
+        let host: HostRef = IPv4Address::LOCALHOST.to_host_ref();
+        let result: Option<DomainRef> = host.to_domain_ref();
+        let expected: Option<DomainRef> = None;
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn ref_to_ip() {
+        let host: HostRef = IPv4Address::LOCALHOST.to_host_ref();
+        let result: Option<IPAddress> = host.to_ip();
+        let expected: Option<IPAddress> = Some(IPv4Address::LOCALHOST.to_ip());
+        assert_eq!(result, expected);
+
+        let host: HostRef = DomainRef::LOCALHOST.to_host_ref();
+        let result: Option<IPAddress> = host.to_ip();
+        let expected: Option<IPAddress> = None;
         assert_eq!(result, expected);
     }
 }

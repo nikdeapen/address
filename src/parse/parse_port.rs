@@ -36,9 +36,9 @@ pub(crate) fn parse_port(address: &[u8]) -> Result<(&[u8], u16), ParseError> {
 
 #[cfg(test)]
 mod tests {
-    use crate::parse_port;
     use crate::ParseError;
     use crate::ParseError::InvalidPort;
+    use crate::parse_port;
 
     type TestCase<'a> = (&'a str, Result<(&'a str, u16), ParseError>);
 

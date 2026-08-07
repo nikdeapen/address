@@ -23,15 +23,15 @@ impl<D: Into<Domain>> From<(D, u16)> for Endpoint {
     }
 }
 
-impl<'a> From<EndpointRef<'a>> for Endpoint {
-    fn from(endpoint: EndpointRef<'a>) -> Self {
-        Endpoint::new(endpoint.domain().to_domain(), endpoint.port())
-    }
-}
-
 impl From<Endpoint> for (Domain, u16) {
     fn from(endpoint: Endpoint) -> Self {
         (endpoint.domain, endpoint.port)
+    }
+}
+
+impl<'a> From<EndpointRef<'a>> for Endpoint {
+    fn from(endpoint: EndpointRef<'a>) -> Self {
+        endpoint.to_endpoint()
     }
 }
 
