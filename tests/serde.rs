@@ -4,8 +4,8 @@ use address::{
     Authority, AuthorityRef, Domain, DomainRef, Endpoint, EndpointRef, Host, HostRef, IPAddress,
     IPv4Address, IPv6Address, SocketAddress, SocketAddressV4, SocketAddressV6,
 };
-use serde::de::DeserializeOwned;
 use serde::Serialize;
+use serde::de::DeserializeOwned;
 use std::fmt::Debug;
 use std::str::FromStr;
 

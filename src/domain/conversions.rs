@@ -51,6 +51,18 @@ impl Borrow<str> for Domain {
     }
 }
 
+impl<'a> AsRef<str> for DomainRef<'a> {
+    fn as_ref(&self) -> &str {
+        self.name()
+    }
+}
+
+impl<'a> Borrow<str> for DomainRef<'a> {
+    fn borrow(&self) -> &str {
+        self.name()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::{Domain, DomainRef, Endpoint, EndpointRef, Host, HostRef};
@@ -107,5 +119,16 @@ mod tests {
         let result: HostRef = domain.to_host_ref();
         let expected: HostRef = HostRef::Name(DomainRef::LOCALHOST);
         assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn as_str() {
+        let owned: Domain = Domain::localhost();
+        let result: &str = owned.as_ref();
+        assert_eq!(result, "localhost");
+
+        let domain: DomainRef = DomainRef::LOCALHOST;
+        let result: &str = domain.as_ref();
+        assert_eq!(result, "localhost");
     }
 }

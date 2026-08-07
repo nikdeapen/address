@@ -1,6 +1,6 @@
 use crate::ParseError::InvalidAuthority;
-use crate::{parse_port, strip_brackets};
 use crate::{Authority, AuthorityRef, HostRef, IPv6Address, ParseError};
+use crate::{parse_port, strip_brackets};
 use std::str::FromStr;
 
 impl FromStr for Authority {
@@ -19,6 +19,8 @@ impl FromStr for Authority {
 impl<'a> TryFrom<&'a str> for AuthorityRef<'a> {
     type Error = ParseError;
 
+    /// A domain name must already be lowercase, since a borrowed name cannot be normalized. Use
+    /// `Authority::from_str` to parse mixed-case domain names.
     fn try_from(authority: &'a str) -> Result<Self, Self::Error> {
         Self::try_from(authority.as_bytes())
     }
@@ -27,6 +29,8 @@ impl<'a> TryFrom<&'a str> for AuthorityRef<'a> {
 impl<'a> TryFrom<&'a [u8]> for AuthorityRef<'a> {
     type Error = ParseError;
 
+    /// A domain name must already be lowercase, since a borrowed name cannot be normalized. Use
+    /// `Authority::from_str` to parse mixed-case domain names.
     fn try_from(authority: &'a [u8]) -> Result<Self, Self::Error> {
         let (s, port) = parse_port(authority)?;
         if let Some(s) = strip_brackets(s) {
@@ -34,10 +38,10 @@ impl<'a> TryFrom<&'a [u8]> for AuthorityRef<'a> {
             Ok(host.to_authority_ref(port))
         } else {
             let host: HostRef = HostRef::try_from(s)?;
-            if let HostRef::Address(ip) = host {
-                if ip.is_v6() {
-                    return Err(InvalidAuthority);
-                }
+            if let HostRef::Address(ip) = host
+                && ip.is_v6()
+            {
+                return Err(InvalidAuthority);
             }
             Ok(host.to_authority_ref(port))
         }

@@ -66,15 +66,7 @@ impl TryFrom<&str> for Domain {
     type Error = ParseError;
 
     fn try_from(name: &str) -> Result<Self, Self::Error> {
-        if Self::is_valid_name_str(name, false) {
-            let name: String = name.to_string();
-            Ok(Self { name })
-        } else if Self::is_valid_name_str(name, true) {
-            let name: String = name.to_ascii_lowercase();
-            Ok(Self { name })
-        } else {
-            Err(InvalidDomain)
-        }
+        Self::try_from(name.as_bytes())
     }
 }
 
@@ -113,15 +105,15 @@ impl TryFrom<&[u8]> for Domain {
     }
 }
 
-impl<'a> From<DomainRef<'a>> for Domain {
-    fn from(domain: DomainRef) -> Self {
-        domain.to_domain()
-    }
-}
-
 impl From<Domain> for String {
     fn from(domain: Domain) -> Self {
         domain.name
+    }
+}
+
+impl<'a> From<DomainRef<'a>> for Domain {
+    fn from(domain: DomainRef<'a>) -> Self {
+        domain.to_domain()
     }
 }
 

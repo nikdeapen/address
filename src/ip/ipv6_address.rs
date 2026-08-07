@@ -150,6 +150,20 @@ mod tests {
         assert_eq!(ip, IPv6Address::from(address));
         assert_eq!(ip, IPv6Address::from(segments));
         assert_eq!(ip, IPv6Address::from(value));
+    }
+
+    #[test]
+    fn deconstruction() {
+        let address: [u8; 16] = [
+            0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF, 0x01, 0x23, 0x45, 0x67, 0x89, 0xAB,
+            0xCD, 0xEF,
+        ];
+        let segments: [u16; 8] = [
+            0x0123, 0x4567, 0x89AB, 0xCDEF, 0x0123, 0x4567, 0x89AB, 0xCDEF,
+        ];
+        let value: u128 = 0x0123456789ABCDEF0123456789ABCDEFu128;
+
+        let ip: IPv6Address = IPv6Address::new(address);
 
         let result: [u8; 16] = ip.into();
         assert_eq!(result, address);
