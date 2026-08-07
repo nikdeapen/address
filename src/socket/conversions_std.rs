@@ -41,14 +41,12 @@ impl SocketAddressV6 {
 }
 
 impl From<SocketAddrV6> for SocketAddressV6 {
-    /// The `flow_info` and `scope_id` are not part of the address and are discarded.
     fn from(std: SocketAddrV6) -> Self {
         Self::new((*std.ip()).into(), std.port())
     }
 }
 
 impl From<SocketAddressV6> for SocketAddrV6 {
-    /// The `flow_info` and `scope_id` are set to zero. Use `to_std_with` to supply them.
     fn from(socket: SocketAddressV6) -> Self {
         socket.to_std()
     }
@@ -57,15 +55,13 @@ impl From<SocketAddressV6> for SocketAddrV6 {
 impl SocketAddress {
     //! Standard Library Conversions
 
-    /// Converts the address to a standard library address. For IPv6 addresses the `flow_info` and
-    /// `scope_id` are set to zero.
+    /// Converts the address to a standard library address with a zero `flow_info` and `scope_id` for IPv6 addresses.
     #[must_use]
     pub const fn to_std(self) -> SocketAddr {
         self.to_std_with(0, 0)
     }
 
-    /// Converts the address to a standard library address with the `flow_info` and `scope_id`.
-    /// For IPv4 addresses the `flow_info` and `scope_id` are ignored.
+    /// Converts the address to a standard library address with the `flow_info` and `scope_id` for IPv6 addresses.
     #[must_use]
     pub const fn to_std_with(self, flow_info: u32, scope_id: u32) -> SocketAddr {
         match self.ip() {
@@ -81,16 +77,12 @@ impl SocketAddress {
 }
 
 impl From<SocketAddr> for SocketAddress {
-    /// For IPv6 addresses the `flow_info` and `scope_id` are not part of the address and are
-    /// discarded.
     fn from(std: SocketAddr) -> Self {
         Self::new(std.ip().into(), std.port())
     }
 }
 
 impl From<SocketAddress> for SocketAddr {
-    /// For IPv6 addresses the `flow_info` and `scope_id` are set to zero. Use `to_std_with` to
-    /// supply them.
     fn from(socket: SocketAddress) -> Self {
         socket.to_std()
     }

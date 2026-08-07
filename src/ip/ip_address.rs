@@ -1,6 +1,7 @@
 use crate::{IPv4Address, IPv6Address};
 
 /// Either an IPv4 address or an IPv6 address.
+#[must_use]
 #[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Debug)]
 pub enum IPAddress {
     /// An IPv4 address.
@@ -29,6 +30,7 @@ impl From<(u8, u8, u8, u8)> for IPAddress {
 }
 
 impl From<u32> for IPAddress {
+    /// The `value` is in network byte order. (big-endian: `127.0.0.1` is `0x7F000001`)
     fn from(value: u32) -> Self {
         Self::from(IPv4Address::from(value))
     }
@@ -53,8 +55,22 @@ impl From<[u16; 8]> for IPAddress {
 }
 
 impl From<u128> for IPAddress {
+    /// The `value` is in network byte order. (big-endian: `::1` is `0x1`)
     fn from(value: u128) -> Self {
         Self::from(IPv6Address::from(value))
+    }
+}
+
+impl IPAddress {
+    //! Properties
+
+    /// Gets the address. (V4: [a, b, c, d], V6: [a-high, a-low, ..., h-high, h-low])
+    #[must_use]
+    pub const fn address(&self) -> &[u8] {
+        match self {
+            Self::V4(ip) => &ip.address,
+            Self::V6(ip) => &ip.address,
+        }
     }
 }
 
@@ -62,11 +78,13 @@ impl IPAddress {
     //! Matching
 
     /// Checks if the address is an IPv4 address.
+    #[must_use]
     pub const fn is_v4(self) -> bool {
         matches!(self, Self::V4(_))
     }
 
     /// Checks if the address is an IPv6 address.
+    #[must_use]
     pub const fn is_v6(self) -> bool {
         matches!(self, Self::V6(_))
     }
@@ -97,6 +115,18 @@ mod tests {
         assert_eq!(ip, expected);
         let ip: IPAddress = 1u128.into();
         assert_eq!(ip, expected);
+    }
+
+    #[test]
+    fn properties() {
+        let ip: IPAddress = IPv4Address::LOCALHOST.into();
+        assert_eq!(ip.address(), &[127, 0, 0, 1]);
+
+        let ip: IPAddress = IPv6Address::LOCALHOST.into();
+        assert_eq!(
+            ip.address(),
+            &[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
+        );
     }
 
     #[test]

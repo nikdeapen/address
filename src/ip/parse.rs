@@ -3,6 +3,22 @@ use crate::{IPAddress, IPv4Address, IPv6Address, ParseError};
 use std::net::{Ipv4Addr, Ipv6Addr};
 use std::str::FromStr;
 
+impl IPv4Address {
+    //! Parse
+
+    /// The maximum length of an IPv4 address string. (255.255.255.255)
+    pub(crate) const MAX_STR_LEN: usize = 15;
+
+    /// Parses an IPv4 address from the `address` bytes.
+    pub(crate) fn parse(address: &[u8]) -> Result<Self, ParseError> {
+        if address.len() > Self::MAX_STR_LEN || !address.is_ascii() {
+            return Err(InvalidIPv4Address);
+        }
+        let address: &str = unsafe { std::str::from_utf8_unchecked(address) };
+        Self::from_str(address)
+    }
+}
+
 impl FromStr for IPv4Address {
     type Err = ParseError;
 
@@ -13,6 +29,22 @@ impl FromStr for IPv4Address {
     }
 }
 
+impl IPv6Address {
+    //! Parse
+
+    /// The maximum length of an IPv6 address string. (ffff:ffff:ffff:ffff:ffff:ffff:255.255.255.255)
+    pub(crate) const MAX_STR_LEN: usize = 45;
+
+    /// Parses an IPv6 address from the `address` bytes.
+    pub(crate) fn parse(address: &[u8]) -> Result<Self, ParseError> {
+        if address.len() > Self::MAX_STR_LEN || !address.is_ascii() {
+            return Err(InvalidIPv6Address);
+        }
+        let address: &str = unsafe { std::str::from_utf8_unchecked(address) };
+        Self::from_str(address)
+    }
+}
+
 impl FromStr for IPv6Address {
     type Err = ParseError;
 
@@ -20,6 +52,21 @@ impl FromStr for IPv6Address {
         Ok(Ipv6Addr::from_str(s)
             .map_err(|_| InvalidIPv6Address)?
             .into())
+    }
+}
+
+impl IPAddress {
+    //! Parse
+
+    /// Parses an IP address from the `address` bytes.
+    pub(crate) fn parse(address: &[u8]) -> Result<Self, ParseError> {
+        if let Ok(ip) = IPv4Address::parse(address) {
+            Ok(ip.to_ip())
+        } else if let Ok(ip) = IPv6Address::parse(address) {
+            Ok(ip.to_ip())
+        } else {
+            Err(InvalidIPAddress)
+        }
     }
 }
 
@@ -55,6 +102,9 @@ mod tests {
         for (input, expected) in test_cases {
             let result: Result<IPv4Address, ParseError> = IPv4Address::from_str(input);
             assert_eq!(result, *expected);
+
+            let result: Result<IPv4Address, ParseError> = IPv4Address::parse(input.as_bytes());
+            assert_eq!(result, *expected);
         }
     }
 
@@ -69,6 +119,9 @@ mod tests {
         for (input, expected) in test_cases {
             let result: Result<IPv6Address, ParseError> = IPv6Address::from_str(input);
             assert_eq!(result, *expected);
+
+            let result: Result<IPv6Address, ParseError> = IPv6Address::parse(input.as_bytes());
+            assert_eq!(result, *expected);
         }
     }
 
@@ -82,6 +135,9 @@ mod tests {
 
         for (input, expected) in test_cases {
             let result: Result<IPAddress, ParseError> = IPAddress::from_str(input);
+            assert_eq!(result, *expected);
+
+            let result: Result<IPAddress, ParseError> = IPAddress::parse(input.as_bytes());
             assert_eq!(result, *expected);
         }
     }

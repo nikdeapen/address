@@ -1,6 +1,7 @@
 use crate::{AuthorityRef, Host, HostRef};
 
 /// A host with an associated port.
+#[must_use]
 #[derive(Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Debug)]
 pub struct Authority {
     host: Host,
@@ -22,15 +23,21 @@ impl<H: Into<Host>> From<(H, u16)> for Authority {
     }
 }
 
-impl<'a> From<AuthorityRef<'a>> for Authority {
-    fn from(authority: AuthorityRef<'a>) -> Self {
-        Self::new(authority.host().to_host(), authority.port())
-    }
-}
-
 impl From<Authority> for (Host, u16) {
     fn from(authority: Authority) -> Self {
         (authority.host, authority.port)
+    }
+}
+
+impl<'a> From<AuthorityRef<'a>> for Authority {
+    fn from(authority: AuthorityRef<'a>) -> Self {
+        authority.to_authority()
+    }
+}
+
+impl<'a> PartialEq<AuthorityRef<'a>> for Authority {
+    fn eq(&self, other: &AuthorityRef<'a>) -> bool {
+        self.to_ref() == *other
     }
 }
 
@@ -43,6 +50,7 @@ impl Authority {
     }
 
     /// Gets the port.
+    #[must_use]
     pub const fn port(&self) -> u16 {
         self.port
     }
@@ -74,6 +82,15 @@ mod tests {
         let (host, port) = authority.into();
         assert_eq!(host, Host::Name(Domain::localhost()));
         assert_eq!(port, 80);
+    }
+
+    #[test]
+    fn equality() {
+        let authority: Authority = Authority::new(Host::Name(Domain::localhost()), 80);
+        assert_eq!(authority, authority.to_ref());
+
+        let other: Authority = Authority::new(Host::Name(Domain::localhost()), 81);
+        assert_ne!(authority, other.to_ref());
     }
 
     #[test]

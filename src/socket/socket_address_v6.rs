@@ -1,6 +1,7 @@
 use crate::IPv6Address;
 
 /// An IPv6 address with an associated port.
+#[must_use]
 #[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Debug)]
 pub struct SocketAddressV6 {
     ip: IPv6Address,
@@ -22,6 +23,12 @@ impl<A: Into<IPv6Address>> From<(A, u16)> for SocketAddressV6 {
     }
 }
 
+impl From<SocketAddressV6> for (IPv6Address, u16) {
+    fn from(socket: SocketAddressV6) -> Self {
+        (socket.ip, socket.port)
+    }
+}
+
 impl SocketAddressV6 {
     //! Properties
 
@@ -31,6 +38,7 @@ impl SocketAddressV6 {
     }
 
     /// Gets the port.
+    #[must_use]
     pub const fn port(self) -> u16 {
         self.port
     }
@@ -49,6 +57,14 @@ mod tests {
         let socket: SocketAddressV6 = (IPv6Address::LOCALHOST, 80).into();
         assert_eq!(socket.ip, IPv6Address::LOCALHOST);
         assert_eq!(socket.port, 80);
+    }
+
+    #[test]
+    fn deconstruction() {
+        let socket: SocketAddressV6 = (IPv6Address::LOCALHOST, 80).into();
+        let (ip, port) = socket.into();
+        assert_eq!(ip, IPv6Address::LOCALHOST);
+        assert_eq!(port, 80);
     }
 
     #[test]

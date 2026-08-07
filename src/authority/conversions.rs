@@ -4,7 +4,6 @@ impl Authority {
     //! Conversions
 
     /// Converts the authority to an authority reference.
-    #[must_use]
     pub fn to_ref(&self) -> AuthorityRef<'_> {
         AuthorityRef::new(self.host(), self.port())
     }
@@ -36,7 +35,6 @@ impl<'a> AuthorityRef<'a> {
     //! Conversions
 
     /// Converts the authority reference to an authority.
-    #[must_use]
     pub fn to_authority(self) -> Authority {
         Authority::new(self.host().to_host(), self.port())
     }
@@ -62,27 +60,12 @@ impl<'a> AuthorityRef<'a> {
     }
 }
 
-impl<'a> From<&'a Authority> for AuthorityRef<'a> {
-    fn from(authority: &'a Authority) -> Self {
-        authority.to_ref()
-    }
-}
-
-impl<'a> PartialEq<AuthorityRef<'a>> for Authority {
-    fn eq(&self, other: &AuthorityRef<'a>) -> bool {
-        self.to_ref() == *other
-    }
-}
-
-impl<'a> PartialEq<Authority> for AuthorityRef<'a> {
-    fn eq(&self, other: &Authority) -> bool {
-        *self == other.to_ref()
-    }
-}
-
 #[cfg(test)]
 mod tests {
-    use crate::{Authority, AuthorityRef, Domain, DomainRef, Host, HostRef};
+    use crate::{
+        Authority, AuthorityRef, Domain, DomainRef, Endpoint, EndpointRef, Host, HostRef,
+        IPv4Address, SocketAddress,
+    };
 
     #[test]
     fn authority_to_ref() {
@@ -94,12 +77,64 @@ mod tests {
     }
 
     #[test]
+    fn authority_to_endpoint() {
+        let authority: Authority = Authority::new(Host::Name(Domain::localhost()), 80);
+        let result: Option<Endpoint> = authority.to_endpoint();
+        let expected: Option<Endpoint> = Some(Endpoint::new(Domain::localhost(), 80));
+        assert_eq!(result, expected);
+
+        let authority: Authority = Authority::new(IPv4Address::LOCALHOST.to_host(), 80);
+        let result: Option<Endpoint> = authority.to_endpoint();
+        let expected: Option<Endpoint> = None;
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn authority_to_socket() {
+        let authority: Authority = Authority::new(IPv4Address::LOCALHOST.to_host(), 80);
+        let result: Option<SocketAddress> = authority.to_socket();
+        let expected: Option<SocketAddress> = Some(IPv4Address::LOCALHOST.to_ip().to_socket(80));
+        assert_eq!(result, expected);
+
+        let authority: Authority = Authority::new(Host::Name(Domain::localhost()), 80);
+        let result: Option<SocketAddress> = authority.to_socket();
+        let expected: Option<SocketAddress> = None;
+        assert_eq!(result, expected);
+    }
+
+    #[test]
     fn ref_to_authority() {
         let host: HostRef = HostRef::Name(DomainRef::LOCALHOST);
         let authority: AuthorityRef = AuthorityRef::new(host, 80);
 
         let result: Authority = authority.to_authority();
         let expected: Authority = Authority::new(host.to_host(), 80);
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn ref_to_endpoint() {
+        let authority: AuthorityRef = AuthorityRef::new(HostRef::Name(DomainRef::LOCALHOST), 80);
+        let result: Option<EndpointRef> = authority.to_endpoint_ref();
+        let expected: Option<EndpointRef> = Some(EndpointRef::new(DomainRef::LOCALHOST, 80));
+        assert_eq!(result, expected);
+
+        let authority: AuthorityRef = AuthorityRef::new(IPv4Address::LOCALHOST.to_host_ref(), 80);
+        let result: Option<EndpointRef> = authority.to_endpoint_ref();
+        let expected: Option<EndpointRef> = None;
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn ref_to_socket() {
+        let authority: AuthorityRef = AuthorityRef::new(IPv4Address::LOCALHOST.to_host_ref(), 80);
+        let result: Option<SocketAddress> = authority.to_socket();
+        let expected: Option<SocketAddress> = Some(IPv4Address::LOCALHOST.to_ip().to_socket(80));
+        assert_eq!(result, expected);
+
+        let authority: AuthorityRef = AuthorityRef::new(HostRef::Name(DomainRef::LOCALHOST), 80);
+        let result: Option<SocketAddress> = authority.to_socket();
+        let expected: Option<SocketAddress> = None;
         assert_eq!(result, expected);
     }
 }

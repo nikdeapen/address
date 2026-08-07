@@ -16,6 +16,7 @@ impl Domain {
     /// A valid label is 1 to 63 (`MAX_LABEL_LEN`) bytes of ASCII lowercase letters, digits, and
     /// dashes and must not start or end with a dash. Uppercase letters are also valid with
     /// `ignore_case`.
+    #[must_use]
     pub fn is_valid_label(label: &[u8], ignore_case: bool) -> bool {
         if (label.is_empty() || label.len() > Self::MAX_LABEL_LEN)
             || (label[0] == b'-' || label[label.len() - 1] == b'-')
@@ -29,6 +30,7 @@ impl Domain {
     }
 
     /// Checks if the domain `label` is valid.
+    #[must_use]
     pub fn is_valid_label_str(label: &str, ignore_case: bool) -> bool {
         Self::is_valid_label(label.as_bytes(), ignore_case)
     }
@@ -46,6 +48,7 @@ impl Domain {
     /// cannot be empty, so leading, trailing, and consecutive dots are invalid. Labels may be
     /// entirely numeric. Underscores are invalid, so service names like `_sip._tcp.example.com`
     /// cannot be represented.
+    #[must_use]
     pub fn is_valid_name(name: &[u8], ignore_case: bool) -> bool {
         if name.is_empty() || name.len() > Self::MAX_NAME_LEN {
             false
@@ -62,6 +65,7 @@ impl Domain {
     }
 
     /// Checks if the domain `name` is valid.
+    #[must_use]
     pub fn is_valid_name_str(name: &str, ignore_case: bool) -> bool {
         Self::is_valid_name(name.as_bytes(), ignore_case)
     }

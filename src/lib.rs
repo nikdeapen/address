@@ -1,5 +1,6 @@
 #![doc = include_str!("../README.md")]
 #![allow(clippy::module_inception)]
+#![warn(clippy::must_use_candidate)]
 #![cfg_attr(docsrs, feature(doc_auto_cfg))]
 
 pub use authority::*;

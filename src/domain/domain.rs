@@ -6,6 +6,7 @@ use crate::{DomainRef, InvalidDomainName, ParseError};
 /// Domain names are lowercase ASCII letters, digits, and dashes: dot-separated labels that must
 /// not start or end with a dash. (see `Domain::is_valid_name`) Mixed-case input is normalized to
 /// lowercase when parsed.
+#[must_use]
 #[derive(Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Debug)]
 pub struct Domain {
     name: String,
@@ -124,10 +125,17 @@ impl From<Domain> for String {
     }
 }
 
+impl<'a> PartialEq<DomainRef<'a>> for Domain {
+    fn eq(&self, other: &DomainRef<'a>) -> bool {
+        self.to_ref() == *other
+    }
+}
+
 impl Domain {
     //! Properties
 
     /// Gets the name.
+    #[must_use]
     pub fn name(&self) -> &str {
         self.name.as_str()
     }
@@ -220,6 +228,13 @@ mod tests {
         let result: String = domain.into();
         let expected: &str = "localhost";
         assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn equality() {
+        let domain: Domain = Domain::localhost();
+        assert_eq!(domain, DomainRef::LOCALHOST);
+        assert_ne!(domain, DomainRef::EXAMPLE);
     }
 
     #[test]

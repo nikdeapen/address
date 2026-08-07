@@ -9,8 +9,8 @@ impl FromStr for SocketAddressV4 {
     type Err = ParseError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let (s, port) = parse_port(s)?;
-        let ip: IPv4Address = IPv4Address::from_str(s)?;
+        let (s, port) = parse_port(s.as_bytes())?;
+        let ip: IPv4Address = IPv4Address::parse(s)?;
         Ok(SocketAddressV4::new(ip, port))
     }
 }
@@ -19,9 +19,9 @@ impl FromStr for SocketAddressV6 {
     type Err = ParseError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let (s, port) = parse_port(s)?;
-        let s: &str = strip_brackets(s).ok_or(InvalidSocketAddressV6)?;
-        let ip: IPv6Address = IPv6Address::from_str(s)?;
+        let (s, port) = parse_port(s.as_bytes())?;
+        let s: &[u8] = strip_brackets(s).ok_or(InvalidSocketAddressV6)?;
+        let ip: IPv6Address = IPv6Address::parse(s)?;
         Ok(SocketAddressV6::new(ip, port))
     }
 }
@@ -30,12 +30,12 @@ impl FromStr for SocketAddress {
     type Err = ParseError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let (s, port) = parse_port(s)?;
+        let (s, port) = parse_port(s.as_bytes())?;
         if let Some(s) = strip_brackets(s) {
-            let ip: IPv6Address = IPv6Address::from_str(s)?;
+            let ip: IPv6Address = IPv6Address::parse(s)?;
             Ok(ip.to_socket(port).to_socket())
         } else {
-            let ip: IPv4Address = IPv4Address::from_str(s).map_err(|_| InvalidSocketAddress)?;
+            let ip: IPv4Address = IPv4Address::parse(s).map_err(|_| InvalidSocketAddress)?;
             Ok(ip.to_socket(port).to_socket())
         }
     }

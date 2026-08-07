@@ -3,7 +3,7 @@ use std::str::FromStr;
 use crate::ParseError;
 use crate::ParseError::InvalidPort;
 
-/// Parses the port from the `address` string.
+/// Parses the port from the `address`.
 ///
 /// Returns `(address_without_last_colon, port)`.
 ///
@@ -17,18 +17,18 @@ use crate::ParseError::InvalidPort;
 /// :+80            -> `Err(InvalidPort)`
 /// :080            -> `Err(InvalidPort)`
 /// 80              -> `Err(InvalidPort)`
-pub(crate) fn parse_port(address: &str) -> Result<(&str, u16), ParseError> {
-    if let Some(colon) = address.as_bytes().iter().rposition(|c| *c == b':') {
-        let port: &str = &address[colon + 1..];
+pub(crate) fn parse_port(address: &[u8]) -> Result<(&[u8], u16), ParseError> {
+    if let Some(colon) = address.iter().rposition(|c| *c == b':') {
+        let port: &[u8] = &address[colon + 1..];
         let canonical: bool = !port.is_empty()
-            && port.bytes().all(|c| c.is_ascii_digit())
-            && (port.len() == 1 || !port.starts_with('0'));
+            && port.iter().all(|c| c.is_ascii_digit())
+            && (port.len() == 1 || port[0] != b'0');
         if !canonical {
             return Err(InvalidPort);
         }
+        let port: &str = unsafe { std::str::from_utf8_unchecked(port) };
         let port: u16 = u16::from_str(port).map_err(|_| InvalidPort)?;
-        let s: &str = &address[..colon];
-        Ok((s, port))
+        Ok((&address[..colon], port))
     } else {
         Err(InvalidPort)
     }
@@ -65,8 +65,12 @@ mod tests {
         ];
 
         for (input, expected) in test_cases {
-            let result: Result<(&str, u16), ParseError> = parse_port(input);
-            assert_eq!(result, *expected, "input={}", input);
+            let result: Result<(&[u8], u16), ParseError> = parse_port(input.as_bytes());
+            let expected: Result<(&[u8], u16), ParseError> = match expected {
+                Ok((s, port)) => Ok((s.as_bytes(), *port)),
+                Err(error) => Err(*error),
+            };
+            assert_eq!(result, expected, "input={}", input);
         }
     }
 }

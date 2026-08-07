@@ -1,6 +1,7 @@
 use crate::IPAddress;
 
 /// An IP address with an associated port.
+#[must_use]
 #[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Debug)]
 pub struct SocketAddress {
     ip: IPAddress,
@@ -22,6 +23,12 @@ impl<A: Into<IPAddress>> From<(A, u16)> for SocketAddress {
     }
 }
 
+impl From<SocketAddress> for (IPAddress, u16) {
+    fn from(socket: SocketAddress) -> Self {
+        (socket.ip, socket.port)
+    }
+}
+
 impl SocketAddress {
     //! Properties
 
@@ -31,6 +38,7 @@ impl SocketAddress {
     }
 
     /// Gets the port.
+    #[must_use]
     pub const fn port(self) -> u16 {
         self.port
     }
@@ -49,6 +57,14 @@ mod tests {
         let socket: SocketAddress = (IPv4Address::LOCALHOST, 80).into();
         assert_eq!(socket.ip, IPAddress::V4(IPv4Address::LOCALHOST));
         assert_eq!(socket.port, 80);
+    }
+
+    #[test]
+    fn deconstruction() {
+        let socket: SocketAddress = (IPv4Address::LOCALHOST, 80).into();
+        let (ip, port) = socket.into();
+        assert_eq!(ip, IPAddress::V4(IPv4Address::LOCALHOST));
+        assert_eq!(port, 80);
     }
 
     #[test]

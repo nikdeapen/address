@@ -81,10 +81,7 @@ impl From<IpAddr> for IPAddress {
 
 impl From<IPAddress> for IpAddr {
     fn from(ip: IPAddress) -> Self {
-        match ip {
-            IPAddress::V4(ip) => IpAddr::V4(ip.to_std()),
-            IPAddress::V6(ip) => IpAddr::V6(ip.to_std()),
-        }
+        ip.to_std()
     }
 }
 

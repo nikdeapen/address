@@ -1,7 +1,7 @@
-use crate::parse_port;
-use crate::{DomainRef, ParseError};
+use crate::{DomainRef, Endpoint};
 
 /// A domain reference with an associated port.
+#[must_use]
 #[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Debug)]
 pub struct EndpointRef<'a> {
     domain: DomainRef<'a>,
@@ -23,15 +23,21 @@ impl<'a, D: Into<DomainRef<'a>>> From<(D, u16)> for EndpointRef<'a> {
     }
 }
 
-impl<'a> TryFrom<&'a str> for EndpointRef<'a> {
-    type Error = ParseError;
+impl<'a> From<EndpointRef<'a>> for (DomainRef<'a>, u16) {
+    fn from(endpoint: EndpointRef<'a>) -> Self {
+        (endpoint.domain, endpoint.port)
+    }
+}
 
-    /// The domain name must already be lowercase, since a borrowed name cannot be normalized. Use
-    /// `Endpoint::from_str` to parse mixed-case domain names.
-    fn try_from(endpoint: &'a str) -> Result<Self, Self::Error> {
-        let (domain, port) = parse_port(endpoint)?;
-        let domain: DomainRef = DomainRef::try_from(domain)?;
-        Ok(Self::new(domain, port))
+impl<'a> From<&'a Endpoint> for EndpointRef<'a> {
+    fn from(endpoint: &'a Endpoint) -> Self {
+        endpoint.to_ref()
+    }
+}
+
+impl<'a> PartialEq<Endpoint> for EndpointRef<'a> {
+    fn eq(&self, other: &Endpoint) -> bool {
+        *self == other.to_ref()
     }
 }
 
@@ -44,6 +50,7 @@ impl<'a> EndpointRef<'a> {
     }
 
     /// Gets the port.
+    #[must_use]
     pub const fn port(self) -> u16 {
         self.port
     }
@@ -51,7 +58,7 @@ impl<'a> EndpointRef<'a> {
 
 #[cfg(test)]
 mod tests {
-    use crate::{DomainRef, EndpointRef};
+    use crate::{Domain, DomainRef, Endpoint, EndpointRef};
 
     #[test]
     fn construction() {
@@ -62,6 +69,26 @@ mod tests {
         let result: EndpointRef = (DomainRef::LOCALHOST, 80).into();
         assert_eq!(result.domain, DomainRef::LOCALHOST);
         assert_eq!(result.port, 80);
+
+        let owned: Endpoint = Endpoint::new(Domain::localhost(), 80);
+        let result: EndpointRef = (&owned).into();
+        assert_eq!(result.domain, DomainRef::LOCALHOST);
+        assert_eq!(result.port, 80);
+    }
+
+    #[test]
+    fn deconstruction() {
+        let endpoint: EndpointRef = (DomainRef::LOCALHOST, 80).into();
+        let (domain, port) = endpoint.into();
+        assert_eq!(domain, DomainRef::LOCALHOST);
+        assert_eq!(port, 80);
+    }
+
+    #[test]
+    fn equality() {
+        let owned: Endpoint = Endpoint::new(Domain::localhost(), 80);
+        assert_eq!(EndpointRef::new(DomainRef::LOCALHOST, 80), owned);
+        assert_ne!(EndpointRef::new(DomainRef::LOCALHOST, 81), owned);
     }
 
     #[test]
