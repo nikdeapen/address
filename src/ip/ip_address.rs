@@ -1,6 +1,7 @@
 use crate::{IPv4Address, IPv6Address};
 
 /// Either an IPv4 address or an IPv6 address.
+#[must_use]
 #[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Debug)]
 pub enum IPAddress {
     /// An IPv4 address.
@@ -64,6 +65,7 @@ impl IPAddress {
     //! Properties
 
     /// Gets the address. (V4: [a, b, c, d], V6: [a-high, a-low, ..., h-high, h-low])
+    #[must_use]
     pub const fn address(&self) -> &[u8] {
         match self {
             Self::V4(ip) => &ip.address,
@@ -76,11 +78,13 @@ impl IPAddress {
     //! Matching
 
     /// Checks if the address is an IPv4 address.
+    #[must_use]
     pub const fn is_v4(self) -> bool {
         matches!(self, Self::V4(_))
     }
 
     /// Checks if the address is an IPv6 address.
+    #[must_use]
     pub const fn is_v6(self) -> bool {
         matches!(self, Self::V6(_))
     }

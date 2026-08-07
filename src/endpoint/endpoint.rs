@@ -1,6 +1,7 @@
 use crate::{Domain, DomainRef, EndpointRef};
 
 /// A domain with an associated port.
+#[must_use]
 #[derive(Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Debug)]
 pub struct Endpoint {
     domain: Domain,
@@ -34,6 +35,12 @@ impl From<Endpoint> for (Domain, u16) {
     }
 }
 
+impl<'a> PartialEq<EndpointRef<'a>> for Endpoint {
+    fn eq(&self, other: &EndpointRef<'a>) -> bool {
+        self.to_ref() == *other
+    }
+}
+
 impl Endpoint {
     //! Properties
 
@@ -43,6 +50,7 @@ impl Endpoint {
     }
 
     /// Gets the port.
+    #[must_use]
     pub const fn port(&self) -> u16 {
         self.port
     }
@@ -74,6 +82,13 @@ mod tests {
         let (domain, port) = endpoint.into();
         assert_eq!(domain, Domain::localhost());
         assert_eq!(port, 80);
+    }
+
+    #[test]
+    fn equality() {
+        let endpoint: Endpoint = Endpoint::new(Domain::localhost(), 80);
+        assert_eq!(endpoint, EndpointRef::new(DomainRef::LOCALHOST, 80));
+        assert_ne!(endpoint, EndpointRef::new(DomainRef::LOCALHOST, 81));
     }
 
     #[test]

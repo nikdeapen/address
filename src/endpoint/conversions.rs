@@ -4,13 +4,11 @@ impl Endpoint {
     //! Conversions
 
     /// Converts the endpoint to an endpoint reference.
-    #[must_use]
     pub fn to_ref(&self) -> EndpointRef<'_> {
         EndpointRef::new(self.domain(), self.port())
     }
 
     /// Converts the endpoint to an authority.
-    #[must_use]
     pub fn to_authority(self) -> Authority {
         let (domain, port) = self.into();
         Authority::new(Host::Name(domain), port)
@@ -21,33 +19,13 @@ impl<'a> EndpointRef<'a> {
     //! Conversions
 
     /// Converts the endpoint reference to an endpoint.
-    #[must_use]
     pub fn to_endpoint(self) -> Endpoint {
         Endpoint::new(self.domain().to_domain(), self.port())
     }
 
     /// Converts the endpoint reference to an authority reference.
-    #[must_use]
     pub const fn to_authority_ref(self) -> AuthorityRef<'a> {
         AuthorityRef::new(HostRef::Name(self.domain()), self.port())
-    }
-}
-
-impl<'a> From<&'a Endpoint> for EndpointRef<'a> {
-    fn from(endpoint: &'a Endpoint) -> Self {
-        endpoint.to_ref()
-    }
-}
-
-impl<'a> PartialEq<EndpointRef<'a>> for Endpoint {
-    fn eq(&self, other: &EndpointRef<'a>) -> bool {
-        self.to_ref() == *other
-    }
-}
-
-impl<'a> PartialEq<Endpoint> for EndpointRef<'a> {
-    fn eq(&self, other: &Endpoint) -> bool {
-        *self == other.to_ref()
     }
 }
 

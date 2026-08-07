@@ -8,7 +8,7 @@ mod invalid_domain_name;
 
 mod conversions;
 mod display;
-mod from_str;
+mod parse;
 mod validation;
 
 #[cfg(feature = "idna")]

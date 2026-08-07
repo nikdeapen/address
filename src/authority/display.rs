@@ -37,8 +37,8 @@ mod tests {
             ),
         ];
 
-        for (host, expected) in test_cases {
-            let result: String = host.to_string();
+        for (authority, expected) in test_cases {
+            let result: String = authority.to_string();
             assert_eq!(result, *expected);
         }
     }

@@ -22,6 +22,7 @@ impl<T> InvalidDomainName<T> {
     //! Properties
 
     /// Gets the invalid domain name.
+    #[must_use]
     pub const fn name(&self) -> &T {
         &self.name
     }
@@ -31,6 +32,7 @@ impl<T> InvalidDomainName<T> {
     //! Deconstruction
 
     /// Converts the error back into the invalid domain name.
+    #[must_use]
     pub fn into_name(self) -> T {
         self.name
     }

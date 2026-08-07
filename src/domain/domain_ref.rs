@@ -1,10 +1,10 @@
-use crate::ParseError::InvalidDomain;
-use crate::{Domain, ParseError};
+use crate::Domain;
 
 /// A domain name reference.
 ///
 /// See `Domain` for the domain name validation rules. A borrowed name cannot be normalized, so
 /// the name must already be lowercase.
+#[must_use]
 #[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Debug)]
 pub struct DomainRef<'a> {
     name: &'a str,
@@ -37,32 +37,15 @@ impl<'a> DomainRef<'a> {
     }
 }
 
-impl<'a> TryFrom<&'a str> for DomainRef<'a> {
-    type Error = ParseError;
-
-    /// The `name` must already be lowercase, since a borrowed name cannot be normalized. Use
-    /// `Domain::try_from` to parse mixed-case names.
-    fn try_from(name: &'a str) -> Result<Self, Self::Error> {
-        if Domain::is_valid_name_str(name, false) {
-            Ok(Self { name })
-        } else {
-            Err(InvalidDomain)
-        }
+impl<'a> From<&'a Domain> for DomainRef<'a> {
+    fn from(domain: &'a Domain) -> Self {
+        domain.to_ref()
     }
 }
 
-impl<'a> TryFrom<&'a [u8]> for DomainRef<'a> {
-    type Error = ParseError;
-
-    /// The `name` must already be lowercase, since a borrowed name cannot be normalized. Use
-    /// `Domain::try_from` to parse mixed-case names.
-    fn try_from(name: &'a [u8]) -> Result<Self, Self::Error> {
-        if Domain::is_valid_name(name, false) {
-            let name: &str = unsafe { std::str::from_utf8_unchecked(name) };
-            Ok(Self { name })
-        } else {
-            Err(InvalidDomain)
-        }
+impl<'a> PartialEq<Domain> for DomainRef<'a> {
+    fn eq(&self, other: &Domain) -> bool {
+        *self == other.to_ref()
     }
 }
 
@@ -70,6 +53,7 @@ impl<'a> DomainRef<'a> {
     //! Properties
 
     /// Gets the name.
+    #[must_use]
     pub const fn name(self) -> &'a str {
         self.name
     }
@@ -77,8 +61,7 @@ impl<'a> DomainRef<'a> {
 
 #[cfg(test)]
 mod tests {
-    use crate::ParseError::InvalidDomain;
-    use crate::{DomainRef, ParseError};
+    use crate::{Domain, DomainRef};
 
     #[test]
     fn specials() {
@@ -87,21 +70,17 @@ mod tests {
     }
 
     #[test]
-    fn try_from_str() {
-        let result: Result<DomainRef, ParseError> = DomainRef::try_from("localhost");
-        assert_eq!(result, Ok(DomainRef::LOCALHOST));
-
-        let result: Result<DomainRef, ParseError> = DomainRef::try_from("LocalHost");
-        assert_eq!(result, Err(InvalidDomain));
+    fn construction() {
+        let owned: Domain = Domain::localhost();
+        let domain: DomainRef = (&owned).into();
+        assert_eq!(domain.name, "localhost");
     }
 
     #[test]
-    fn try_from_slice() {
-        let result: Result<DomainRef, ParseError> = DomainRef::try_from("localhost".as_bytes());
-        assert_eq!(result, Ok(DomainRef::LOCALHOST));
-
-        let result: Result<DomainRef, ParseError> = DomainRef::try_from("LocalHost".as_bytes());
-        assert_eq!(result, Err(InvalidDomain));
+    fn equality() {
+        let owned: Domain = Domain::localhost();
+        assert_eq!(DomainRef::LOCALHOST, owned);
+        assert_ne!(DomainRef::EXAMPLE, owned);
     }
 
     #[test]

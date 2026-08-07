@@ -1,6 +1,7 @@
 use crate::{Domain, HostRef, IPAddress};
 
 /// Either a domain or an IP address.
+#[must_use]
 #[derive(Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Debug)]
 pub enum Host {
     /// A domain.
@@ -28,15 +29,23 @@ impl<'a> From<HostRef<'a>> for Host {
     }
 }
 
+impl<'a> PartialEq<HostRef<'a>> for Host {
+    fn eq(&self, other: &HostRef<'a>) -> bool {
+        self.to_ref() == *other
+    }
+}
+
 impl Host {
     //! Matching
 
     /// Checks if the host is a domain.
+    #[must_use]
     pub const fn is_domain(&self) -> bool {
         matches!(self, Self::Name(_))
     }
 
     /// Checks if the host is an IP address.
+    #[must_use]
     pub const fn is_ip(&self) -> bool {
         matches!(self, Self::Address(_))
     }
@@ -44,7 +53,7 @@ impl Host {
 
 #[cfg(test)]
 mod tests {
-    use crate::{Domain, Host, IPAddress, IPv4Address};
+    use crate::{Domain, DomainRef, Host, HostRef, IPAddress, IPv4Address};
 
     #[test]
     fn construction() {
@@ -55,6 +64,13 @@ mod tests {
         let result: Host = IPv4Address::LOCALHOST.into();
         let expected: Host = Host::Address(IPAddress::V4(IPv4Address::LOCALHOST));
         assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn equality() {
+        let host: Host = Domain::localhost().into();
+        assert_eq!(host, HostRef::Name(DomainRef::LOCALHOST));
+        assert_ne!(host, IPv4Address::LOCALHOST.to_host_ref());
     }
 
     #[test]

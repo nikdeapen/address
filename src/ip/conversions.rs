@@ -7,39 +7,33 @@ impl IPv4Address {
     //! Conversions
 
     /// Converts the address to an IPv6 compatible address. (::a.b.c.d)
-    #[must_use]
     pub const fn to_v6_compatible(self) -> IPv6Address {
         let (a, b, c, d) = self.bytes();
         IPv6Address::new([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, a, b, c, d])
     }
 
     /// Converts the address to an IPv6 mapped address. (::ffff:a.b.c.d)
-    #[must_use]
     pub const fn to_v6_mapped(self) -> IPv6Address {
         let (a, b, c, d) = self.bytes();
         IPv6Address::new([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xFF, 0xFF, a, b, c, d])
     }
 
     /// Converts the address to an IP address.
-    #[must_use]
     pub const fn to_ip(self) -> IPAddress {
         IPAddress::V4(self)
     }
 
     /// Converts the address to a socket address with the `port`.
-    #[must_use]
     pub const fn to_socket(self, port: u16) -> SocketAddressV4 {
         SocketAddressV4::new(self, port)
     }
 
     /// Converts the address to a host.
-    #[must_use]
     pub const fn to_host(self) -> Host {
         Host::Address(self.to_ip())
     }
 
     /// Converts the address to a host reference.
-    #[must_use]
     pub const fn to_host_ref(self) -> HostRef<'static> {
         HostRef::Address(self.to_ip())
     }
@@ -67,7 +61,8 @@ impl IPv6Address {
 
     /// Converts the address to an optional IPv4 address.
     ///
-    /// Returns `None` if the address is not an IPv4 mapped address (::ffff:a.b.c.d).
+    /// Returns `None` if the address is not an IPv4 mapped address (::ffff:a.b.c.d). Unlike `to_v4` it does not
+    /// convert IPv4 compatible addresses (::a.b.c.d).
     #[must_use]
     pub const fn to_v4_mapped(self) -> Option<IPv4Address> {
         match self.address() {
@@ -79,25 +74,21 @@ impl IPv6Address {
     }
 
     /// Converts the address to an IP address.
-    #[must_use]
     pub const fn to_ip(self) -> IPAddress {
         IPAddress::V6(self)
     }
 
     /// Converts the address to a socket address with the `port`.
-    #[must_use]
     pub const fn to_socket(self, port: u16) -> SocketAddressV6 {
         SocketAddressV6::new(self, port)
     }
 
     /// Converts the address to a host.
-    #[must_use]
     pub const fn to_host(self) -> Host {
         Host::Address(self.to_ip())
     }
 
     /// Converts the address to a host reference.
-    #[must_use]
     pub const fn to_host_ref(self) -> HostRef<'static> {
         HostRef::Address(self.to_ip())
     }
@@ -127,19 +118,16 @@ impl IPAddress {
     }
 
     /// Converts the address to a socket address with the `port`.
-    #[must_use]
     pub const fn to_socket(self, port: u16) -> SocketAddress {
         SocketAddress::new(self, port)
     }
 
     /// Converts the address to a host.
-    #[must_use]
     pub const fn to_host(self) -> Host {
         Host::Address(self)
     }
 
     /// Converts the address to a host reference.
-    #[must_use]
     pub const fn to_host_ref(self) -> HostRef<'static> {
         HostRef::Address(self)
     }

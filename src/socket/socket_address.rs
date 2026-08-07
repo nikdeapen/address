@@ -1,6 +1,7 @@
 use crate::IPAddress;
 
 /// An IP address with an associated port.
+#[must_use]
 #[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Debug)]
 pub struct SocketAddress {
     ip: IPAddress,
@@ -37,6 +38,7 @@ impl SocketAddress {
     }
 
     /// Gets the port.
+    #[must_use]
     pub const fn port(self) -> u16 {
         self.port
     }

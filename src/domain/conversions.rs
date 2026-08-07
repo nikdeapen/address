@@ -5,19 +5,16 @@ impl Domain {
     //! Conversions
 
     /// Converts the domain to a domain reference.
-    #[must_use]
     pub fn to_ref(&self) -> DomainRef<'_> {
         unsafe { DomainRef::new_unchecked(self.name()) }
     }
 
     /// Converts the domain to an endpoint with the `port`.
-    #[must_use]
     pub const fn to_endpoint(self, port: u16) -> Endpoint {
         Endpoint::new(self, port)
     }
 
     /// Converts the domain to a host.
-    #[must_use]
     pub const fn to_host(self) -> Host {
         Host::Name(self)
     }
@@ -27,27 +24,18 @@ impl<'a> DomainRef<'a> {
     //! Conversions
 
     /// Converts the domain reference to a domain.
-    #[must_use]
     pub fn to_domain(self) -> Domain {
         unsafe { Domain::new_unchecked(self.name()) }
     }
 
     /// Converts the domain reference to an endpoint reference with the `port`.
-    #[must_use]
     pub const fn to_endpoint_ref(self, port: u16) -> EndpointRef<'a> {
         EndpointRef::new(self, port)
     }
 
     /// Converts the domain reference to a host reference.
-    #[must_use]
     pub const fn to_host_ref(self) -> HostRef<'a> {
         HostRef::Name(self)
-    }
-}
-
-impl<'a> From<&'a Domain> for DomainRef<'a> {
-    fn from(domain: &'a Domain) -> Self {
-        domain.to_ref()
     }
 }
 
@@ -60,18 +48,6 @@ impl AsRef<str> for Domain {
 impl Borrow<str> for Domain {
     fn borrow(&self) -> &str {
         self.name()
-    }
-}
-
-impl<'a> PartialEq<DomainRef<'a>> for Domain {
-    fn eq(&self, other: &DomainRef<'a>) -> bool {
-        self.to_ref() == *other
-    }
-}
-
-impl<'a> PartialEq<Domain> for DomainRef<'a> {
-    fn eq(&self, other: &Domain) -> bool {
-        *self == other.to_ref()
     }
 }
 

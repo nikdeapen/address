@@ -1,4 +1,4 @@
-/// Strips the surrounding brackets from the `address` string.
+/// Strips the surrounding brackets from the `address`.
 ///
 /// Returns `None` if the address is not bracketed.
 ///
@@ -7,9 +7,8 @@
 /// []      -> `Some("")`
 /// ::1     -> `None`
 /// [::1    -> `None`
-pub(crate) fn strip_brackets(address: &str) -> Option<&str> {
-    let bytes: &[u8] = address.as_bytes();
-    if bytes.len() >= 2 && bytes[0] == b'[' && bytes[bytes.len() - 1] == b']' {
+pub(crate) fn strip_brackets(address: &[u8]) -> Option<&[u8]> {
+    if address.len() >= 2 && address[0] == b'[' && address[address.len() - 1] == b']' {
         Some(&address[1..address.len() - 1])
     } else {
         None

@@ -1,4 +1,5 @@
 /// An IPv4 address. (a.b.c.d)
+#[must_use]
 #[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Debug, Default)]
 pub struct IPv4Address {
     pub(super) address: [u8; 4],
@@ -68,11 +69,13 @@ impl IPv4Address {
     //! Properties
 
     /// Gets the address. [a, b, c, d]
+    #[must_use]
     pub const fn address(self) -> [u8; 4] {
         self.address
     }
 
     /// Gets the bytes. (a, b, c, d)
+    #[must_use]
     pub const fn bytes(self) -> (u8, u8, u8, u8) {
         (
             self.address[0],

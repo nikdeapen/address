@@ -1,8 +1,7 @@
-use crate::ParseError::InvalidHost;
-use crate::{DomainRef, IPAddress, ParseError};
-use std::str::FromStr;
+use crate::{DomainRef, Host, IPAddress};
 
 /// Either a domain reference or an IP address.
+#[must_use]
 #[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Debug)]
 pub enum HostRef<'a> {
     /// A domain reference.
@@ -24,19 +23,15 @@ impl<'a, A: Into<IPAddress>> From<A> for HostRef<'a> {
     }
 }
 
-impl<'a> TryFrom<&'a str> for HostRef<'a> {
-    type Error = ParseError;
+impl<'a> From<&'a Host> for HostRef<'a> {
+    fn from(host: &'a Host) -> Self {
+        host.to_ref()
+    }
+}
 
-    /// A domain name must already be lowercase, since a borrowed name cannot be normalized. Use
-    /// `Host::from_str` to parse mixed-case domain names.
-    fn try_from(host: &'a str) -> Result<Self, Self::Error> {
-        if let Ok(ip) = IPAddress::from_str(host) {
-            Ok(ip.to_host_ref())
-        } else if let Ok(domain) = DomainRef::try_from(host) {
-            Ok(domain.to_host_ref())
-        } else {
-            Err(InvalidHost)
-        }
+impl<'a> PartialEq<Host> for HostRef<'a> {
+    fn eq(&self, other: &Host) -> bool {
+        *self == other.to_ref()
     }
 }
 
@@ -44,11 +39,13 @@ impl<'a> HostRef<'a> {
     //! Matching
 
     /// Checks if the host is a domain.
+    #[must_use]
     pub const fn is_domain(self) -> bool {
         matches!(self, Self::Name(_))
     }
 
     /// Checks if the host is an IP address.
+    #[must_use]
     pub const fn is_ip(self) -> bool {
         matches!(self, Self::Address(_))
     }
@@ -56,7 +53,7 @@ impl<'a> HostRef<'a> {
 
 #[cfg(test)]
 mod tests {
-    use crate::{DomainRef, HostRef, IPAddress, IPv4Address};
+    use crate::{Domain, DomainRef, Host, HostRef, IPAddress, IPv4Address};
 
     #[test]
     fn construction() {
@@ -67,6 +64,19 @@ mod tests {
         let result: HostRef = IPAddress::V4(IPv4Address::LOCALHOST).into();
         let expected: HostRef = HostRef::Address(IPAddress::V4(IPv4Address::LOCALHOST));
         assert_eq!(result, expected);
+
+        let owned: Host = Domain::localhost().into();
+        let result: HostRef = (&owned).into();
+        let expected: HostRef = HostRef::Name(DomainRef::LOCALHOST);
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn equality() {
+        let owned: Host = Domain::localhost().into();
+        let host: HostRef = HostRef::Name(DomainRef::LOCALHOST);
+        assert_eq!(host, owned);
+        assert_ne!(IPv4Address::LOCALHOST.to_host_ref(), owned);
     }
 
     #[test]

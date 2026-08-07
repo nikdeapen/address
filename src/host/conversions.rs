@@ -4,7 +4,6 @@ impl Host {
     //! Conversions
 
     /// Converts the host to a host reference.
-    #[must_use]
     pub fn to_ref(&self) -> HostRef<'_> {
         match self {
             Self::Name(domain) => HostRef::Name(domain.to_ref()),
@@ -13,7 +12,6 @@ impl Host {
     }
 
     /// Converts the host to an authority with the `port`.
-    #[must_use]
     pub const fn to_authority(self, port: u16) -> Authority {
         Authority::new(self, port)
     }
@@ -43,7 +41,6 @@ impl<'a> HostRef<'a> {
     //! Conversions
 
     /// Converts the host reference to a host.
-    #[must_use]
     pub fn to_host(self) -> Host {
         match self {
             Self::Name(domain) => Host::Name(domain.to_domain()),
@@ -52,7 +49,6 @@ impl<'a> HostRef<'a> {
     }
 
     /// Converts the host reference to an authority reference with the `port`.
-    #[must_use]
     pub const fn to_authority_ref(self, port: u16) -> AuthorityRef<'a> {
         AuthorityRef::new(self, port)
     }
@@ -75,24 +71,6 @@ impl<'a> HostRef<'a> {
         } else {
             None
         }
-    }
-}
-
-impl<'a> From<&'a Host> for HostRef<'a> {
-    fn from(host: &'a Host) -> Self {
-        host.to_ref()
-    }
-}
-
-impl<'a> PartialEq<HostRef<'a>> for Host {
-    fn eq(&self, other: &HostRef<'a>) -> bool {
-        self.to_ref() == *other
-    }
-}
-
-impl<'a> PartialEq<Host> for HostRef<'a> {
-    fn eq(&self, other: &Host) -> bool {
-        *self == other.to_ref()
     }
 }
 

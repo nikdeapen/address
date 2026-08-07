@@ -1,4 +1,5 @@
 /// An IPv6 address. (a:b:c:d:e:f:g:h)
+#[must_use]
 #[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Debug, Default)]
 pub struct IPv6Address {
     pub(super) address: [u8; 16],
@@ -89,11 +90,13 @@ impl IPv6Address {
     //! Properties
 
     /// Gets the address. [a-high, a-low, b-high, b-low, ..., h-high, h-low]
+    #[must_use]
     pub const fn address(self) -> [u8; 16] {
         self.address
     }
 
     /// Gets the segments. [a, b, c, d, e, f, g, h]
+    #[must_use]
     pub const fn segments(self) -> [u16; 8] {
         [
             ((self.address[0] as u16) << 8) | (self.address[1] as u16),
