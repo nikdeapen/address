@@ -5,15 +5,17 @@ This library aids in processing network addresses.
 ## Features & Dependencies
 
 ```toml
-address = "0.19.0-rc.2"
+address = "0.19.0"
 ```
 
 This crate has no dependencies by default.
 
 - `idna`: Adds `Domain::from_unicode` & `to_unicode` for international domain names. Uses the `idna` crate.
 - `serde`: Adds `Serialize` & `Deserialize` implementations via the `serde` crate. Human-readable formats use the
-  `Display` & `FromStr` strings. Binary formats use compact binary forms for the IP & socket address types, matching
-  the wire format of the standard library types. The `Ref` types deserialize by borrowing from the input.
+  `Display` & `FromStr` strings. Binary formats use compact binary forms for the IP & socket address types. The
+  version-specific types match the wire format of the standard library types; `IPAddress` & `SocketAddress` serialize
+  the IP address as a byte string of 4 or 16 bytes instead of the standard library's enum encoding. The `Ref` types
+  deserialize by borrowing from the input.
 
 ## Address Types
 

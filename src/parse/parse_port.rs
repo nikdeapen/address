@@ -7,23 +7,22 @@ use crate::ParseError::InvalidPort;
 ///
 /// Returns `(address_without_last_colon, port)`.
 ///
-/// The port must be canonical decimal: digits only, with no sign and no leading zeros.
+/// The port must be decimal digits only, with no sign. Leading zeros are allowed, matching the
+/// standard library.
 ///
 /// # Examples
 /// localhost:80    -> `Ok("localhost", 80)`
 /// :80             -> `Ok("", 80)`
+/// :080            -> `Ok("", 80)`
 /// :0              -> `Ok("", 0)`
 /// :8x             -> `Err(InvalidPort)`
 /// :+80            -> `Err(InvalidPort)`
-/// :080            -> `Err(InvalidPort)`
 /// 80              -> `Err(InvalidPort)`
 pub(crate) fn parse_port(address: &[u8]) -> Result<(&[u8], u16), ParseError> {
     if let Some(colon) = address.iter().rposition(|c| *c == b':') {
         let port: &[u8] = &address[colon + 1..];
-        let canonical: bool = !port.is_empty()
-            && port.iter().all(|c| c.is_ascii_digit())
-            && (port.len() == 1 || port[0] != b'0');
-        if !canonical {
+        let valid: bool = !port.is_empty() && port.iter().all(|c| c.is_ascii_digit());
+        if !valid {
             return Err(InvalidPort);
         }
         let port: &str = unsafe { std::str::from_utf8_unchecked(port) };
@@ -54,9 +53,11 @@ mod tests {
             (":8x", Err(InvalidPort)),
             (":+80", Err(InvalidPort)),
             (":-80", Err(InvalidPort)),
-            (":080", Err(InvalidPort)),
-            (":00", Err(InvalidPort)),
+            (":080", Ok(("", 80))),
+            (":00", Ok(("", 0))),
+            (":00080", Ok(("", 80))),
             (":65535", Ok(("", 65535))),
+            (":065535", Ok(("", 65535))),
             (":65536", Err(InvalidPort)),
             (":99999", Err(InvalidPort)),
             (":18446744073709551616", Err(InvalidPort)),
