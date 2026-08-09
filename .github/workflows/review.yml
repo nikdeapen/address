@@ -18,6 +18,16 @@ jobs:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
           fetch-depth: 1
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          repository: nikdeapen/coding
+          path: .coding
+      - name: Install coding rules
+        run: |
+          mkdir -p ~/.claude
+          cp -R .coding/rules ~/.claude/rules
+          rm -rf .coding
+          ls ~/.claude/rules/
       - uses: anthropics/claude-code-action@c038e4dcdedfbbca18dfb17df35a17e40ded4ddc # v1.0.186
         with:
           # This token expires ~2027-08-05. Rerun `claude setup-token` and update the secret.
