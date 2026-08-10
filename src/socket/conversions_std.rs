@@ -1,6 +1,5 @@
-use std::net::{SocketAddr, SocketAddrV4, SocketAddrV6};
-
 use crate::{IPAddress, SocketAddress, SocketAddressV4, SocketAddressV6};
+use std::net::{SocketAddr, SocketAddrV4, SocketAddrV6};
 
 impl SocketAddressV4 {
     //! Standard Library Conversions
@@ -41,6 +40,7 @@ impl SocketAddressV6 {
 }
 
 impl From<SocketAddrV6> for SocketAddressV6 {
+    /// Converts the standard library address, discarding its `flow_info` & `scope_id`.
     fn from(std: SocketAddrV6) -> Self {
         Self::new((*std.ip()).into(), std.port())
     }
@@ -66,17 +66,13 @@ impl SocketAddress {
     pub const fn to_std_with(self, flow_info: u32, scope_id: u32) -> SocketAddr {
         match self.ip() {
             IPAddress::V4(ip) => SocketAddr::V4(SocketAddrV4::new(ip.to_std(), self.port())),
-            IPAddress::V6(ip) => SocketAddr::V6(SocketAddrV6::new(
-                ip.to_std(),
-                self.port(),
-                flow_info,
-                scope_id,
-            )),
+            IPAddress::V6(ip) => SocketAddr::V6(SocketAddrV6::new(ip.to_std(), self.port(), flow_info, scope_id)),
         }
     }
 }
 
 impl From<SocketAddr> for SocketAddress {
+    /// Converts the standard library address, discarding the `flow_info` & `scope_id` of IPv6 addresses.
     fn from(std: SocketAddr) -> Self {
         Self::new(std.ip().into(), std.port())
     }
@@ -90,53 +86,81 @@ impl From<SocketAddress> for SocketAddr {
 
 #[cfg(test)]
 mod tests {
-    use std::net::{Ipv4Addr, Ipv6Addr, SocketAddr, SocketAddrV4, SocketAddrV6};
-
     use crate::{IPv4Address, IPv6Address, SocketAddress, SocketAddressV4, SocketAddressV6};
+    use std::net::{Ipv4Addr, Ipv6Addr, SocketAddr, SocketAddrV4, SocketAddrV6};
 
     #[test]
     fn v4() {
-        let socket: SocketAddressV4 = SocketAddressV4::new(IPv4Address::LOCALHOST, 80);
-        let result: SocketAddrV4 = socket.to_std();
-        let expected: SocketAddrV4 = SocketAddrV4::new(Ipv4Addr::LOCALHOST, 80);
-        assert_eq!(result, expected);
+        let test_cases: &[(SocketAddressV4, SocketAddrV4)] = &[(
+            SocketAddressV4::new(IPv4Address::LOCALHOST, 80),
+            SocketAddrV4::new(Ipv4Addr::LOCALHOST, 80),
+        )];
 
-        let socket: SocketAddressV4 = SocketAddressV4::new(IPv4Address::LOCALHOST, 80);
-        let result: SocketAddrV4 = socket.into();
-        let expected: SocketAddrV4 = SocketAddrV4::new(Ipv4Addr::LOCALHOST, 80);
-        assert_eq!(result, expected);
+        for (socket, std) in test_cases {
+            let result: SocketAddrV4 = socket.to_std();
+            assert_eq!(result, *std, "socket={:?}", socket);
 
-        let socket: SocketAddrV4 = SocketAddrV4::new(Ipv4Addr::LOCALHOST, 80);
-        let result: SocketAddressV4 = socket.into();
-        let expected: SocketAddressV4 = SocketAddressV4::new(IPv4Address::LOCALHOST, 80);
-        assert_eq!(result, expected);
+            let result: SocketAddrV4 = (*socket).into();
+            assert_eq!(result, *std, "socket={:?}", socket);
+
+            let result: SocketAddressV4 = (*std).into();
+            assert_eq!(result, *socket, "std={:?}", std);
+        }
     }
 
     #[test]
     fn v6() {
+        let test_cases: &[(SocketAddressV6, SocketAddrV6)] = &[(
+            SocketAddressV6::new(IPv6Address::LOCALHOST, 80),
+            SocketAddrV6::new(Ipv6Addr::LOCALHOST, 80, 0, 0),
+        )];
+
+        for (socket, std) in test_cases {
+            let result: SocketAddrV6 = socket.to_std();
+            assert_eq!(result, *std, "socket={:?}", socket);
+
+            let result: SocketAddrV6 = (*socket).into();
+            assert_eq!(result, *std, "socket={:?}", socket);
+
+            let result: SocketAddressV6 = (*std).into();
+            assert_eq!(result, *socket, "std={:?}", std);
+        }
+
         let socket: SocketAddressV6 = SocketAddressV6::new(IPv6Address::LOCALHOST, 80);
         let result: SocketAddrV6 = socket.to_std_with(123, 456);
         let expected: SocketAddrV6 = SocketAddrV6::new(Ipv6Addr::LOCALHOST, 80, 123, 456);
         assert_eq!(result, expected);
 
-        let socket: SocketAddressV6 = SocketAddressV6::new(IPv6Address::LOCALHOST, 80);
-        let result: SocketAddrV6 = socket.to_std();
-        let expected: SocketAddrV6 = SocketAddrV6::new(Ipv6Addr::LOCALHOST, 80, 0, 0);
-        assert_eq!(result, expected);
-
-        let socket: SocketAddressV6 = SocketAddressV6::new(IPv6Address::LOCALHOST, 80);
-        let result: SocketAddrV6 = socket.into();
-        let expected: SocketAddrV6 = SocketAddrV6::new(Ipv6Addr::LOCALHOST, 80, 0, 0);
-        assert_eq!(result, expected);
-
-        let socket: SocketAddrV6 = SocketAddrV6::new(Ipv6Addr::LOCALHOST, 80, 123, 456);
-        let result: SocketAddressV6 = socket.into();
+        let std: SocketAddrV6 = SocketAddrV6::new(Ipv6Addr::LOCALHOST, 80, 123, 456);
+        let result: SocketAddressV6 = std.into();
         let expected: SocketAddressV6 = SocketAddressV6::new(IPv6Address::LOCALHOST, 80);
         assert_eq!(result, expected);
     }
 
     #[test]
     fn socket() {
+        let test_cases: &[(SocketAddress, SocketAddr)] = &[
+            (
+                SocketAddress::new(IPv4Address::LOCALHOST.to_ip(), 80),
+                SocketAddr::V4(SocketAddrV4::new(Ipv4Addr::LOCALHOST, 80)),
+            ),
+            (
+                SocketAddress::new(IPv6Address::LOCALHOST.to_ip(), 80),
+                SocketAddr::V6(SocketAddrV6::new(Ipv6Addr::LOCALHOST, 80, 0, 0)),
+            ),
+        ];
+
+        for (socket, std) in test_cases {
+            let result: SocketAddr = socket.to_std();
+            assert_eq!(result, *std, "socket={:?}", socket);
+
+            let result: SocketAddr = (*socket).into();
+            assert_eq!(result, *std, "socket={:?}", socket);
+
+            let result: SocketAddress = (*std).into();
+            assert_eq!(result, *socket, "std={:?}", std);
+        }
+
         let socket: SocketAddress = SocketAddress::new(IPv4Address::LOCALHOST.to_ip(), 80);
         let result: SocketAddr = socket.to_std_with(123, 456);
         let expected: SocketAddr = SocketAddr::V4(SocketAddrV4::new(Ipv4Addr::LOCALHOST, 80));
@@ -144,28 +168,7 @@ mod tests {
 
         let socket: SocketAddress = SocketAddress::new(IPv6Address::LOCALHOST.to_ip(), 80);
         let result: SocketAddr = socket.to_std_with(123, 456);
-        let expected: SocketAddr =
-            SocketAddr::V6(SocketAddrV6::new(Ipv6Addr::LOCALHOST, 80, 123, 456));
-        assert_eq!(result, expected);
-
-        let socket: SocketAddress = SocketAddress::new(IPv6Address::LOCALHOST.to_ip(), 80);
-        let result: SocketAddr = socket.to_std();
-        let expected: SocketAddr = SocketAddr::V6(SocketAddrV6::new(Ipv6Addr::LOCALHOST, 80, 0, 0));
-        assert_eq!(result, expected);
-
-        let socket: SocketAddress = SocketAddress::new(IPv4Address::LOCALHOST.to_ip(), 80);
-        let result: SocketAddr = socket.into();
-        let expected: SocketAddr = SocketAddr::V4(SocketAddrV4::new(Ipv4Addr::LOCALHOST, 80));
-        assert_eq!(result, expected);
-
-        let socket: SocketAddress = SocketAddress::new(IPv6Address::LOCALHOST.to_ip(), 80);
-        let result: SocketAddr = socket.into();
-        let expected: SocketAddr = SocketAddr::V6(SocketAddrV6::new(Ipv6Addr::LOCALHOST, 80, 0, 0));
-        assert_eq!(result, expected);
-
-        let std: SocketAddr = SocketAddr::V4(SocketAddrV4::new(Ipv4Addr::LOCALHOST, 80));
-        let result: SocketAddress = std.into();
-        let expected: SocketAddress = SocketAddress::new(IPv4Address::LOCALHOST.to_ip(), 80);
+        let expected: SocketAddr = SocketAddr::V6(SocketAddrV6::new(Ipv6Addr::LOCALHOST, 80, 123, 456));
         assert_eq!(result, expected);
 
         let std: SocketAddr = SocketAddr::V6(SocketAddrV6::new(Ipv6Addr::LOCALHOST, 80, 123, 456));

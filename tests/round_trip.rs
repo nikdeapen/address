@@ -1,12 +1,12 @@
 use address::{
-    Authority, Domain, Endpoint, Host, IPAddress, IPv4Address, IPv6Address, SocketAddress,
-    SocketAddressV4, SocketAddressV6,
+    Authority, Domain, Endpoint, Host, IPAddress, IPv4Address, IPv6Address, SocketAddress, SocketAddressV4,
+    SocketAddressV6,
 };
 use std::fmt::{Debug, Display};
 use std::str::FromStr;
 
-/// Parses each canonical string, checks the value displays as the exact same string, then checks
-/// the displayed string parses back to an equal value.
+/// Parses each canonical string, checks the value displays as the exact same string, then checks the displayed string
+/// parses back to an equal value.
 fn assert_round_trips<T>(canonical: &[&str])
 where
     T: FromStr + Display + PartialEq + Debug,
@@ -18,7 +18,7 @@ where
             Err(error) => panic!("failed to parse {:?}: {:?}", s, error),
         };
         let displayed: String = parsed.to_string();
-        assert_eq!(displayed.as_str(), *s, "display was not canonical");
+        assert_eq!(displayed.as_str(), *s, "display was not canonical for {:?}", s);
 
         let reparsed: T = T::from_str(displayed.as_str()).unwrap();
         assert_eq!(reparsed, parsed, "reparse changed the value for {:?}", s);
@@ -35,12 +35,9 @@ where
         let displayed: String = value.to_string();
         let reparsed: T = match T::from_str(displayed.as_str()) {
             Ok(reparsed) => reparsed,
-            Err(error) => panic!(
-                "failed to reparse {:?} from {:?}: {:?}",
-                value, displayed, error
-            ),
+            Err(error) => panic!("failed to reparse {:?} from {:?}: {:?}", value, displayed, error),
         };
-        assert_eq!(&reparsed, value);
+        assert_eq!(&reparsed, value, "value={:?}", value);
     }
 }
 
@@ -90,12 +87,7 @@ fn socket_v4() {
 
 #[test]
 fn socket_v6() {
-    assert_round_trips::<SocketAddressV6>(&[
-        "[::]:0",
-        "[::1]:80",
-        "[::ffff:1.2.3.4]:443",
-        "[fe80::1]:65535",
-    ]);
+    assert_round_trips::<SocketAddressV6>(&["[::]:0", "[::1]:80", "[::ffff:1.2.3.4]:443", "[fe80::1]:65535"]);
 }
 
 #[test]

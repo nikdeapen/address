@@ -2,7 +2,7 @@ use crate::IPv6Address;
 
 /// An IPv6 address with an associated port.
 #[must_use]
-#[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Debug)]
+#[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
 pub struct SocketAddressV6 {
     ip: IPv6Address,
     port: u16,
@@ -62,7 +62,7 @@ mod tests {
     #[test]
     fn deconstruction() {
         let socket: SocketAddressV6 = (IPv6Address::LOCALHOST, 80).into();
-        let (ip, port) = socket.into();
+        let (ip, port): (IPv6Address, u16) = socket.into();
         assert_eq!(ip, IPv6Address::LOCALHOST);
         assert_eq!(port, 80);
     }

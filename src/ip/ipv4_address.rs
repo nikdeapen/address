@@ -1,6 +1,6 @@
 /// An IPv4 address. (a.b.c.d)
 #[must_use]
-#[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Debug, Default)]
+#[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Default)]
 pub struct IPv4Address {
     pub(super) address: [u8; 4],
 }
@@ -52,16 +52,16 @@ impl From<IPv4Address> for (u8, u8, u8, u8) {
 }
 
 impl From<u32> for IPv4Address {
-    /// The `value` is in network byte order. (big-endian: `127.0.0.1` is `0x7F000001`)
+    /// The `value` is treated as big-endian. (`0x7F000001` -> `127.0.0.1`)
     fn from(value: u32) -> Self {
         Self::new(value.to_be_bytes())
     }
 }
 
 impl From<IPv4Address> for u32 {
-    /// The returned value is in network byte order. (big-endian: `127.0.0.1` is `0x7F000001`)
+    /// The `ip` is converted to big-endian. (`127.0.0.1` -> `0x7F000001`)
     fn from(ip: IPv4Address) -> Self {
-        u32::from_be_bytes(ip.address)
+        Self::from_be_bytes(ip.address)
     }
 }
 
@@ -77,12 +77,7 @@ impl IPv4Address {
     /// Gets the bytes. (a, b, c, d)
     #[must_use]
     pub const fn bytes(self) -> (u8, u8, u8, u8) {
-        (
-            self.address[0],
-            self.address[1],
-            self.address[2],
-            self.address[3],
-        )
+        (self.address[0], self.address[1], self.address[2], self.address[3])
     }
 }
 

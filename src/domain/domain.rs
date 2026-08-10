@@ -3,11 +3,10 @@ use crate::{DomainRef, InvalidDomainName, ParseError};
 
 /// A domain name.
 ///
-/// Domain names are lowercase ASCII letters, digits, and dashes: dot-separated labels that must
-/// not start or end with a dash. (see `Domain::is_valid_name`) Mixed-case input is normalized to
-/// lowercase when parsed.
+/// Domain names are lowercase ASCII letters, digits, and dashes: dot-separated labels that must not start or end
+/// with a dash. (see `Domain::is_valid_name`) Mixed-case input is normalized to lowercase when parsed.
 #[must_use]
-#[derive(Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Debug)]
+#[derive(Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
 pub struct Domain {
     name: String,
 }
@@ -32,8 +31,7 @@ impl Domain {
     /// Creates a new domain.
     ///
     /// # Safety
-    /// The `name` must be valid and lowercase. Validity is a struct invariant that unsafe code
-    /// may rely on.
+    /// The `name` must be valid and lowercase. Validity is a struct invariant that unsafe code may rely on.
     pub unsafe fn new_unchecked<S>(name: S) -> Self
     where
         S: Into<String>,
@@ -146,62 +144,60 @@ mod tests {
 
     #[test]
     fn try_from_string() {
-        let result: Result<Domain, InvalidDomainName<String>> =
-            Domain::try_from("localhost".to_string());
-        assert_eq!(result, Ok(Domain::localhost()));
+        let test_cases: &[(&str, Result<Domain, &str>)] = &[
+            ("localhost", Ok(Domain::localhost())),
+            ("LocalHost", Ok(Domain::localhost())),
+            ("Local!Host", Err("Local!Host")),
+        ];
 
-        let result: Result<Domain, InvalidDomainName<String>> =
-            Domain::try_from("LocalHost".to_string());
-        assert_eq!(result, Ok(Domain::localhost()));
-
-        let result: Result<Domain, InvalidDomainName<String>> =
-            Domain::try_from("Local!Host".to_string());
-        assert_eq!(
-            result.map_err(|e| e.into_name()),
-            Err("Local!Host".to_string())
-        );
+        for (input, expected) in test_cases {
+            let result: Result<Domain, InvalidDomainName<String>> = Domain::try_from(input.to_string());
+            let result: Result<Domain, String> = result.map_err(|e| e.into_name());
+            assert_eq!(result, expected.clone().map_err(String::from), "input={}", input);
+        }
     }
 
     #[test]
     fn try_from_str() {
-        let result: Result<Domain, ParseError> = Domain::try_from("localhost");
-        assert_eq!(result, Ok(Domain::localhost()));
+        let test_cases: &[(&str, Result<Domain, ParseError>)] = &[
+            ("localhost", Ok(Domain::localhost())),
+            ("LocalHost", Ok(Domain::localhost())),
+            ("Local!Host", Err(InvalidDomain)),
+        ];
 
-        let result: Result<Domain, ParseError> = Domain::try_from("LocalHost");
-        assert_eq!(result, Ok(Domain::localhost()));
-
-        let result: Result<Domain, ParseError> = Domain::try_from("Local!Host");
-        assert_eq!(result, Err(InvalidDomain));
+        for (input, expected) in test_cases {
+            let result: Result<Domain, ParseError> = Domain::try_from(*input);
+            assert_eq!(result, *expected, "input={}", input);
+        }
     }
 
     #[test]
     fn try_from_vec() {
-        let result: Result<Domain, InvalidDomainName<Vec<u8>>> =
-            Domain::try_from(Vec::from("localhost"));
-        assert_eq!(result, Ok(Domain::localhost()));
+        let test_cases: &[(&str, Result<Domain, &str>)] = &[
+            ("localhost", Ok(Domain::localhost())),
+            ("LocalHost", Ok(Domain::localhost())),
+            ("Local!Host", Err("Local!Host")),
+        ];
 
-        let result: Result<Domain, InvalidDomainName<Vec<u8>>> =
-            Domain::try_from(Vec::from("LocalHost"));
-        assert_eq!(result, Ok(Domain::localhost()));
-
-        let result: Result<Domain, InvalidDomainName<Vec<u8>>> =
-            Domain::try_from(Vec::from("Local!Host"));
-        assert_eq!(
-            result.map_err(|e| e.into_name()),
-            Err(Vec::from("Local!Host"))
-        );
+        for (input, expected) in test_cases {
+            let result: Result<Domain, InvalidDomainName<Vec<u8>>> = Domain::try_from(Vec::from(*input));
+            let result: Result<Domain, Vec<u8>> = result.map_err(|e| e.into_name());
+            assert_eq!(result, expected.clone().map_err(Vec::from), "input={}", input);
+        }
     }
 
     #[test]
     fn try_from_slice() {
-        let result: Result<Domain, ParseError> = Domain::try_from("localhost".as_bytes());
-        assert_eq!(result, Ok(Domain::localhost()));
+        let test_cases: &[(&str, Result<Domain, ParseError>)] = &[
+            ("localhost", Ok(Domain::localhost())),
+            ("LocalHost", Ok(Domain::localhost())),
+            ("Local!Host", Err(InvalidDomain)),
+        ];
 
-        let result: Result<Domain, ParseError> = Domain::try_from("LocalHost".as_bytes());
-        assert_eq!(result, Ok(Domain::localhost()));
-
-        let result: Result<Domain, ParseError> = Domain::try_from("Local!Host".as_bytes());
-        assert_eq!(result, Err(InvalidDomain));
+        for (input, expected) in test_cases {
+            let result: Result<Domain, ParseError> = Domain::try_from(input.as_bytes());
+            assert_eq!(result, *expected, "input={}", input);
+        }
     }
 
     #[test]

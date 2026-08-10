@@ -1,17 +1,29 @@
 use crate::{Host, HostRef};
-use std::fmt::{Display, Formatter};
+use std::fmt::{Debug, Display, Formatter};
+
+impl Debug for Host {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        Display::fmt(self, f)
+    }
+}
 
 impl Display for Host {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        self.to_ref().fmt(f)
+        Display::fmt(&self.to_ref(), f)
+    }
+}
+
+impl<'a> Debug for HostRef<'a> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        Display::fmt(self, f)
     }
 }
 
 impl<'a> Display for HostRef<'a> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::Name(domain) => domain.fmt(f),
-            Self::Address(ip) => ip.fmt(f),
+            Self::Name(domain) => Display::fmt(domain, f),
+            Self::Address(ip) => Display::fmt(ip, f),
         }
     }
 }
@@ -30,7 +42,7 @@ mod tests {
 
         for (host, expected) in test_cases {
             let result: String = host.to_string();
-            assert_eq!(result, *expected);
+            assert_eq!(result, *expected, "host={:?}", host);
         }
     }
 }

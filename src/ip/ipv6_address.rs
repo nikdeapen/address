@@ -1,6 +1,6 @@
 /// An IPv6 address. (a:b:c:d:e:f:g:h)
 #[must_use]
-#[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Debug, Default)]
+#[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Default)]
 pub struct IPv6Address {
     pub(super) address: [u8; 16],
 }
@@ -73,16 +73,16 @@ impl From<IPv6Address> for [u16; 8] {
 }
 
 impl From<u128> for IPv6Address {
-    /// The `value` is in network byte order. (big-endian: `::1` is `0x1`)
+    /// The `value` is treated as big-endian. (`0x1` -> `::1`)
     fn from(value: u128) -> Self {
         Self::new(value.to_be_bytes())
     }
 }
 
 impl From<IPv6Address> for u128 {
-    /// The returned value is in network byte order. (big-endian: `::1` is `0x1`)
+    /// The `ip` is converted to big-endian. (`::1` -> `0x1`)
     fn from(ip: IPv6Address) -> Self {
-        u128::from_be_bytes(ip.address)
+        Self::from_be_bytes(ip.address)
     }
 }
 
@@ -135,12 +135,9 @@ mod tests {
     #[test]
     fn construction() {
         let address: [u8; 16] = [
-            0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF, 0x01, 0x23, 0x45, 0x67, 0x89, 0xAB,
-            0xCD, 0xEF,
+            0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF, 0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF,
         ];
-        let segments: [u16; 8] = [
-            0x0123, 0x4567, 0x89AB, 0xCDEF, 0x0123, 0x4567, 0x89AB, 0xCDEF,
-        ];
+        let segments: [u16; 8] = [0x0123, 0x4567, 0x89AB, 0xCDEF, 0x0123, 0x4567, 0x89AB, 0xCDEF];
         let value: u128 = 0x0123456789ABCDEF0123456789ABCDEFu128;
 
         let ip: IPv6Address = IPv6Address::new(address);
@@ -155,12 +152,9 @@ mod tests {
     #[test]
     fn deconstruction() {
         let address: [u8; 16] = [
-            0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF, 0x01, 0x23, 0x45, 0x67, 0x89, 0xAB,
-            0xCD, 0xEF,
+            0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF, 0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF,
         ];
-        let segments: [u16; 8] = [
-            0x0123, 0x4567, 0x89AB, 0xCDEF, 0x0123, 0x4567, 0x89AB, 0xCDEF,
-        ];
+        let segments: [u16; 8] = [0x0123, 0x4567, 0x89AB, 0xCDEF, 0x0123, 0x4567, 0x89AB, 0xCDEF];
         let value: u128 = 0x0123456789ABCDEF0123456789ABCDEFu128;
 
         let ip: IPv6Address = IPv6Address::new(address);
@@ -176,12 +170,9 @@ mod tests {
     #[test]
     fn properties() {
         let address: [u8; 16] = [
-            0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF, 0x01, 0x23, 0x45, 0x67, 0x89, 0xAB,
-            0xCD, 0xEF,
+            0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF, 0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF,
         ];
-        let segments: [u16; 8] = [
-            0x0123, 0x4567, 0x89AB, 0xCDEF, 0x0123, 0x4567, 0x89AB, 0xCDEF,
-        ];
+        let segments: [u16; 8] = [0x0123, 0x4567, 0x89AB, 0xCDEF, 0x0123, 0x4567, 0x89AB, 0xCDEF];
 
         let ip: IPv6Address = IPv6Address::new(address);
         assert_eq!(ip.address(), address);

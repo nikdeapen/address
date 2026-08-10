@@ -1,8 +1,8 @@
 #![cfg(feature = "serde")]
 
 use address::{
-    Authority, AuthorityRef, Domain, DomainRef, Endpoint, EndpointRef, Host, HostRef, IPAddress,
-    IPv4Address, IPv6Address, SocketAddress, SocketAddressV4, SocketAddressV6,
+    Authority, AuthorityRef, Domain, DomainRef, Endpoint, EndpointRef, Host, HostRef, IPAddress, IPv4Address,
+    IPv6Address, SocketAddress, SocketAddressV4, SocketAddressV6,
 };
 use serde::Serialize;
 use serde::de::DeserializeOwned;
@@ -24,12 +24,7 @@ const IPV6_ADDRESSES: &[&str] = &[
 ];
 const IP_ADDRESSES: &[&str] = &["127.0.0.1", "255.255.255.255", "::1", "fe80::1"];
 const SOCKET_ADDRESSES_V4: &[&str] = &["0.0.0.0:0", "127.0.0.1:80", "255.255.255.255:65535"];
-const SOCKET_ADDRESSES_V6: &[&str] = &[
-    "[::]:0",
-    "[::1]:80",
-    "[::ffff:1.2.3.4]:443",
-    "[fe80::1]:65535",
-];
+const SOCKET_ADDRESSES_V6: &[&str] = &["[::]:0", "[::1]:80", "[::ffff:1.2.3.4]:443", "[fe80::1]:65535"];
 const SOCKET_ADDRESSES: &[&str] = &["127.0.0.1:80", "[::1]:443", "[fe80::1]:0"];
 const DOMAINS: &[&str] = &[
     "localhost",
@@ -57,13 +52,13 @@ where
         let value: T = T::from_str(s).unwrap();
 
         let json: String = serde_json::to_string(&value).unwrap();
-        assert_eq!(json, format!("\"{}\"", s));
+        assert_eq!(json, format!("\"{}\"", s), "json for {:?}", s);
         let parsed: T = serde_json::from_str(json.as_str()).unwrap();
-        assert_eq!(parsed, value);
+        assert_eq!(parsed, value, "json round trip for {:?}", s);
 
         let bytes: Vec<u8> = postcard::to_allocvec(&value).unwrap();
         let parsed: T = postcard::from_bytes(bytes.as_slice()).unwrap();
-        assert_eq!(parsed, value);
+        assert_eq!(parsed, value, "postcard round trip for {:?}", s);
     }
 }
 
@@ -73,13 +68,13 @@ macro_rules! assert_ref_round_trips {
             let value: $ty = $ty::try_from(*s).unwrap();
 
             let json: String = serde_json::to_string(&value).unwrap();
-            assert_eq!(json, format!("\"{}\"", s));
+            assert_eq!(json, format!("\"{}\"", s), "json for {:?}", s);
             let parsed: $ty = serde_json::from_str(json.as_str()).unwrap();
-            assert_eq!(parsed, value);
+            assert_eq!(parsed, value, "json round trip for {:?}", s);
 
             let bytes: Vec<u8> = postcard::to_allocvec(&value).unwrap();
             let parsed: $ty = postcard::from_bytes(bytes.as_slice()).unwrap();
-            assert_eq!(parsed, value);
+            assert_eq!(parsed, value, "postcard round trip for {:?}", s);
         }
     };
 }
@@ -165,15 +160,30 @@ fn escaped_input() {
 
 #[test]
 fn compact_sizes() {
-    let bytes: Vec<u8> = postcard::to_allocvec(&IPv4Address::LOCALHOST).unwrap();
-    assert_eq!(bytes.len(), 4);
+    let test_cases: &[(Vec<u8>, usize, &str)] = &[
+        (
+            postcard::to_allocvec(&IPv4Address::LOCALHOST).unwrap(),
+            4,
+            "IPv4Address",
+        ),
+        (
+            postcard::to_allocvec(&IPv6Address::LOCALHOST).unwrap(),
+            16,
+            "IPv6Address",
+        ),
+        (
+            postcard::to_allocvec(&IPv4Address::LOCALHOST.to_ip()).unwrap(),
+            5,
+            "IPAddress::V4",
+        ),
+        (
+            postcard::to_allocvec(&IPv6Address::LOCALHOST.to_ip()).unwrap(),
+            17,
+            "IPAddress::V6",
+        ),
+    ];
 
-    let bytes: Vec<u8> = postcard::to_allocvec(&IPv6Address::LOCALHOST).unwrap();
-    assert_eq!(bytes.len(), 16);
-
-    let bytes: Vec<u8> = postcard::to_allocvec(&IPv4Address::LOCALHOST.to_ip()).unwrap();
-    assert_eq!(bytes.len(), 5);
-
-    let bytes: Vec<u8> = postcard::to_allocvec(&IPv6Address::LOCALHOST.to_ip()).unwrap();
-    assert_eq!(bytes.len(), 17);
+    for (bytes, expected, label) in test_cases {
+        assert_eq!(bytes.len(), *expected, "type={}", label);
+    }
 }

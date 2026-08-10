@@ -2,7 +2,7 @@ use crate::{IPv4Address, IPv6Address};
 
 /// Either an IPv4 address or an IPv6 address.
 #[must_use]
-#[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Debug)]
+#[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
 pub enum IPAddress {
     /// An IPv4 address.
     V4(IPv4Address),
@@ -13,7 +13,7 @@ pub enum IPAddress {
 
 impl From<IPv4Address> for IPAddress {
     fn from(v4: IPv4Address) -> Self {
-        IPAddress::V4(v4)
+        Self::V4(v4)
     }
 }
 
@@ -30,7 +30,7 @@ impl From<(u8, u8, u8, u8)> for IPAddress {
 }
 
 impl From<u32> for IPAddress {
-    /// The `value` is in network byte order. (big-endian: `127.0.0.1` is `0x7F000001`)
+    /// The `value` is treated as big-endian. (`0x7F000001` -> `127.0.0.1`)
     fn from(value: u32) -> Self {
         Self::from(IPv4Address::from(value))
     }
@@ -55,7 +55,7 @@ impl From<[u16; 8]> for IPAddress {
 }
 
 impl From<u128> for IPAddress {
-    /// The `value` is in network byte order. (big-endian: `::1` is `0x1`)
+    /// The `value` is treated as big-endian. (`0x1` -> `::1`)
     fn from(value: u128) -> Self {
         Self::from(IPv6Address::from(value))
     }
@@ -123,10 +123,7 @@ mod tests {
         assert_eq!(ip.address(), &[127, 0, 0, 1]);
 
         let ip: IPAddress = IPv6Address::LOCALHOST.into();
-        assert_eq!(
-            ip.address(),
-            &[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
-        );
+        assert_eq!(ip.address(), &[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]);
     }
 
     #[test]

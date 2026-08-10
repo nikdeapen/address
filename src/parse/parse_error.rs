@@ -2,10 +2,9 @@ use std::fmt::{Display, Formatter};
 
 /// An error parsing an address.
 ///
-/// Errors name the most specific part that can be blamed. When the expected address version is
-/// declared by the type (`SocketAddressV4`) or by the syntax (brackets imply IPv6), the specific
-/// IP error is returned. When the version is ambiguous (an unbracketed `SocketAddress`), the
-/// aggregate error is returned.
+/// Errors name the most specific part that can be blamed. When the expected address version is declared by the type
+/// (`SocketAddressV4`) or by the syntax (brackets imply IPv6), the specific IP error is returned. When the version is
+/// ambiguous (an unbracketed `SocketAddress`), the aggregate error is returned.
 #[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Debug)]
 #[non_exhaustive]
 pub enum ParseError {

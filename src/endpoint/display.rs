@@ -1,9 +1,21 @@
 use crate::{Endpoint, EndpointRef};
-use std::fmt::{Display, Formatter};
+use std::fmt::{Debug, Display, Formatter};
+
+impl Debug for Endpoint {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        Display::fmt(self, f)
+    }
+}
 
 impl Display for Endpoint {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        self.to_ref().fmt(f)
+        Display::fmt(&self.to_ref(), f)
+    }
+}
+
+impl<'a> Debug for EndpointRef<'a> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        Display::fmt(self, f)
     }
 }
 

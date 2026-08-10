@@ -2,7 +2,7 @@ use crate::{Authority, HostRef};
 
 /// A host reference with an associated port.
 #[must_use]
-#[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Debug)]
+#[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
 pub struct AuthorityRef<'a> {
     host: HostRef<'a>,
     port: u16,
@@ -79,7 +79,7 @@ mod tests {
     #[test]
     fn deconstruction() {
         let authority: AuthorityRef = (DomainRef::LOCALHOST, 80).into();
-        let (host, port) = authority.into();
+        let (host, port): (HostRef, u16) = authority.into();
         assert_eq!(host, HostRef::Name(DomainRef::LOCALHOST));
         assert_eq!(port, 80);
     }

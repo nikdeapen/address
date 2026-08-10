@@ -7,14 +7,13 @@ use crate::ParseError::InvalidPort;
 ///
 /// Returns `(address_without_last_colon, port)`.
 ///
-/// The port must be decimal digits only, with no sign. Leading zeros are allowed, matching the
-/// standard library.
+/// The port must be decimal digits only, with no sign. Leading zeros are allowed, matching the standard library.
 ///
 /// # Examples
-/// localhost:80    -> `Ok("localhost", 80)`
-/// :80             -> `Ok("", 80)`
-/// :080            -> `Ok("", 80)`
-/// :0              -> `Ok("", 0)`
+/// localhost:80    -> `Ok(("localhost", 80))`
+/// :80             -> `Ok(("", 80))`
+/// :080            -> `Ok(("", 80))`
+/// :0              -> `Ok(("", 0))`
 /// :8x             -> `Err(InvalidPort)`
 /// :+80            -> `Err(InvalidPort)`
 /// 80              -> `Err(InvalidPort)`
@@ -25,7 +24,7 @@ pub(crate) fn parse_port(address: &[u8]) -> Result<(&[u8], u16), ParseError> {
         if !valid {
             return Err(InvalidPort);
         }
-        let port: &str = unsafe { std::str::from_utf8_unchecked(port) };
+        let port: &str = std::str::from_utf8(port).map_err(|_| InvalidPort)?;
         let port: u16 = u16::from_str(port).map_err(|_| InvalidPort)?;
         Ok((&address[..colon], port))
     } else {
