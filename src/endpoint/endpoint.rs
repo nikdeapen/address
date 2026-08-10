@@ -2,7 +2,7 @@ use crate::{Domain, DomainRef, EndpointRef};
 
 /// A domain with an associated port.
 #[must_use]
-#[derive(Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Debug)]
+#[derive(Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
 pub struct Endpoint {
     domain: Domain,
     port: u16,
@@ -79,7 +79,7 @@ mod tests {
     fn deconstruction() {
         let endpoint: Endpoint = Endpoint::new(Domain::localhost(), 80);
 
-        let (domain, port) = endpoint.into();
+        let (domain, port): (Domain, u16) = endpoint.into();
         assert_eq!(domain, Domain::localhost());
         assert_eq!(port, 80);
     }

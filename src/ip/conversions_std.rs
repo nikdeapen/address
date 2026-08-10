@@ -1,6 +1,5 @@
-use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
-
 use crate::{IPAddress, IPv4Address, IPv6Address};
+use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 
 impl IPv4Address {
     //! Standard Library Conversions
@@ -15,7 +14,7 @@ impl IPv4Address {
 
 impl From<Ipv4Addr> for IPv4Address {
     fn from(std: Ipv4Addr) -> Self {
-        IPv4Address::new(std.octets())
+        Self::new(std.octets())
     }
 }
 
@@ -47,7 +46,7 @@ impl IPv6Address {
 
 impl From<Ipv6Addr> for IPv6Address {
     fn from(std: Ipv6Addr) -> Self {
-        IPv6Address::new(std.octets())
+        Self::new(std.octets())
     }
 }
 
@@ -73,8 +72,8 @@ impl IPAddress {
 impl From<IpAddr> for IPAddress {
     fn from(std: IpAddr) -> Self {
         match std {
-            IpAddr::V4(ip) => IPAddress::V4(IPv4Address::from(ip)),
-            IpAddr::V6(ip) => IPAddress::V6(IPv6Address::from(ip)),
+            IpAddr::V4(ip) => Self::V4(IPv4Address::from(ip)),
+            IpAddr::V6(ip) => Self::V6(IPv6Address::from(ip)),
         }
     }
 }
@@ -87,64 +86,57 @@ impl From<IPAddress> for IpAddr {
 
 #[cfg(test)]
 mod tests {
-    use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
-
     use crate::{IPAddress, IPv4Address, IPv6Address};
+    use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 
     #[test]
     fn v4() {
-        let ip: IPv4Address = IPv4Address::LOCALHOST;
-        let std: Ipv4Addr = Ipv4Addr::LOCALHOST;
+        let test_cases: &[(IPv4Address, Ipv4Addr)] = &[(IPv4Address::LOCALHOST, Ipv4Addr::LOCALHOST)];
 
-        let result: Ipv4Addr = ip.to_std();
-        assert_eq!(result, std);
+        for (ip, std) in test_cases {
+            let result: Ipv4Addr = ip.to_std();
+            assert_eq!(result, *std, "ip={:?}", ip);
 
-        let result: Ipv4Addr = ip.into();
-        assert_eq!(result, std);
+            let result: Ipv4Addr = (*ip).into();
+            assert_eq!(result, *std, "ip={:?}", ip);
 
-        let result: IPv4Address = std.into();
-        assert_eq!(result, ip);
+            let result: IPv4Address = (*std).into();
+            assert_eq!(result, *ip, "std={:?}", std);
+        }
     }
 
     #[test]
     fn v6() {
-        let ip: IPv6Address = IPv6Address::LOCALHOST;
-        let std: Ipv6Addr = Ipv6Addr::LOCALHOST;
+        let test_cases: &[(IPv6Address, Ipv6Addr)] = &[(IPv6Address::LOCALHOST, Ipv6Addr::LOCALHOST)];
 
-        let result: Ipv6Addr = ip.to_std();
-        assert_eq!(result, std);
+        for (ip, std) in test_cases {
+            let result: Ipv6Addr = ip.to_std();
+            assert_eq!(result, *std, "ip={:?}", ip);
 
-        let result: Ipv6Addr = ip.into();
-        assert_eq!(result, std);
+            let result: Ipv6Addr = (*ip).into();
+            assert_eq!(result, *std, "ip={:?}", ip);
 
-        let result: IPv6Address = std.into();
-        assert_eq!(result, ip);
+            let result: IPv6Address = (*std).into();
+            assert_eq!(result, *ip, "std={:?}", std);
+        }
     }
 
     #[test]
     fn ip() {
-        let ip: IPAddress = IPv4Address::LOCALHOST.to_ip();
-        let std: IpAddr = IpAddr::V4(Ipv4Addr::LOCALHOST);
+        let test_cases: &[(IPAddress, IpAddr)] = &[
+            (IPv4Address::LOCALHOST.to_ip(), IpAddr::V4(Ipv4Addr::LOCALHOST)),
+            (IPv6Address::LOCALHOST.to_ip(), IpAddr::V6(Ipv6Addr::LOCALHOST)),
+        ];
 
-        let result: IpAddr = ip.to_std();
-        assert_eq!(result, std);
+        for (ip, std) in test_cases {
+            let result: IpAddr = ip.to_std();
+            assert_eq!(result, *std, "ip={:?}", ip);
 
-        let result: IpAddr = ip.into();
-        assert_eq!(result, std);
+            let result: IpAddr = (*ip).into();
+            assert_eq!(result, *std, "ip={:?}", ip);
 
-        let result: IPAddress = std.into();
-        assert_eq!(result, ip);
-
-        let ip: IPAddress = IPv6Address::LOCALHOST.to_ip();
-        let std: IpAddr = IpAddr::V6(Ipv6Addr::LOCALHOST);
-
-        let result: IpAddr = ip.to_std();
-        assert_eq!(result, std);
-
-        let result: IpAddr = ip.into();
-        assert_eq!(result, std);
-
-        let result: IPAddress = std.into();
-        assert_eq!(result, ip);
+            let result: IPAddress = (*std).into();
+            assert_eq!(result, *ip, "std={:?}", std);
+        }
     }
 }

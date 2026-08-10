@@ -2,7 +2,7 @@ use crate::IPv4Address;
 
 /// An IPv4 address with an associated port.
 #[must_use]
-#[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Debug)]
+#[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
 pub struct SocketAddressV4 {
     ip: IPv4Address,
     port: u16,
@@ -62,7 +62,7 @@ mod tests {
     #[test]
     fn deconstruction() {
         let socket: SocketAddressV4 = (IPv4Address::LOCALHOST, 80).into();
-        let (ip, port) = socket.into();
+        let (ip, port): (IPv4Address, u16) = socket.into();
         assert_eq!(ip, IPv4Address::LOCALHOST);
         assert_eq!(port, 80);
     }

@@ -2,7 +2,7 @@ use crate::{DomainRef, Endpoint};
 
 /// A domain reference with an associated port.
 #[must_use]
-#[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Debug)]
+#[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
 pub struct EndpointRef<'a> {
     domain: DomainRef<'a>,
     port: u16,
@@ -79,7 +79,7 @@ mod tests {
     #[test]
     fn deconstruction() {
         let endpoint: EndpointRef = (DomainRef::LOCALHOST, 80).into();
-        let (domain, port) = endpoint.into();
+        let (domain, port): (DomainRef, u16) = endpoint.into();
         assert_eq!(domain, DomainRef::LOCALHOST);
         assert_eq!(port, 80);
     }

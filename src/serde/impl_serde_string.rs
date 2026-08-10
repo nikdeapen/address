@@ -35,13 +35,13 @@ macro_rules! impl_serde_string_ref {
 
         impl<'de: 'a, 'a> ::serde::Deserialize<'de> for crate::$ty<'a> {
             #[doc = concat!(
-                "The string is borrowed from the input, so domain names must be lowercase and ",
-                "must not contain escape sequences. Use [`",
-                stringify!($owned),
-                "`](crate::",
-                stringify!($owned),
-                ") to deserialize mixed-case or escaped input."
-            )]
+                                        "The string is borrowed from the input, so domain names must be lowercase and ",
+                                        "must not contain escape sequences. Use [`",
+                                        stringify!($owned),
+                                        "`](crate::",
+                                        stringify!($owned),
+                                        ") to deserialize mixed-case or escaped input."
+                                    )]
             fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
             where
                 D: ::serde::Deserializer<'de>,

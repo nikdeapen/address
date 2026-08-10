@@ -6,7 +6,7 @@ use std::str::FromStr;
 /// A serde visitor that parses a string with `FromStr`.
 pub(crate) struct FromStrVisitor<T: FromStr> {
     expecting: &'static str,
-    phantom: PhantomData<T>,
+    phantom: PhantomData<fn() -> T>,
 }
 
 impl<T: FromStr> FromStrVisitor<T> {

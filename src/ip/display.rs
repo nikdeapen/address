@@ -1,23 +1,41 @@
 use crate::{IPAddress, IPv4Address, IPv6Address};
-use std::fmt::{Display, Formatter};
+use std::fmt::{Debug, Display, Formatter};
+
+impl Debug for IPv4Address {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        Display::fmt(self, f)
+    }
+}
 
 impl Display for IPv4Address {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        self.to_std().fmt(f)
+        Display::fmt(&self.to_std(), f)
+    }
+}
+
+impl Debug for IPv6Address {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        Display::fmt(self, f)
     }
 }
 
 impl Display for IPv6Address {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        self.to_std().fmt(f)
+        Display::fmt(&self.to_std(), f)
+    }
+}
+
+impl Debug for IPAddress {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        Display::fmt(self, f)
     }
 }
 
 impl Display for IPAddress {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::V4(ip) => ip.fmt(f),
-            Self::V6(ip) => ip.fmt(f),
+            Self::V4(ip) => Display::fmt(ip, f),
+            Self::V6(ip) => Display::fmt(ip, f),
         }
     }
 }
@@ -36,20 +54,17 @@ mod tests {
 
         for (ip, expected) in test_cases {
             let result: String = ip.to_string();
-            assert_eq!(result, *expected);
+            assert_eq!(result, *expected, "ip={:?}", ip);
         }
     }
 
     #[test]
     fn v6() {
-        let test_cases: &[(IPv6Address, &str)] = &[
-            (IPv6Address::UNSPECIFIED, "::"),
-            (IPv6Address::LOCALHOST, "::1"),
-        ];
+        let test_cases: &[(IPv6Address, &str)] = &[(IPv6Address::UNSPECIFIED, "::"), (IPv6Address::LOCALHOST, "::1")];
 
         for (ip, expected) in test_cases {
             let result: String = ip.to_string();
-            assert_eq!(result, *expected);
+            assert_eq!(result, *expected, "ip={:?}", ip);
         }
     }
 
@@ -62,7 +77,7 @@ mod tests {
 
         for (ip, expected) in test_cases {
             let result: String = ip.to_string();
-            assert_eq!(result, *expected);
+            assert_eq!(result, *expected, "ip={:?}", ip);
         }
     }
 }

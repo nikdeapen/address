@@ -49,9 +49,7 @@ impl SocketAddress {
 
 #[cfg(test)]
 mod tests {
-    use crate::{
-        Authority, IPv4Address, IPv6Address, SocketAddress, SocketAddressV4, SocketAddressV6,
-    };
+    use crate::{Authority, IPv4Address, IPv6Address, SocketAddress, SocketAddressV4, SocketAddressV6};
 
     #[test]
     fn v4_to_socket() {
@@ -71,30 +69,34 @@ mod tests {
 
     #[test]
     fn socket_to_v4() {
-        let socket: SocketAddress = IPv4Address::LOCALHOST.to_ip().to_socket(80);
-        let result: Option<SocketAddressV4> = socket.to_v4();
-        let expected: Option<SocketAddressV4> =
-            Some(SocketAddressV4::new(IPv4Address::LOCALHOST, 80));
-        assert_eq!(result, expected);
+        let test_cases: &[(SocketAddress, Option<SocketAddressV4>)] = &[
+            (
+                IPv4Address::LOCALHOST.to_ip().to_socket(80),
+                Some(SocketAddressV4::new(IPv4Address::LOCALHOST, 80)),
+            ),
+            (IPv6Address::LOCALHOST.to_ip().to_socket(80), None),
+        ];
 
-        let socket: SocketAddress = IPv6Address::LOCALHOST.to_ip().to_socket(80);
-        let result: Option<SocketAddressV4> = socket.to_v4();
-        let expected: Option<SocketAddressV4> = None;
-        assert_eq!(result, expected);
+        for (socket, expected) in test_cases {
+            let result: Option<SocketAddressV4> = socket.to_v4();
+            assert_eq!(result, *expected, "socket={:?}", socket);
+        }
     }
 
     #[test]
     fn socket_to_v6() {
-        let socket: SocketAddress = IPv4Address::LOCALHOST.to_ip().to_socket(80);
-        let result: Option<SocketAddressV6> = socket.to_v6();
-        let expected: Option<SocketAddressV6> = None;
-        assert_eq!(result, expected);
+        let test_cases: &[(SocketAddress, Option<SocketAddressV6>)] = &[
+            (IPv4Address::LOCALHOST.to_ip().to_socket(80), None),
+            (
+                IPv6Address::LOCALHOST.to_ip().to_socket(80),
+                Some(SocketAddressV6::new(IPv6Address::LOCALHOST, 80)),
+            ),
+        ];
 
-        let socket: SocketAddress = IPv6Address::LOCALHOST.to_ip().to_socket(80);
-        let result: Option<SocketAddressV6> = socket.to_v6();
-        let expected: Option<SocketAddressV6> =
-            Some(SocketAddressV6::new(IPv6Address::LOCALHOST, 80));
-        assert_eq!(result, expected);
+        for (socket, expected) in test_cases {
+            let result: Option<SocketAddressV6> = socket.to_v6();
+            assert_eq!(result, *expected, "socket={:?}", socket);
+        }
     }
 
     #[test]

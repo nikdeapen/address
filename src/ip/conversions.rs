@@ -1,12 +1,11 @@
-use crate::{
-    Host, HostRef, IPAddress, IPv4Address, IPv6Address, SocketAddress, SocketAddressV4,
-    SocketAddressV6,
-};
+use crate::{Host, HostRef, IPAddress, IPv4Address, IPv6Address, SocketAddress, SocketAddressV4, SocketAddressV6};
 
 impl IPv4Address {
     //! Conversions
 
     /// Converts the address to an IPv6 compatible address. (::a.b.c.d)
+    ///
+    /// The compatible format is deprecated (RFC 4291); prefer `to_v6_mapped`.
     pub const fn to_v6_compatible(self) -> IPv6Address {
         let (a, b, c, d) = self.bytes();
         IPv6Address::new([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, a, b, c, d])
@@ -42,33 +41,26 @@ impl IPv4Address {
 impl IPv6Address {
     //! Conversions
 
-    /// Converts the address to an optional IPv4 address.
+    /// Converts an IPv4 compatible (::a.b.c.d) or IPv4 mapped (::ffff:a.b.c.d) address to an IPv4 address.
     ///
-    /// Returns `None` if the address is not an IPv4 compatible address (::a.b.c.d) or an IPv4 mapped address
-    /// (::ffff:a.b.c.d).
+    /// Plain IPv6 addresses match the compatible pattern (`::1` -> `Some(0.0.0.1)`); use `to_v4_mapped` to avoid
+    /// these false positives.
     #[must_use]
     pub const fn to_v4(self) -> Option<IPv4Address> {
         match self.address() {
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, a, b, c, d] => {
-                Some(IPv4Address::new([a, b, c, d]))
-            }
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xFF, 0xFF, a, b, c, d] => {
-                Some(IPv4Address::new([a, b, c, d]))
-            }
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, a, b, c, d] => Some(IPv4Address::new([a, b, c, d])),
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xFF, 0xFF, a, b, c, d] => Some(IPv4Address::new([a, b, c, d])),
             _ => None,
         }
     }
 
-    /// Converts the address to an optional IPv4 address.
+    /// Converts an IPv4 mapped (::ffff:a.b.c.d) address to an IPv4 address.
     ///
-    /// Returns `None` if the address is not an IPv4 mapped address (::ffff:a.b.c.d). Unlike `to_v4` it does not
-    /// convert IPv4 compatible addresses (::a.b.c.d).
+    /// Unlike `to_v4`, IPv4 compatible addresses (::a.b.c.d) return `None`.
     #[must_use]
     pub const fn to_v4_mapped(self) -> Option<IPv4Address> {
         match self.address() {
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xFF, 0xFF, a, b, c, d] => {
-                Some(IPv4Address::new([a, b, c, d]))
-            }
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xFF, 0xFF, a, b, c, d] => Some(IPv4Address::new([a, b, c, d])),
             _ => None,
         }
     }
@@ -100,21 +92,13 @@ impl IPAddress {
     /// Converts the address to an optional IPv4 address.
     #[must_use]
     pub const fn to_v4(self) -> Option<IPv4Address> {
-        if let Self::V4(ip) = self {
-            Some(ip)
-        } else {
-            None
-        }
+        if let Self::V4(ip) = self { Some(ip) } else { None }
     }
 
     /// Converts the address to an optional IPv6 address.
     #[must_use]
     pub const fn to_v6(self) -> Option<IPv6Address> {
-        if let Self::V6(ip) = self {
-            Some(ip)
-        } else {
-            None
-        }
+        if let Self::V6(ip) = self { Some(ip) } else { None }
     }
 
     /// Converts the address to a socket address with the `port`.
@@ -135,10 +119,7 @@ impl IPAddress {
 
 #[cfg(test)]
 mod tests {
-    use crate::{
-        Host, HostRef, IPAddress, IPv4Address, IPv6Address, SocketAddress, SocketAddressV4,
-        SocketAddressV6,
-    };
+    use crate::{Host, HostRef, IPAddress, IPv4Address, IPv6Address, SocketAddress, SocketAddressV4, SocketAddressV6};
 
     #[test]
     fn v4_to_v6() {
@@ -183,35 +164,36 @@ mod tests {
 
     #[test]
     fn v6_to_v4() {
-        let ip: IPv6Address = IPv6Address::from([0, 0, 0, 0, 0, 0, 0x7F00, 1]);
-        let result: Option<IPv4Address> = ip.to_v4();
-        let expected: Option<IPv4Address> = Some(IPv4Address::LOCALHOST);
-        assert_eq!(result, expected);
+        let test_cases: &[(IPv6Address, Option<IPv4Address>)] = &[
+            (
+                IPv6Address::from([0, 0, 0, 0, 0, 0, 0x7F00, 1]),
+                Some(IPv4Address::LOCALHOST),
+            ),
+            (
+                IPv6Address::from([0, 0, 0, 0, 0, 0xFFFF, 0x7F00, 1]),
+                Some(IPv4Address::LOCALHOST),
+            ),
+            (IPv6Address::from([1, 0, 0, 0, 0, 0, 0, 0]), None),
+            (IPv6Address::from([0, 0, 0, 0, 0, 1, 0, 0]), None),
+        ];
 
-        let ip: IPv6Address = IPv6Address::from([0, 0, 0, 0, 0, 0xFFFF, 0x7F00, 1]);
-        let result: Option<IPv4Address> = ip.to_v4();
-        let expected: Option<IPv4Address> = Some(IPv4Address::LOCALHOST);
-        assert_eq!(result, expected);
+        for (ip, expected) in test_cases {
+            let result: Option<IPv4Address> = ip.to_v4();
+            assert_eq!(result, *expected, "ip={}", ip);
+        }
 
-        let ip: IPv6Address = IPv6Address::from([1, 0, 0, 0, 0, 0, 0, 0]);
-        let result: Option<IPv4Address> = ip.to_v4();
-        let expected: Option<IPv4Address> = None;
-        assert_eq!(result, expected);
+        let test_cases: &[(IPv6Address, Option<IPv4Address>)] = &[
+            (
+                IPv6Address::from([0, 0, 0, 0, 0, 0xFFFF, 0x7F00, 1]),
+                Some(IPv4Address::LOCALHOST),
+            ),
+            (IPv6Address::from([0, 0, 0, 0, 0, 0, 0x7F00, 1]), None),
+        ];
 
-        let ip: IPv6Address = IPv6Address::from([0, 0, 0, 0, 0, 1, 0, 0]);
-        let result: Option<IPv4Address> = ip.to_v4();
-        let expected: Option<IPv4Address> = None;
-        assert_eq!(result, expected);
-
-        let ip: IPv6Address = IPv6Address::from([0, 0, 0, 0, 0, 0xFFFF, 0x7F00, 1]);
-        let result: Option<IPv4Address> = ip.to_v4_mapped();
-        let expected: Option<IPv4Address> = Some(IPv4Address::LOCALHOST);
-        assert_eq!(result, expected);
-
-        let ip: IPv6Address = IPv6Address::from([0, 0, 0, 0, 0, 0, 0x7F00, 1]);
-        let result: Option<IPv4Address> = ip.to_v4_mapped();
-        let expected: Option<IPv4Address> = None;
-        assert_eq!(result, expected);
+        for (ip, expected) in test_cases {
+            let result: Option<IPv4Address> = ip.to_v4_mapped();
+            assert_eq!(result, *expected, "ip={}", ip);
+        }
     }
 
     #[test]

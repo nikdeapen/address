@@ -1,7 +1,5 @@
 use crate::ParseError::{InvalidSocketAddress, InvalidSocketAddressV6};
-use crate::{
-    IPv4Address, IPv6Address, ParseError, SocketAddress, SocketAddressV4, SocketAddressV6,
-};
+use crate::{IPv4Address, IPv6Address, ParseError, SocketAddress, SocketAddressV4, SocketAddressV6};
 use crate::{parse_port, strip_brackets};
 use std::str::FromStr;
 
@@ -9,9 +7,9 @@ impl FromStr for SocketAddressV4 {
     type Err = ParseError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let (s, port) = parse_port(s.as_bytes())?;
+        let (s, port): (&[u8], u16) = parse_port(s.as_bytes())?;
         let ip: IPv4Address = IPv4Address::parse(s)?;
-        Ok(SocketAddressV4::new(ip, port))
+        Ok(Self::new(ip, port))
     }
 }
 
@@ -19,10 +17,10 @@ impl FromStr for SocketAddressV6 {
     type Err = ParseError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let (s, port) = parse_port(s.as_bytes())?;
+        let (s, port): (&[u8], u16) = parse_port(s.as_bytes())?;
         let s: &[u8] = strip_brackets(s).ok_or(InvalidSocketAddressV6)?;
         let ip: IPv6Address = IPv6Address::parse(s)?;
-        Ok(SocketAddressV6::new(ip, port))
+        Ok(Self::new(ip, port))
     }
 }
 
@@ -30,7 +28,7 @@ impl FromStr for SocketAddress {
     type Err = ParseError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let (s, port) = parse_port(s.as_bytes())?;
+        let (s, port): (&[u8], u16) = parse_port(s.as_bytes())?;
         if let Some(s) = strip_brackets(s) {
             let ip: IPv6Address = IPv6Address::parse(s)?;
             Ok(ip.to_socket(port).to_socket())
@@ -46,12 +44,9 @@ mod tests {
     use std::str::FromStr;
 
     use crate::ParseError::{
-        InvalidIPv4Address, InvalidIPv6Address, InvalidPort, InvalidSocketAddress,
-        InvalidSocketAddressV6,
+        InvalidIPv4Address, InvalidIPv6Address, InvalidPort, InvalidSocketAddress, InvalidSocketAddressV6,
     };
-    use crate::{
-        IPv4Address, IPv6Address, ParseError, SocketAddress, SocketAddressV4, SocketAddressV6,
-    };
+    use crate::{IPv4Address, IPv6Address, ParseError, SocketAddress, SocketAddressV4, SocketAddressV6};
 
     #[test]
     fn v4() {
@@ -62,10 +57,7 @@ mod tests {
             (":80", Err(InvalidIPv4Address)),
             ("xx:80", Err(InvalidIPv4Address)),
             ("127.0.0.1:80", Ok(IPv4Address::LOCALHOST.to_socket(80))),
-            (
-                "127.0.0.1:65535",
-                Ok(IPv4Address::LOCALHOST.to_socket(65535)),
-            ),
+            ("127.0.0.1:65535", Ok(IPv4Address::LOCALHOST.to_socket(65535))),
             ("127.0.0.1:65536", Err(InvalidPort)),
         ];
 
@@ -104,10 +96,7 @@ mod tests {
             ("::1:80", Err(InvalidSocketAddress)),
             ("[]:80", Err(InvalidIPv6Address)),
             ("[xx]:80", Err(InvalidIPv6Address)),
-            (
-                "[::1]:80",
-                Ok(IPv6Address::LOCALHOST.to_socket(80).to_socket()),
-            ),
+            ("[::1]:80", Ok(IPv6Address::LOCALHOST.to_socket(80).to_socket())),
         ];
 
         for (input, expected) in test_cases {

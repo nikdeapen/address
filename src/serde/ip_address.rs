@@ -12,10 +12,7 @@ impl Serialize for IPAddress {
         if serializer.is_human_readable() {
             serializer.collect_str(self)
         } else {
-            match self {
-                Self::V4(ip) => serializer.serialize_bytes(&ip.address()),
-                Self::V6(ip) => serializer.serialize_bytes(&ip.address()),
-            }
+            serializer.serialize_bytes(self.address())
         }
     }
 }

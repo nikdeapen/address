@@ -11,7 +11,7 @@ impl Authority {
     /// Converts the authority to an optional endpoint.
     #[must_use]
     pub fn to_endpoint(self) -> Option<Endpoint> {
-        let (host, port) = self.into();
+        let (host, port): (Host, u16) = self.into();
         if let Host::Name(domain) = host {
             Some(Endpoint::new(domain, port))
         } else {
@@ -22,7 +22,7 @@ impl Authority {
     /// Converts the authority to an optional socket address.
     #[must_use]
     pub fn to_socket(self) -> Option<SocketAddress> {
-        let (host, port) = self.into();
+        let (host, port): (Host, u16) = self.into();
         if let Host::Address(ip) = host {
             Some(SocketAddress::new(ip, port))
         } else {
@@ -63,8 +63,7 @@ impl<'a> AuthorityRef<'a> {
 #[cfg(test)]
 mod tests {
     use crate::{
-        Authority, AuthorityRef, Domain, DomainRef, Endpoint, EndpointRef, Host, HostRef,
-        IPv4Address, SocketAddress,
+        Authority, AuthorityRef, Domain, DomainRef, Endpoint, EndpointRef, Host, HostRef, IPv4Address, SocketAddress,
     };
 
     #[test]
@@ -114,27 +113,33 @@ mod tests {
 
     #[test]
     fn ref_to_endpoint() {
-        let authority: AuthorityRef = AuthorityRef::new(HostRef::Name(DomainRef::LOCALHOST), 80);
-        let result: Option<EndpointRef> = authority.to_endpoint_ref();
-        let expected: Option<EndpointRef> = Some(EndpointRef::new(DomainRef::LOCALHOST, 80));
-        assert_eq!(result, expected);
+        let test_cases: &[(AuthorityRef, Option<EndpointRef>)] = &[
+            (
+                AuthorityRef::new(HostRef::Name(DomainRef::LOCALHOST), 80),
+                Some(EndpointRef::new(DomainRef::LOCALHOST, 80)),
+            ),
+            (AuthorityRef::new(IPv4Address::LOCALHOST.to_host_ref(), 80), None),
+        ];
 
-        let authority: AuthorityRef = AuthorityRef::new(IPv4Address::LOCALHOST.to_host_ref(), 80);
-        let result: Option<EndpointRef> = authority.to_endpoint_ref();
-        let expected: Option<EndpointRef> = None;
-        assert_eq!(result, expected);
+        for (authority, expected) in test_cases {
+            let result: Option<EndpointRef> = authority.to_endpoint_ref();
+            assert_eq!(result, *expected, "authority={:?}", authority);
+        }
     }
 
     #[test]
     fn ref_to_socket() {
-        let authority: AuthorityRef = AuthorityRef::new(IPv4Address::LOCALHOST.to_host_ref(), 80);
-        let result: Option<SocketAddress> = authority.to_socket();
-        let expected: Option<SocketAddress> = Some(IPv4Address::LOCALHOST.to_ip().to_socket(80));
-        assert_eq!(result, expected);
+        let test_cases: &[(AuthorityRef, Option<SocketAddress>)] = &[
+            (
+                AuthorityRef::new(IPv4Address::LOCALHOST.to_host_ref(), 80),
+                Some(IPv4Address::LOCALHOST.to_ip().to_socket(80)),
+            ),
+            (AuthorityRef::new(HostRef::Name(DomainRef::LOCALHOST), 80), None),
+        ];
 
-        let authority: AuthorityRef = AuthorityRef::new(HostRef::Name(DomainRef::LOCALHOST), 80);
-        let result: Option<SocketAddress> = authority.to_socket();
-        let expected: Option<SocketAddress> = None;
-        assert_eq!(result, expected);
+        for (authority, expected) in test_cases {
+            let result: Option<SocketAddress> = authority.to_socket();
+            assert_eq!(result, *expected, "authority={:?}", authority);
+        }
     }
 }

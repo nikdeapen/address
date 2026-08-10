@@ -2,7 +2,7 @@ use crate::{Domain, DomainRef, HostRef, IPAddress};
 
 /// Either a domain or an IP address.
 #[must_use]
-#[derive(Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Debug)]
+#[derive(Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
 pub enum Host {
     /// A domain.
     Name(Domain),
@@ -90,12 +90,14 @@ mod tests {
 
     #[test]
     fn matching() {
-        let host: Host = Domain::localhost().into();
-        assert!(host.is_domain());
-        assert!(!host.is_ip());
+        let test_cases: &[(Host, bool, bool)] = &[
+            (Domain::localhost().into(), true, false),
+            (IPv4Address::LOCALHOST.into(), false, true),
+        ];
 
-        let host: Host = IPv4Address::LOCALHOST.into();
-        assert!(!host.is_domain());
-        assert!(host.is_ip());
+        for (host, is_domain, is_ip) in test_cases {
+            assert_eq!(host.is_domain(), *is_domain, "host={:?}", host);
+            assert_eq!(host.is_ip(), *is_ip, "host={:?}", host);
+        }
     }
 }
