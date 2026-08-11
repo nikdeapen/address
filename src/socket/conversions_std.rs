@@ -100,11 +100,11 @@ mod tests {
             let result: SocketAddrV4 = socket.to_std();
             assert_eq!(result, *std, "socket={:?}", socket);
 
-            let result: SocketAddrV4 = (*socket).into();
-            assert_eq!(result, *std, "socket={:?}", socket);
-
             let result: SocketAddressV4 = (*std).into();
             assert_eq!(result, *socket, "std={:?}", std);
+
+            let result: SocketAddrV4 = (*socket).into();
+            assert_eq!(result, *std, "socket={:?}", socket);
         }
     }
 
@@ -119,11 +119,11 @@ mod tests {
             let result: SocketAddrV6 = socket.to_std();
             assert_eq!(result, *std, "socket={:?}", socket);
 
-            let result: SocketAddrV6 = (*socket).into();
-            assert_eq!(result, *std, "socket={:?}", socket);
-
             let result: SocketAddressV6 = (*std).into();
             assert_eq!(result, *socket, "std={:?}", std);
+
+            let result: SocketAddrV6 = (*socket).into();
+            assert_eq!(result, *std, "socket={:?}", socket);
         }
 
         let socket: SocketAddressV6 = SocketAddressV6::new(IPv6Address::LOCALHOST, 80);
@@ -154,11 +154,11 @@ mod tests {
             let result: SocketAddr = socket.to_std();
             assert_eq!(result, *std, "socket={:?}", socket);
 
-            let result: SocketAddr = (*socket).into();
-            assert_eq!(result, *std, "socket={:?}", socket);
-
             let result: SocketAddress = (*std).into();
             assert_eq!(result, *socket, "std={:?}", std);
+
+            let result: SocketAddr = (*socket).into();
+            assert_eq!(result, *std, "socket={:?}", socket);
         }
 
         let socket: SocketAddress = SocketAddress::new(IPv4Address::LOCALHOST.to_ip(), 80);

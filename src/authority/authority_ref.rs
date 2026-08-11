@@ -1,6 +1,8 @@
 use crate::{Authority, HostRef};
 
 /// A host reference with an associated port.
+///
+/// The port is required and user-info is not supported.
 #[must_use]
 #[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
 pub struct AuthorityRef<'a> {
@@ -26,12 +28,6 @@ impl<'a, H: Into<HostRef<'a>>> From<(H, u16)> for AuthorityRef<'a> {
 impl<'a> From<AuthorityRef<'a>> for (HostRef<'a>, u16) {
     fn from(authority: AuthorityRef<'a>) -> Self {
         (authority.host, authority.port)
-    }
-}
-
-impl<'a> From<&'a Authority> for AuthorityRef<'a> {
-    fn from(authority: &'a Authority) -> Self {
-        authority.to_ref()
     }
 }
 
@@ -67,11 +63,6 @@ mod tests {
         assert_eq!(authority.port, 80);
 
         let authority: AuthorityRef = (DomainRef::LOCALHOST, 80).into();
-        assert_eq!(authority.host, HostRef::Name(DomainRef::LOCALHOST));
-        assert_eq!(authority.port, 80);
-
-        let owned: Authority = Authority::new(Host::Name(Domain::localhost()), 80);
-        let authority: AuthorityRef = (&owned).into();
         assert_eq!(authority.host, HostRef::Name(DomainRef::LOCALHOST));
         assert_eq!(authority.port, 80);
     }

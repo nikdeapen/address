@@ -11,12 +11,6 @@ pub enum IPAddress {
     V6(IPv6Address),
 }
 
-impl From<IPv4Address> for IPAddress {
-    fn from(v4: IPv4Address) -> Self {
-        Self::V4(v4)
-    }
-}
-
 impl From<[u8; 4]> for IPAddress {
     fn from(address: [u8; 4]) -> Self {
         Self::from(IPv4Address::from(address))
@@ -33,12 +27,6 @@ impl From<u32> for IPAddress {
     /// The `value` is treated as big-endian. (`0x7F000001` -> `127.0.0.1`)
     fn from(value: u32) -> Self {
         Self::from(IPv4Address::from(value))
-    }
-}
-
-impl From<IPv6Address> for IPAddress {
-    fn from(v6: IPv6Address) -> Self {
-        Self::V6(v6)
     }
 }
 
@@ -97,8 +85,6 @@ mod tests {
     #[test]
     fn construction() {
         let expected: IPAddress = IPAddress::V4(IPv4Address::LOCALHOST);
-        let ip: IPAddress = IPv4Address::LOCALHOST.into();
-        assert_eq!(ip, expected);
         let ip: IPAddress = [127, 0, 0, 1].into();
         assert_eq!(ip, expected);
         let ip: IPAddress = (127, 0, 0, 1).into();
@@ -107,8 +93,6 @@ mod tests {
         assert_eq!(ip, expected);
 
         let expected: IPAddress = IPAddress::V6(IPv6Address::LOCALHOST);
-        let ip: IPAddress = IPv6Address::LOCALHOST.into();
-        assert_eq!(ip, expected);
         let ip: IPAddress = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1].into();
         assert_eq!(ip, expected);
         let ip: IPAddress = [0, 0, 0, 0, 0, 0, 0, 1].into();

@@ -7,7 +7,7 @@ use crate::ParseError::InvalidPort;
 ///
 /// Returns `(address_without_last_colon, port)`.
 ///
-/// The port must be decimal digits only, with no sign. Leading zeros are allowed, matching the standard library.
+/// The port must be decimal digits only, with no sign. Leading zeros are allowed to match the standard library.
 ///
 /// # Examples
 /// localhost:80    -> `Ok(("localhost", 80))`

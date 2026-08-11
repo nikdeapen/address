@@ -15,6 +15,8 @@
 - Add `PartialEq<&str>` for `Domain` & `DomainRef` so `domain == "localhost"` works, matching the std `String`/`str`
   comparisons.
 - Add a `labels()` iterator to `Domain` & `DomainRef`, avoiding manual `name().split('.')`.
+- Decide whether to impl `std::net::ToSocketAddrs` for `Authority` & `AuthorityRef`: it enables
+  `TcpStream::connect(&authority)` but puts blocking DNS resolution in a pure-data crate.
 
 ## Validation
 

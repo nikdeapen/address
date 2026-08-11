@@ -33,6 +33,30 @@ impl Host {
     }
 }
 
+impl From<Domain> for Host {
+    fn from(domain: Domain) -> Self {
+        Self::Name(domain)
+    }
+}
+
+impl<'a> From<DomainRef<'a>> for Host {
+    fn from(domain: DomainRef<'a>) -> Self {
+        Self::Name(domain.to_domain())
+    }
+}
+
+impl<A: Into<IPAddress>> From<A> for Host {
+    fn from(ip: A) -> Self {
+        Self::Address(ip.into())
+    }
+}
+
+impl<'a> From<HostRef<'a>> for Host {
+    fn from(host: HostRef<'a>) -> Self {
+        host.to_host()
+    }
+}
+
 impl<'a> HostRef<'a> {
     //! Conversions
 
@@ -63,6 +87,24 @@ impl<'a> HostRef<'a> {
     #[must_use]
     pub const fn to_ip(self) -> Option<IPAddress> {
         if let Self::Address(ip) = self { Some(ip) } else { None }
+    }
+}
+
+impl<'a> From<DomainRef<'a>> for HostRef<'a> {
+    fn from(domain: DomainRef<'a>) -> Self {
+        Self::Name(domain)
+    }
+}
+
+impl<'a, A: Into<IPAddress>> From<A> for HostRef<'a> {
+    fn from(ip: A) -> Self {
+        Self::Address(ip.into())
+    }
+}
+
+impl<'a> From<&'a Host> for HostRef<'a> {
+    fn from(host: &'a Host) -> Self {
+        host.to_ref()
     }
 }
 
@@ -122,6 +164,23 @@ mod tests {
         let host: Host = Domain::localhost().to_host();
         let result: Option<IPAddress> = host.to_ip();
         let expected: Option<IPAddress> = None;
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn host_from() {
+        let expected: Host = Host::Name(Domain::localhost());
+        let result: Host = Domain::localhost().into();
+        assert_eq!(result, expected);
+        let result: Host = DomainRef::LOCALHOST.into();
+        assert_eq!(result, expected);
+
+        let expected: Host = Host::Address(IPAddress::V4(IPv4Address::LOCALHOST));
+        let result: Host = IPv4Address::LOCALHOST.into();
+        assert_eq!(result, expected);
+
+        let expected: Host = Host::Name(Domain::localhost());
+        let result: Host = HostRef::Name(DomainRef::LOCALHOST).into();
         assert_eq!(result, expected);
     }
 
@@ -187,5 +246,21 @@ mod tests {
             let result: Option<IPAddress> = host.to_ip();
             assert_eq!(result, *expected, "host={:?}", host);
         }
+    }
+
+    #[test]
+    fn ref_from() {
+        let expected: HostRef = HostRef::Name(DomainRef::LOCALHOST);
+        let result: HostRef = DomainRef::LOCALHOST.into();
+        assert_eq!(result, expected);
+
+        let expected: HostRef = HostRef::Address(IPAddress::V4(IPv4Address::LOCALHOST));
+        let result: HostRef = IPv4Address::LOCALHOST.into();
+        assert_eq!(result, expected);
+
+        let expected: HostRef = HostRef::Name(DomainRef::LOCALHOST);
+        let owned: Host = Host::Name(Domain::localhost());
+        let result: HostRef = (&owned).into();
+        assert_eq!(result, expected);
     }
 }

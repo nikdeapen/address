@@ -97,11 +97,11 @@ mod tests {
             let result: Ipv4Addr = ip.to_std();
             assert_eq!(result, *std, "ip={:?}", ip);
 
-            let result: Ipv4Addr = (*ip).into();
-            assert_eq!(result, *std, "ip={:?}", ip);
-
             let result: IPv4Address = (*std).into();
             assert_eq!(result, *ip, "std={:?}", std);
+
+            let result: Ipv4Addr = (*ip).into();
+            assert_eq!(result, *std, "ip={:?}", ip);
         }
     }
 
@@ -113,11 +113,11 @@ mod tests {
             let result: Ipv6Addr = ip.to_std();
             assert_eq!(result, *std, "ip={:?}", ip);
 
-            let result: Ipv6Addr = (*ip).into();
-            assert_eq!(result, *std, "ip={:?}", ip);
-
             let result: IPv6Address = (*std).into();
             assert_eq!(result, *ip, "std={:?}", std);
+
+            let result: Ipv6Addr = (*ip).into();
+            assert_eq!(result, *std, "ip={:?}", ip);
         }
     }
 
@@ -132,11 +132,11 @@ mod tests {
             let result: IpAddr = ip.to_std();
             assert_eq!(result, *std, "ip={:?}", ip);
 
-            let result: IpAddr = (*ip).into();
-            assert_eq!(result, *std, "ip={:?}", ip);
-
             let result: IPAddress = (*std).into();
             assert_eq!(result, *ip, "std={:?}", std);
+
+            let result: IpAddr = (*ip).into();
+            assert_eq!(result, *std, "ip={:?}", ip);
         }
     }
 }

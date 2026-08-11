@@ -15,6 +15,12 @@ impl Endpoint {
     }
 }
 
+impl<'a> From<EndpointRef<'a>> for Endpoint {
+    fn from(endpoint: EndpointRef<'a>) -> Self {
+        endpoint.to_endpoint()
+    }
+}
+
 impl<'a> EndpointRef<'a> {
     //! Conversions
 
@@ -26,6 +32,12 @@ impl<'a> EndpointRef<'a> {
     /// Converts the endpoint reference to an authority reference.
     pub const fn to_authority_ref(self) -> AuthorityRef<'a> {
         AuthorityRef::new(HostRef::Name(self.domain()), self.port())
+    }
+}
+
+impl<'a> From<&'a Endpoint> for EndpointRef<'a> {
+    fn from(endpoint: &'a Endpoint) -> Self {
+        endpoint.to_ref()
     }
 }
 
@@ -52,6 +64,13 @@ mod tests {
     }
 
     #[test]
+    fn endpoint_from() {
+        let result: Endpoint = EndpointRef::new(DomainRef::LOCALHOST, 80).into();
+        let expected: Endpoint = Endpoint::new(Domain::localhost(), 80);
+        assert_eq!(result, expected);
+    }
+
+    #[test]
     fn ref_to_endpoint() {
         let endpoint: EndpointRef = EndpointRef::new(DomainRef::LOCALHOST, 80);
 
@@ -66,6 +85,14 @@ mod tests {
 
         let result: AuthorityRef = endpoint.to_authority_ref();
         let expected: AuthorityRef = AuthorityRef::new(DomainRef::LOCALHOST.to_host_ref(), 80);
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn ref_from() {
+        let owned: Endpoint = Endpoint::new(Domain::localhost(), 80);
+        let result: EndpointRef = (&owned).into();
+        let expected: EndpointRef = EndpointRef::new(DomainRef::LOCALHOST, 80);
         assert_eq!(result, expected);
     }
 }

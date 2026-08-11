@@ -1,12 +1,18 @@
+use crate::parse_port;
 use crate::{DomainRef, Endpoint, EndpointRef, ParseError};
-use crate::{parse_lowercase, parse_port};
 use std::str::FromStr;
 
 impl FromStr for Endpoint {
     type Err = ParseError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        parse_lowercase(s, |s| Ok(EndpointRef::try_from(s)?.to_endpoint()))
+        match EndpointRef::try_from(s) {
+            Ok(endpoint) => Ok(endpoint.to_endpoint()),
+            Err(_) if s.bytes().any(|b| b.is_ascii_uppercase()) => {
+                Ok(EndpointRef::try_from(s.to_ascii_lowercase().as_str())?.to_endpoint())
+            }
+            Err(error) => Err(error),
+        }
     }
 }
 

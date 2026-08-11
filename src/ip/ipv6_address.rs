@@ -54,21 +54,9 @@ impl From<[u8; 16]> for IPv6Address {
     }
 }
 
-impl From<IPv6Address> for [u8; 16] {
-    fn from(ip: IPv6Address) -> Self {
-        ip.address
-    }
-}
-
 impl From<[u16; 8]> for IPv6Address {
     fn from(segments: [u16; 8]) -> Self {
         Self::from_segments(segments)
-    }
-}
-
-impl From<IPv6Address> for [u16; 8] {
-    fn from(ip: IPv6Address) -> Self {
-        ip.segments()
     }
 }
 
@@ -76,6 +64,18 @@ impl From<u128> for IPv6Address {
     /// The `value` is treated as big-endian. (`0x1` -> `::1`)
     fn from(value: u128) -> Self {
         Self::new(value.to_be_bytes())
+    }
+}
+
+impl From<IPv6Address> for [u8; 16] {
+    fn from(ip: IPv6Address) -> Self {
+        ip.address
+    }
+}
+
+impl From<IPv6Address> for [u16; 8] {
+    fn from(ip: IPv6Address) -> Self {
+        ip.segments()
     }
 }
 

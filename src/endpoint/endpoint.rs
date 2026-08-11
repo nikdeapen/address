@@ -29,12 +29,6 @@ impl From<Endpoint> for (Domain, u16) {
     }
 }
 
-impl<'a> From<EndpointRef<'a>> for Endpoint {
-    fn from(endpoint: EndpointRef<'a>) -> Self {
-        endpoint.to_endpoint()
-    }
-}
-
 impl<'a> PartialEq<EndpointRef<'a>> for Endpoint {
     fn eq(&self, other: &EndpointRef<'a>) -> bool {
         self.to_ref() == *other
@@ -67,10 +61,6 @@ mod tests {
         assert_eq!(endpoint.port, 80);
 
         let endpoint: Endpoint = (DomainRef::LOCALHOST, 80).into();
-        assert_eq!(endpoint.domain, Domain::localhost());
-        assert_eq!(endpoint.port, 80);
-
-        let endpoint: Endpoint = EndpointRef::new(DomainRef::LOCALHOST, 80).into();
         assert_eq!(endpoint.domain, Domain::localhost());
         assert_eq!(endpoint.port, 80);
     }
