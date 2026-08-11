@@ -109,12 +109,6 @@ impl From<Domain> for String {
     }
 }
 
-impl<'a> From<DomainRef<'a>> for Domain {
-    fn from(domain: DomainRef<'a>) -> Self {
-        domain.to_domain()
-    }
-}
-
 impl<'a> PartialEq<DomainRef<'a>> for Domain {
     fn eq(&self, other: &DomainRef<'a>) -> bool {
         self.to_ref() == *other
@@ -198,15 +192,6 @@ mod tests {
             let result: Result<Domain, ParseError> = Domain::try_from(input.as_bytes());
             assert_eq!(result, *expected, "input={}", input);
         }
-    }
-
-    #[test]
-    fn from_ref() {
-        let domain: DomainRef = DomainRef::LOCALHOST;
-
-        let result: Domain = domain.into();
-        let expected: Domain = Domain::localhost();
-        assert_eq!(result, expected);
     }
 
     #[test]

@@ -20,6 +20,12 @@ impl Domain {
     }
 }
 
+impl<'a> From<DomainRef<'a>> for Domain {
+    fn from(domain: DomainRef<'a>) -> Self {
+        domain.to_domain()
+    }
+}
+
 impl<'a> DomainRef<'a> {
     //! Conversions
 
@@ -36,6 +42,12 @@ impl<'a> DomainRef<'a> {
     /// Converts the domain reference to a host reference.
     pub const fn to_host_ref(self) -> HostRef<'a> {
         HostRef::Name(self)
+    }
+}
+
+impl<'a> From<&'a Domain> for DomainRef<'a> {
+    fn from(domain: &'a Domain) -> Self {
+        domain.to_ref()
     }
 }
 
@@ -95,6 +107,13 @@ mod tests {
     }
 
     #[test]
+    fn domain_from() {
+        let result: Domain = DomainRef::LOCALHOST.into();
+        let expected: Domain = Domain::localhost();
+        assert_eq!(result, expected);
+    }
+
+    #[test]
     fn ref_to_domain() {
         let domain: DomainRef = DomainRef::LOCALHOST;
 
@@ -118,6 +137,14 @@ mod tests {
 
         let result: HostRef = domain.to_host_ref();
         let expected: HostRef = HostRef::Name(DomainRef::LOCALHOST);
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn ref_from() {
+        let owned: Domain = Domain::localhost();
+        let result: DomainRef = (&owned).into();
+        let expected: DomainRef = DomainRef::LOCALHOST;
         assert_eq!(result, expected);
     }
 

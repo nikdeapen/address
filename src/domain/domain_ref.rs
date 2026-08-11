@@ -34,12 +34,6 @@ impl<'a> DomainRef<'a> {
     }
 }
 
-impl<'a> From<&'a Domain> for DomainRef<'a> {
-    fn from(domain: &'a Domain) -> Self {
-        domain.to_ref()
-    }
-}
-
 impl<'a> PartialEq<Domain> for DomainRef<'a> {
     fn eq(&self, other: &Domain) -> bool {
         *self == other.to_ref()
@@ -64,13 +58,6 @@ mod tests {
     fn specials() {
         assert_eq!(DomainRef::LOCALHOST.name, "localhost");
         assert_eq!(DomainRef::EXAMPLE.name, "example.com");
-    }
-
-    #[test]
-    fn construction() {
-        let owned: Domain = Domain::localhost();
-        let domain: DomainRef = (&owned).into();
-        assert_eq!(domain.name, "localhost");
     }
 
     #[test]

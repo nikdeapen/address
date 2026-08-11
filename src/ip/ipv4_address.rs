@@ -33,21 +33,9 @@ impl From<[u8; 4]> for IPv4Address {
     }
 }
 
-impl From<IPv4Address> for [u8; 4] {
-    fn from(ip: IPv4Address) -> Self {
-        ip.address
-    }
-}
-
 impl From<(u8, u8, u8, u8)> for IPv4Address {
     fn from(tuple: (u8, u8, u8, u8)) -> Self {
         Self::new([tuple.0, tuple.1, tuple.2, tuple.3])
-    }
-}
-
-impl From<IPv4Address> for (u8, u8, u8, u8) {
-    fn from(ip: IPv4Address) -> Self {
-        ip.bytes()
     }
 }
 
@@ -55,6 +43,18 @@ impl From<u32> for IPv4Address {
     /// The `value` is treated as big-endian. (`0x7F000001` -> `127.0.0.1`)
     fn from(value: u32) -> Self {
         Self::new(value.to_be_bytes())
+    }
+}
+
+impl From<IPv4Address> for [u8; 4] {
+    fn from(ip: IPv4Address) -> Self {
+        ip.address
+    }
+}
+
+impl From<IPv4Address> for (u8, u8, u8, u8) {
+    fn from(ip: IPv4Address) -> Self {
+        ip.bytes()
     }
 }
 

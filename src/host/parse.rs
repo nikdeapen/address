@@ -1,5 +1,4 @@
 use crate::ParseError::InvalidHost;
-use crate::parse_lowercase;
 use crate::{DomainRef, Host, HostRef, IPAddress, ParseError};
 use std::str::FromStr;
 
@@ -7,7 +6,13 @@ impl FromStr for Host {
     type Err = ParseError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        parse_lowercase(s, |s| Ok(HostRef::try_from(s)?.to_host()))
+        match HostRef::try_from(s) {
+            Ok(host) => Ok(host.to_host()),
+            Err(_) if s.bytes().any(|b| b.is_ascii_uppercase()) => {
+                Ok(HostRef::try_from(s.to_ascii_lowercase().as_str())?.to_host())
+            }
+            Err(error) => Err(error),
+        }
     }
 }
 

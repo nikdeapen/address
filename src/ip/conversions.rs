@@ -117,6 +117,18 @@ impl IPAddress {
     }
 }
 
+impl From<IPv4Address> for IPAddress {
+    fn from(v4: IPv4Address) -> Self {
+        Self::V4(v4)
+    }
+}
+
+impl From<IPv6Address> for IPAddress {
+    fn from(v6: IPv6Address) -> Self {
+        Self::V6(v6)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::{Host, HostRef, IPAddress, IPv4Address, IPv6Address, SocketAddress, SocketAddressV4, SocketAddressV6};
@@ -270,6 +282,17 @@ mod tests {
 
         let result: HostRef = ip.to_host_ref();
         let expected: HostRef = HostRef::Address(IPv4Address::LOCALHOST.to_ip());
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn ip_from() {
+        let result: IPAddress = IPv4Address::LOCALHOST.into();
+        let expected: IPAddress = IPAddress::V4(IPv4Address::LOCALHOST);
+        assert_eq!(result, expected);
+
+        let result: IPAddress = IPv6Address::LOCALHOST.into();
+        let expected: IPAddress = IPAddress::V6(IPv6Address::LOCALHOST);
         assert_eq!(result, expected);
     }
 }
