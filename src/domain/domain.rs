@@ -1,10 +1,9 @@
-use crate::ParseError::InvalidDomain;
-use crate::{DomainRef, InvalidDomainName, ParseError};
+use crate::DomainRef;
 
 /// A domain name.
 ///
 /// Domain names are lowercase ASCII letters, digits, and dashes: dot-separated labels that must not start or end
-/// with a dash. (see `Domain::is_valid_name`) Mixed-case input is normalized to lowercase when parsed.
+/// with a dash (see [`Domain::is_valid_name`]). Mixed-case input is normalized to lowercase when parsed.
 #[must_use]
 #[derive(Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
 pub struct Domain {
@@ -44,68 +43,15 @@ impl Domain {
     }
 }
 
-impl TryFrom<String> for Domain {
-    type Error = InvalidDomainName<String>;
-
-    fn try_from(name: String) -> Result<Self, Self::Error> {
-        if Self::is_valid_name_str(name.as_str(), false) {
-            Ok(Self { name })
-        } else if Self::is_valid_name_str(name.as_str(), true) {
-            let mut name: String = name;
-            name.make_ascii_lowercase();
-            Ok(Self { name })
-        } else {
-            Err(InvalidDomainName::new(name))
-        }
-    }
-}
-
-impl TryFrom<&str> for Domain {
-    type Error = ParseError;
-
-    fn try_from(name: &str) -> Result<Self, Self::Error> {
-        Self::try_from(name.as_bytes())
-    }
-}
-
-impl TryFrom<Vec<u8>> for Domain {
-    type Error = InvalidDomainName<Vec<u8>>;
-
-    fn try_from(name: Vec<u8>) -> Result<Self, Self::Error> {
-        if Self::is_valid_name(name.as_slice(), false) {
-            let name: String = unsafe { String::from_utf8_unchecked(name) };
-            Ok(Self { name })
-        } else if Self::is_valid_name(name.as_slice(), true) {
-            let mut name: String = unsafe { String::from_utf8_unchecked(name) };
-            name.make_ascii_lowercase();
-            Ok(Self { name })
-        } else {
-            Err(InvalidDomainName::new(name))
-        }
-    }
-}
-
-impl TryFrom<&[u8]> for Domain {
-    type Error = ParseError;
-
-    fn try_from(name: &[u8]) -> Result<Self, Self::Error> {
-        if Self::is_valid_name(name, false) {
-            let name: &str = unsafe { std::str::from_utf8_unchecked(name) };
-            let name: String = name.to_string();
-            Ok(Self { name })
-        } else if Self::is_valid_name(name, true) {
-            let name: &str = unsafe { std::str::from_utf8_unchecked(name) };
-            let name: String = name.to_ascii_lowercase();
-            Ok(Self { name })
-        } else {
-            Err(InvalidDomain)
-        }
-    }
-}
-
 impl From<Domain> for String {
     fn from(domain: Domain) -> Self {
         domain.name
+    }
+}
+
+impl From<Domain> for Vec<u8> {
+    fn from(domain: Domain) -> Self {
+        domain.name.into_bytes()
     }
 }
 
@@ -127,8 +73,7 @@ impl Domain {
 
 #[cfg(test)]
 mod tests {
-    use crate::ParseError::InvalidDomain;
-    use crate::{Domain, DomainRef, InvalidDomainName, ParseError};
+    use crate::{Domain, DomainRef};
 
     #[test]
     fn specials() {
@@ -137,69 +82,15 @@ mod tests {
     }
 
     #[test]
-    fn try_from_string() {
-        let test_cases: &[(&str, Result<Domain, &str>)] = &[
-            ("localhost", Ok(Domain::localhost())),
-            ("LocalHost", Ok(Domain::localhost())),
-            ("Local!Host", Err("Local!Host")),
-        ];
-
-        for (input, expected) in test_cases {
-            let result: Result<Domain, InvalidDomainName<String>> = Domain::try_from(input.to_string());
-            let result: Result<Domain, String> = result.map_err(|e| e.into_name());
-            assert_eq!(result, expected.clone().map_err(String::from), "input={}", input);
-        }
-    }
-
-    #[test]
-    fn try_from_str() {
-        let test_cases: &[(&str, Result<Domain, ParseError>)] = &[
-            ("localhost", Ok(Domain::localhost())),
-            ("LocalHost", Ok(Domain::localhost())),
-            ("Local!Host", Err(InvalidDomain)),
-        ];
-
-        for (input, expected) in test_cases {
-            let result: Result<Domain, ParseError> = Domain::try_from(*input);
-            assert_eq!(result, *expected, "input={}", input);
-        }
-    }
-
-    #[test]
-    fn try_from_vec() {
-        let test_cases: &[(&str, Result<Domain, &str>)] = &[
-            ("localhost", Ok(Domain::localhost())),
-            ("LocalHost", Ok(Domain::localhost())),
-            ("Local!Host", Err("Local!Host")),
-        ];
-
-        for (input, expected) in test_cases {
-            let result: Result<Domain, InvalidDomainName<Vec<u8>>> = Domain::try_from(Vec::from(*input));
-            let result: Result<Domain, Vec<u8>> = result.map_err(|e| e.into_name());
-            assert_eq!(result, expected.clone().map_err(Vec::from), "input={}", input);
-        }
-    }
-
-    #[test]
-    fn try_from_slice() {
-        let test_cases: &[(&str, Result<Domain, ParseError>)] = &[
-            ("localhost", Ok(Domain::localhost())),
-            ("LocalHost", Ok(Domain::localhost())),
-            ("Local!Host", Err(InvalidDomain)),
-        ];
-
-        for (input, expected) in test_cases {
-            let result: Result<Domain, ParseError> = Domain::try_from(input.as_bytes());
-            assert_eq!(result, *expected, "input={}", input);
-        }
-    }
-
-    #[test]
     fn deconstruction() {
         let domain: Domain = Domain::localhost();
-
         let result: String = domain.into();
         let expected: &str = "localhost";
+        assert_eq!(result, expected);
+
+        let domain: Domain = Domain::localhost();
+        let result: Vec<u8> = domain.into();
+        let expected: &[u8] = b"localhost";
         assert_eq!(result, expected);
     }
 

@@ -1,12 +1,36 @@
 # address
 
-This library aids in processing network addresses.
+[![Crates.io](https://img.shields.io/crates/v/address.svg)](https://crates.io/crates/address)
+[![Docs.rs](https://docs.rs/address/badge.svg)](https://docs.rs/address)
+[![License](https://img.shields.io/crates/l/address.svg)](https://github.com/nikdeapen/address/blob/master/LICENSE)
 
-## Features & Dependencies
+This library provides network address types — IP, socket, domain, endpoint, host, & authority — with strict
+validation, owned & borrowed variants, and standard library conversions.
+
+## Usage
 
 ```toml
 address = "0.19.0"
 ```
+
+## Example
+
+```rust
+use address::Authority;
+
+// Parsing normalizes mixed-case domain names to lowercase.
+let authority: Authority = "Example.com:443".parse().unwrap();
+assert_eq!(authority.to_string(), "example.com:443");
+assert!(authority.host().is_domain());
+assert_eq!(authority.port(), 443);
+
+// Hosts may also be IP addresses; socket addresses convert to & from the standard library types.
+let authority: Authority = "[::1]:443".parse().unwrap();
+let socket: std::net::SocketAddr = authority.to_socket().unwrap().to_std();
+assert_eq!(socket, "[::1]:443".parse().unwrap());
+```
+
+## Features
 
 This crate has no dependencies by default.
 
@@ -15,7 +39,8 @@ This crate has no dependencies by default.
   `Display` & `FromStr` strings. Binary formats use compact binary forms for the IP & socket address types. The
   version-specific types match the wire format of the standard library types; `IPAddress` & `SocketAddress` serialize
   the IP address as a byte string of 4 or 16 bytes instead of the standard library's enum encoding. The `Ref` types
-  deserialize by borrowing from the input.
+  deserialize by borrowing from the input; domain names must already be lowercase & escaped input is an error, so
+  use the owned types for mixed-case or escaped input.
 
 ## Address Types
 
@@ -26,18 +51,18 @@ There are 6 core address types:
 - `SocketAddress`: An IP address with an associated port.
     - Includes the `SocketAddress`, `SocketAddressV4` & `SocketAddressV6` struct types.
 - `Domain`: A domain name.
-    - Includes: the `Domain` & `DomainRef` struct types.
+    - Includes the `Domain` & `DomainRef` struct types.
 - `Endpoint`: A domain with an associated port.
-    - Includes: the `Endpoint` & `EndpointRef` struct types.
+    - Includes the `Endpoint` & `EndpointRef` struct types.
 - `Host`: Either a domain or an IP address.
-    - Includes: the `Host` & `HostRef` enum types.
+    - Includes the `Host` & `HostRef` enum types.
 - `Authority`: A host with an associated port.
-    - Includes: the `Authority` & `AuthorityRef` struct types.
+    - Includes the `Authority` & `AuthorityRef` struct types.
 
 ## Owned & Reference Types
 
-Address types that are not `Copy` have owned and Ref types (example: `Domain` & `DomainRef`). This allows both owned
-types and types that do not require allocation. These types can be easily converted between one another.
+Address types that are not `Copy` come in owned & reference pairs (example: `Domain` & `DomainRef`). The `Ref` types
+borrow their text, so they parse & convert without allocating; each side converts to the other.
 
 ## Domain Names
 
@@ -48,6 +73,7 @@ can be converted to their ASCII form with the `idna` feature.
 
 ## Standard Library Types
 
-IP addresses and socket addresses are different from their standard library counterparts. They can be easily converted
-between each other. There is a difference in IPv6 socket addresses: the `flow_info` and `scope_id` are not included as
-part of the address.
+The IP & socket address types are separate from their standard library counterparts so the host & authority types can
+compose them and the whole family behaves uniformly. They convert to & from the standard library types. IPv6 socket
+addresses do not model `flow_info` or `scope_id`: converting from the standard library discards them & converting to
+it zeroes them.

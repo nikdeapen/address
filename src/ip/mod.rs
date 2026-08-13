@@ -8,5 +8,7 @@ mod ipv6_address;
 
 mod conversions;
 mod conversions_std;
-mod display;
-mod parse;
+mod conversions_std_v4;
+mod conversions_std_v6;
+mod conversions_v4;
+mod conversions_v6;

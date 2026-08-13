@@ -85,18 +85,24 @@ mod tests {
     #[test]
     fn construction() {
         let expected: IPAddress = IPAddress::V4(IPv4Address::LOCALHOST);
+
         let ip: IPAddress = [127, 0, 0, 1].into();
         assert_eq!(ip, expected);
+
         let ip: IPAddress = (127, 0, 0, 1).into();
         assert_eq!(ip, expected);
+
         let ip: IPAddress = 0x7F000001u32.into();
         assert_eq!(ip, expected);
 
         let expected: IPAddress = IPAddress::V6(IPv6Address::LOCALHOST);
+
         let ip: IPAddress = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1].into();
         assert_eq!(ip, expected);
+
         let ip: IPAddress = [0, 0, 0, 0, 0, 0, 0, 1].into();
         assert_eq!(ip, expected);
+
         let ip: IPAddress = 1u128.into();
         assert_eq!(ip, expected);
     }

@@ -47,14 +47,12 @@ mod tests {
 
     #[test]
     fn matching() {
-        let test_cases: &[(HostRef, bool, bool)] = &[
-            (DomainRef::LOCALHOST.into(), true, false),
-            (IPv4Address::LOCALHOST.into(), false, true),
-        ];
+        let host: HostRef = DomainRef::LOCALHOST.into();
+        assert!(host.is_domain());
+        assert!(!host.is_ip());
 
-        for (host, is_domain, is_ip) in test_cases {
-            assert_eq!(host.is_domain(), *is_domain, "host={:?}", host);
-            assert_eq!(host.is_ip(), *is_ip, "host={:?}", host);
-        }
+        let host: HostRef = IPv4Address::LOCALHOST.into();
+        assert!(!host.is_domain());
+        assert!(host.is_ip());
     }
 }

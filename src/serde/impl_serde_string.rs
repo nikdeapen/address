@@ -15,7 +15,7 @@ macro_rules! impl_serde_string {
             where
                 D: ::serde::Deserializer<'de>,
             {
-                deserializer.deserialize_str(crate::serde::FromStrVisitor::new($expecting))
+                deserializer.deserialize_string(crate::serde::FromStringVisitor::new($expecting))
             }
         }
     };

@@ -10,13 +10,13 @@ use crate::ParseError::InvalidPort;
 /// The port must be decimal digits only, with no sign. Leading zeros are allowed to match the standard library.
 ///
 /// # Examples
-/// localhost:80    -> `Ok(("localhost", 80))`
-/// :80             -> `Ok(("", 80))`
-/// :080            -> `Ok(("", 80))`
-/// :0              -> `Ok(("", 0))`
-/// :8x             -> `Err(InvalidPort)`
-/// :+80            -> `Err(InvalidPort)`
-/// 80              -> `Err(InvalidPort)`
+/// `localhost:80` -> `Ok(("localhost", 80))`
+/// `:80`          -> `Ok(("", 80))`
+/// `:080`         -> `Ok(("", 80))`
+/// `:0`           -> `Ok(("", 0))`
+/// `:8x`          -> `Err(InvalidPort)`
+/// `:+80`         -> `Err(InvalidPort)`
+/// `80`           -> `Err(InvalidPort)`
 pub(crate) fn parse_port(address: &[u8]) -> Result<(&[u8], u16), ParseError> {
     if let Some(colon) = address.iter().rposition(|c| *c == b':') {
         let port: &[u8] = &address[colon + 1..];

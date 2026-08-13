@@ -25,8 +25,17 @@
 - Socket parsing rejects the zone syntax std accepts (`[fe80::1%1]:80` parses via `SocketAddrV6::from_str`), since
   scope ids are not modeled. Decide whether to document or support it.
 
+## Parsing
+
+- Compose the owned `Endpoint`/`Host`/`Authority` parsers from owned components directly, replacing the triplicated
+  Ref-parse-then-lowercase-rescue blocks.
+- Consolidate `Domain`'s triple validate-then-lowercase ladder into a single classifier & route all construction
+  through `new_unchecked`.
+
 ## Testing
 
+- Refactor the `tests/` folder: rework the `tests/canonical/` corpus (free consts in `mod.rs`, frozen composite
+  subsets) & dedupe the duplicated round-trip/serde macros & wiring.
 - Coverage is representative, not exhaustive: most items get a single happy-path case. Edge cases could be much
   deeper across the crate.
 - Test the README claim that version-specific types match the std wire format: assert binary-serialized

@@ -1,7 +1,7 @@
 [package]
 name = "address"
-version = "0.20.0-rc.1"
-description = "This library aids in processing network addresses."
+version = "0.20.0-rc.2"
+description = "Network address types with strict validation, owned & borrowed variants, and standard library conversions."
 readme = "README.md"
 repository = "https://github.com/nikdeapen/address"
 homepage = "https://github.com/nikdeapen/address"
@@ -11,18 +11,18 @@ license = "MIT"
 keywords = ["address", "ip", "domain", "socket", "network"]
 categories = ["network-programming", "parser-implementations"]
 
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
+
 [dependencies]
 idna = { version = "1.1", optional = true }
-serde = { version = "1.0", optional = true, default-features = false }
-
-[features]
-idna = ["dep:idna"]
-serde = ["dep:serde"]
+serde = { version = "1.0", optional = true, default-features = false, features = ["alloc"] }
 
 [dev-dependencies]
 postcard = { version = "1.1", features = ["alloc"] }
 serde_json = "1.0"
 
-[package.metadata.docs.rs]
-all-features = true
-rustdoc-args = ["--cfg", "docsrs"]
+[features]
+idna = ["dep:idna"]
+serde = ["dep:serde"]

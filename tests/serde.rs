@@ -1,47 +1,19 @@
 #![cfg(feature = "serde")]
 
+mod canonical;
+
 use address::{
     Authority, AuthorityRef, Domain, DomainRef, Endpoint, EndpointRef, Host, HostRef, IPAddress, IPv4Address,
     IPv6Address, SocketAddress, SocketAddressV4, SocketAddressV6,
+};
+use canonical::{
+    AUTHORITIES, DOMAINS, ENDPOINTS, HOSTS, IP_ADDRESSES, IPV4_ADDRESSES, IPV6_ADDRESSES, SOCKET_ADDRESSES,
+    SOCKET_ADDRESSES_V4, SOCKET_ADDRESSES_V6,
 };
 use serde::Serialize;
 use serde::de::DeserializeOwned;
 use std::fmt::Debug;
 use std::str::FromStr;
-
-const IPV4_ADDRESSES: &[&str] = &["0.0.0.0", "127.0.0.1", "1.2.3.4", "255.255.255.255"];
-const IPV6_ADDRESSES: &[&str] = &[
-    "::",
-    "::1",
-    "1::",
-    "1::1",
-    "1:0:0:1::",
-    "1:2:3:4:5:6:7:8",
-    "fe80::1",
-    "::ffff:1.2.3.4",
-    "2001:db8::8a2e:370:7334",
-    "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff",
-];
-const IP_ADDRESSES: &[&str] = &["127.0.0.1", "255.255.255.255", "::1", "fe80::1"];
-const SOCKET_ADDRESSES_V4: &[&str] = &["0.0.0.0:0", "127.0.0.1:80", "255.255.255.255:65535"];
-const SOCKET_ADDRESSES_V6: &[&str] = &["[::]:0", "[::1]:80", "[::ffff:1.2.3.4]:443", "[fe80::1]:65535"];
-const SOCKET_ADDRESSES: &[&str] = &["127.0.0.1:80", "[::1]:443", "[fe80::1]:0"];
-const DOMAINS: &[&str] = &[
-    "localhost",
-    "example.com",
-    "a-b.c--d.example",
-    "xn--bcher-kva.example",
-    "123.example",
-];
-const ENDPOINTS: &[&str] = &["localhost:80", "example.com:443", "a.b.c:65535", "x:0"];
-const HOSTS: &[&str] = &["localhost", "example.com", "127.0.0.1", "::1", "fe80::1"];
-const AUTHORITIES: &[&str] = &[
-    "localhost:80",
-    "example.com:443",
-    "127.0.0.1:80",
-    "[::1]:443",
-    "[fe80::1]:0",
-];
 
 fn assert_round_trips<T>(canonical: &[&str])
 where
@@ -80,32 +52,32 @@ macro_rules! assert_ref_round_trips {
 }
 
 #[test]
-fn ipv4_address() {
+fn ipv4() {
     assert_round_trips::<IPv4Address>(IPV4_ADDRESSES);
 }
 
 #[test]
-fn ipv6_address() {
+fn ipv6() {
     assert_round_trips::<IPv6Address>(IPV6_ADDRESSES);
 }
 
 #[test]
-fn ip_address() {
+fn ip() {
     assert_round_trips::<IPAddress>(IP_ADDRESSES);
 }
 
 #[test]
-fn socket_address_v4() {
+fn socket_v4() {
     assert_round_trips::<SocketAddressV4>(SOCKET_ADDRESSES_V4);
 }
 
 #[test]
-fn socket_address_v6() {
+fn socket_v6() {
     assert_round_trips::<SocketAddressV6>(SOCKET_ADDRESSES_V6);
 }
 
 #[test]
-fn socket_address() {
+fn socket() {
     assert_round_trips::<SocketAddress>(SOCKET_ADDRESSES);
 }
 

@@ -2,8 +2,7 @@ use crate::Domain;
 
 /// A domain name reference.
 ///
-/// See `Domain` for the domain name validation rules. A borrowed name cannot be normalized, so the name must already
-/// be lowercase.
+/// See [`Domain`] for the domain name validation rules.
 #[must_use]
 #[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
 pub struct DomainRef<'a> {

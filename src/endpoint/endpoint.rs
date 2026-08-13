@@ -68,7 +68,6 @@ mod tests {
     #[test]
     fn deconstruction() {
         let endpoint: Endpoint = Endpoint::new(Domain::localhost(), 80);
-
         let (domain, port): (Domain, u16) = endpoint.into();
         assert_eq!(domain, Domain::localhost());
         assert_eq!(port, 80);
