@@ -56,13 +56,13 @@ mod tests {
 
     #[test]
     fn construction() {
-        let result: EndpointRef = EndpointRef::new(DomainRef::LOCALHOST, 80);
-        assert_eq!(result.domain, DomainRef::LOCALHOST);
-        assert_eq!(result.port, 80);
+        let endpoint: EndpointRef = EndpointRef::new(DomainRef::LOCALHOST, 80);
+        assert_eq!(endpoint.domain, DomainRef::LOCALHOST);
+        assert_eq!(endpoint.port, 80);
 
-        let result: EndpointRef = (DomainRef::LOCALHOST, 80).into();
-        assert_eq!(result.domain, DomainRef::LOCALHOST);
-        assert_eq!(result.port, 80);
+        let endpoint: EndpointRef = (DomainRef::LOCALHOST, 80).into();
+        assert_eq!(endpoint.domain, DomainRef::LOCALHOST);
+        assert_eq!(endpoint.port, 80);
     }
 
     #[test]

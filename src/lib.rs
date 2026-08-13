@@ -12,6 +12,7 @@ pub use parse::*;
 pub use socket::*;
 
 mod authority;
+mod display;
 mod domain;
 mod endpoint;
 mod host;

@@ -105,21 +105,6 @@ mod tests {
     }
 
     #[test]
-    fn name_length_boundaries() {
-        let test_cases: &[(usize, usize, bool)] =
-            &[(61, Domain::MAX_NAME_LEN, true), (62, Domain::MAX_NAME_LEN + 1, false)];
-
-        for (tail_len, expected_len, expected) in test_cases {
-            let label: String = "a".repeat(Domain::MAX_LABEL_LEN);
-            let name: String = format!("{}.{}.{}.{}", label, label, label, "a".repeat(*tail_len));
-            assert_eq!(name.len(), *expected_len, "tail_len={}", tail_len);
-
-            let result: bool = Domain::is_valid_name_str(name.as_str(), false);
-            assert_eq!(result, *expected, "tail_len={}", tail_len);
-        }
-    }
-
-    #[test]
     fn is_valid_name() {
         let test_cases: &[(&str, bool, bool)] = &[
             ("", false, false),
@@ -139,6 +124,21 @@ mod tests {
 
             let result: bool = Domain::is_valid_name_str(name, true);
             assert_eq!(result, *expected_ignore_case, "name={}", name);
+        }
+    }
+
+    #[test]
+    fn name_length_boundaries() {
+        let test_cases: &[(usize, usize, bool)] =
+            &[(61, Domain::MAX_NAME_LEN, true), (62, Domain::MAX_NAME_LEN + 1, false)];
+
+        for (tail_len, expected_len, expected) in test_cases {
+            let label: String = "a".repeat(Domain::MAX_LABEL_LEN);
+            let name: String = format!("{}.{}.{}.{}", label, label, label, "a".repeat(*tail_len));
+            assert_eq!(name.len(), *expected_len, "tail_len={}", tail_len);
+
+            let result: bool = Domain::is_valid_name_str(name.as_str(), false);
+            assert_eq!(result, *expected, "tail_len={}", tail_len);
         }
     }
 }

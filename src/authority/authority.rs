@@ -2,7 +2,8 @@ use crate::{AuthorityRef, Host, HostRef};
 
 /// A host with an associated port.
 ///
-/// The port is required and user-info is not supported.
+/// Diverging from [RFC 3986](https://www.rfc-editor.org/rfc/rfc3986#section-3.2), the port is required and user-info
+/// is not supported.
 #[must_use]
 #[derive(Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
 pub struct Authority {
@@ -81,11 +82,11 @@ mod tests {
 
     #[test]
     fn equality() {
-        let authority: Authority = Authority::new(Host::Name(Domain::localhost()), 80);
-        assert_eq!(authority, authority.to_ref());
+        let eighty: Authority = Authority::new(Host::Name(Domain::localhost()), 80);
+        assert_eq!(eighty, eighty.to_ref());
 
-        let other: Authority = Authority::new(Host::Name(Domain::localhost()), 81);
-        assert_ne!(authority, other.to_ref());
+        let eighty_one: Authority = Authority::new(Host::Name(Domain::localhost()), 81);
+        assert_ne!(eighty, eighty_one.to_ref());
     }
 
     #[test]

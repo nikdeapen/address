@@ -121,8 +121,10 @@ mod tests {
 
         let result: [u8; 4] = ip.into();
         assert_eq!(result, address);
+
         let result: (u8, u8, u8, u8) = ip.into();
         assert_eq!(result, bytes);
+
         let result: u32 = ip.into();
         assert_eq!(result, value);
     }

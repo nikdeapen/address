@@ -43,34 +43,30 @@ mod tests {
 
     #[test]
     fn v4() {
-        let test_cases: &[(SocketAddressV4, &str)] = &[(IPv4Address::LOCALHOST.to_socket(80), "127.0.0.1:80")];
-
-        for (socket, expected) in test_cases {
-            let result: String = socket.to_string();
-            assert_eq!(result, *expected, "socket={:?}", socket);
-        }
+        let socket: SocketAddressV4 = IPv4Address::LOCALHOST.to_socket(80);
+        let result: String = socket.to_string();
+        let expected: &str = "127.0.0.1:80";
+        assert_eq!(result, expected);
     }
 
     #[test]
     fn v6() {
-        let test_cases: &[(SocketAddressV6, &str)] = &[(IPv6Address::LOCALHOST.to_socket(80), "[::1]:80")];
-
-        for (socket, expected) in test_cases {
-            let result: String = socket.to_string();
-            assert_eq!(result, *expected, "socket={:?}", socket);
-        }
+        let socket: SocketAddressV6 = IPv6Address::LOCALHOST.to_socket(80);
+        let result: String = socket.to_string();
+        let expected: &str = "[::1]:80";
+        assert_eq!(result, expected);
     }
 
     #[test]
     fn socket() {
-        let test_cases: &[(SocketAddress, &str)] = &[
-            (IPv4Address::LOCALHOST.to_socket(80).to_socket(), "127.0.0.1:80"),
-            (IPv6Address::LOCALHOST.to_socket(80).to_socket(), "[::1]:80"),
-        ];
+        let socket: SocketAddress = IPv4Address::LOCALHOST.to_socket(80).to_socket();
+        let result: String = socket.to_string();
+        let expected: &str = "127.0.0.1:80";
+        assert_eq!(result, expected);
 
-        for (socket, expected) in test_cases {
-            let result: String = socket.to_string();
-            assert_eq!(result, *expected, "socket={:?}", socket);
-        }
+        let socket: SocketAddress = IPv6Address::LOCALHOST.to_socket(80).to_socket();
+        let result: String = socket.to_string();
+        let expected: &str = "[::1]:80";
+        assert_eq!(result, expected);
     }
 }

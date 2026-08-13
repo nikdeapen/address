@@ -161,8 +161,10 @@ mod tests {
 
         let result: [u8; 16] = ip.into();
         assert_eq!(result, address);
+
         let result: [u16; 8] = ip.into();
         assert_eq!(result, segments);
+
         let result: u128 = ip.into();
         assert_eq!(result, value);
     }

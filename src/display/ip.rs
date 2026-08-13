@@ -60,24 +60,27 @@ mod tests {
 
     #[test]
     fn v6() {
-        let test_cases: &[(IPv6Address, &str)] = &[(IPv6Address::UNSPECIFIED, "::"), (IPv6Address::LOCALHOST, "::1")];
+        let ip: IPv6Address = IPv6Address::UNSPECIFIED;
+        let result: String = ip.to_string();
+        let expected: &str = "::";
+        assert_eq!(result, expected);
 
-        for (ip, expected) in test_cases {
-            let result: String = ip.to_string();
-            assert_eq!(result, *expected, "ip={:?}", ip);
-        }
+        let ip: IPv6Address = IPv6Address::LOCALHOST;
+        let result: String = ip.to_string();
+        let expected: &str = "::1";
+        assert_eq!(result, expected);
     }
 
     #[test]
     fn ip() {
-        let test_cases: &[(IPAddress, &str)] = &[
-            (IPv4Address::LOCALHOST.to_ip(), "127.0.0.1"),
-            (IPv6Address::LOCALHOST.to_ip(), "::1"),
-        ];
+        let ip: IPAddress = IPv4Address::LOCALHOST.to_ip();
+        let result: String = ip.to_string();
+        let expected: &str = "127.0.0.1";
+        assert_eq!(result, expected);
 
-        for (ip, expected) in test_cases {
-            let result: String = ip.to_string();
-            assert_eq!(result, *expected, "ip={:?}", ip);
-        }
+        let ip: IPAddress = IPv6Address::LOCALHOST.to_ip();
+        let result: String = ip.to_string();
+        let expected: &str = "::1";
+        assert_eq!(result, expected);
     }
 }

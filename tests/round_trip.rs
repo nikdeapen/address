@@ -1,6 +1,12 @@
+mod canonical;
+
 use address::{
-    Authority, Domain, Endpoint, Host, IPAddress, IPv4Address, IPv6Address, SocketAddress, SocketAddressV4,
-    SocketAddressV6,
+    Authority, AuthorityRef, Domain, DomainRef, Endpoint, EndpointRef, Host, HostRef, IPAddress, IPv4Address,
+    IPv6Address, SocketAddress, SocketAddressV4, SocketAddressV6,
+};
+use canonical::{
+    AUTHORITIES, DOMAINS, ENDPOINTS, HOSTS, IP_ADDRESSES, IPV4_ADDRESSES, IPV6_ADDRESSES, SOCKET_ADDRESSES,
+    SOCKET_ADDRESSES_V4, SOCKET_ADDRESSES_V6,
 };
 use std::fmt::{Debug, Display};
 use std::str::FromStr;
@@ -25,6 +31,22 @@ where
     }
 }
 
+/// Parses each canonical string as a reference type, checks the value displays as the exact same string, then checks
+/// the displayed string parses back to an equal value.
+macro_rules! assert_ref_round_trips {
+    ($ty:ident, $canonical:expr) => {
+        for s in $canonical {
+            let value: $ty = $ty::try_from(*s).unwrap();
+
+            let displayed: String = value.to_string();
+            assert_eq!(displayed.as_str(), *s, "display was not canonical for {:?}", s);
+
+            let reparsed: $ty = $ty::try_from(displayed.as_str()).unwrap();
+            assert_eq!(reparsed, value, "reparse changed the value for {:?}", s);
+        }
+    };
+}
+
 /// Displays each value and checks the displayed string parses back to an equal value.
 fn assert_display_parses<T>(values: &[T])
 where
@@ -43,23 +65,12 @@ where
 
 #[test]
 fn ipv4() {
-    assert_round_trips::<IPv4Address>(&["0.0.0.0", "127.0.0.1", "1.2.3.4", "255.255.255.255"]);
+    assert_round_trips::<IPv4Address>(IPV4_ADDRESSES);
 }
 
 #[test]
 fn ipv6() {
-    assert_round_trips::<IPv6Address>(&[
-        "::",
-        "::1",
-        "1::",
-        "1::1",
-        "1:0:0:1::",
-        "1:2:3:4:5:6:7:8",
-        "fe80::1",
-        "::ffff:1.2.3.4",
-        "2001:db8::8a2e:370:7334",
-        "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff",
-    ]);
+    assert_round_trips::<IPv6Address>(IPV6_ADDRESSES);
 }
 
 #[test]
@@ -77,26 +88,26 @@ fn ipv6_constructed() {
 
 #[test]
 fn ip() {
-    assert_round_trips::<IPAddress>(&["127.0.0.1", "255.255.255.255", "::1", "fe80::1"]);
+    assert_round_trips::<IPAddress>(IP_ADDRESSES);
 }
 
 #[test]
 fn socket_v4() {
-    assert_round_trips::<SocketAddressV4>(&["0.0.0.0:0", "127.0.0.1:80", "255.255.255.255:65535"]);
+    assert_round_trips::<SocketAddressV4>(SOCKET_ADDRESSES_V4);
 }
 
 #[test]
 fn socket_v6() {
-    assert_round_trips::<SocketAddressV6>(&["[::]:0", "[::1]:80", "[::ffff:1.2.3.4]:443", "[fe80::1]:65535"]);
+    assert_round_trips::<SocketAddressV6>(SOCKET_ADDRESSES_V6);
 }
 
 #[test]
 fn socket() {
-    assert_round_trips::<SocketAddress>(&["127.0.0.1:80", "[::1]:443", "[fe80::1]:0"]);
+    assert_round_trips::<SocketAddress>(SOCKET_ADDRESSES);
 }
 
 #[test]
-fn sockets_constructed() {
+fn socket_constructed() {
     assert_display_parses(&[
         IPv6Address::from([0, 0, 1, 0, 0, 0, 0, 1]).to_socket(0),
         IPv6Address::from(u128::MAX).to_socket(65535),
@@ -109,32 +120,40 @@ fn sockets_constructed() {
 
 #[test]
 fn domain() {
-    assert_round_trips::<Domain>(&[
-        "localhost",
-        "example.com",
-        "a-b.c--d.example",
-        "xn--bcher-kva.example",
-        "123.example",
-    ]);
+    assert_round_trips::<Domain>(DOMAINS);
+}
+
+#[test]
+fn domain_ref() {
+    assert_ref_round_trips!(DomainRef, DOMAINS);
 }
 
 #[test]
 fn endpoint() {
-    assert_round_trips::<Endpoint>(&["localhost:80", "example.com:443", "a.b.c:65535", "x:0"]);
+    assert_round_trips::<Endpoint>(ENDPOINTS);
+}
+
+#[test]
+fn endpoint_ref() {
+    assert_ref_round_trips!(EndpointRef, ENDPOINTS);
 }
 
 #[test]
 fn host() {
-    assert_round_trips::<Host>(&["localhost", "example.com", "127.0.0.1", "::1", "fe80::1"]);
+    assert_round_trips::<Host>(HOSTS);
+}
+
+#[test]
+fn host_ref() {
+    assert_ref_round_trips!(HostRef, HOSTS);
 }
 
 #[test]
 fn authority() {
-    assert_round_trips::<Authority>(&[
-        "localhost:80",
-        "example.com:443",
-        "127.0.0.1:80",
-        "[::1]:443",
-        "[fe80::1]:0",
-    ]);
+    assert_round_trips::<Authority>(AUTHORITIES);
+}
+
+#[test]
+fn authority_ref() {
+    assert_ref_round_trips!(AuthorityRef, AUTHORITIES);
 }

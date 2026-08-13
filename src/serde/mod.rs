@@ -12,9 +12,11 @@
 //!   escaped input.
 
 pub(crate) use from_str_visitor::*;
+pub(crate) use from_string_visitor::*;
 pub(crate) use try_from_str_visitor::*;
 
 mod from_str_visitor;
+mod from_string_visitor;
 mod try_from_str_visitor;
 
 mod impl_serde_string;
