@@ -3,7 +3,6 @@
 ## Cargo
 
 - Decide whether to declare an MSRV: add `rust-version` to `Cargo.toml`, measure it, and enforce it in CI.
-- Test the feature matrix: no features, `idna` alone, and `serde` alone, not just `--all-features`.
 
 ## API
 
