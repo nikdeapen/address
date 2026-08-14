@@ -27,6 +27,19 @@ impl From<SocketAddr> for SocketAddress {
     }
 }
 
+impl From<SocketAddrV4> for SocketAddress {
+    fn from(std: SocketAddrV4) -> Self {
+        Self::new((*std.ip()).into(), std.port())
+    }
+}
+
+impl From<SocketAddrV6> for SocketAddress {
+    /// Converts the standard library address, discarding the `flow_info` & `scope_id`.
+    fn from(std: SocketAddrV6) -> Self {
+        Self::new((*std.ip()).into(), std.port())
+    }
+}
+
 impl From<SocketAddress> for SocketAddr {
     fn from(socket: SocketAddress) -> Self {
         socket.to_std()
@@ -49,6 +62,9 @@ mod tests {
         let result: SocketAddress = std.into();
         assert_eq!(result, socket);
 
+        let result: SocketAddress = SocketAddrV4::new(Ipv4Addr::LOCALHOST, 80).into();
+        assert_eq!(result, socket);
+
         let result: SocketAddr = socket.into();
         assert_eq!(result, std);
 
@@ -59,6 +75,9 @@ mod tests {
         assert_eq!(result, std);
 
         let result: SocketAddress = std.into();
+        assert_eq!(result, socket);
+
+        let result: SocketAddress = SocketAddrV6::new(Ipv6Addr::LOCALHOST, 80, 0, 0).into();
         assert_eq!(result, socket);
 
         let result: SocketAddr = socket.into();
@@ -77,6 +96,9 @@ mod tests {
         let std: SocketAddr = SocketAddr::V6(SocketAddrV6::new(Ipv6Addr::LOCALHOST, 80, 123, 456));
         let result: SocketAddress = std.into();
         let expected: SocketAddress = SocketAddress::new(IPv6Address::LOCALHOST.to_ip(), 80);
+        assert_eq!(result, expected);
+
+        let result: SocketAddress = SocketAddrV6::new(Ipv6Addr::LOCALHOST, 80, 123, 456).into();
         assert_eq!(result, expected);
     }
 }
