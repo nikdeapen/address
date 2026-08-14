@@ -1,5 +1,5 @@
 use crate::{IPAddress, IPv4Address, IPv6Address};
-use std::net::IpAddr;
+use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 
 impl IPAddress {
     //! Standard Library Conversions
@@ -20,6 +20,18 @@ impl From<IpAddr> for IPAddress {
             IpAddr::V4(ip) => Self::V4(IPv4Address::from(ip)),
             IpAddr::V6(ip) => Self::V6(IPv6Address::from(ip)),
         }
+    }
+}
+
+impl From<Ipv4Addr> for IPAddress {
+    fn from(std: Ipv4Addr) -> Self {
+        Self::V4(IPv4Address::from(std))
+    }
+}
+
+impl From<Ipv6Addr> for IPAddress {
+    fn from(std: Ipv6Addr) -> Self {
+        Self::V6(IPv6Address::from(std))
     }
 }
 
@@ -45,6 +57,9 @@ mod tests {
         let result: IPAddress = std.into();
         assert_eq!(result, ip);
 
+        let result: IPAddress = Ipv4Addr::LOCALHOST.into();
+        assert_eq!(result, ip);
+
         let result: IpAddr = ip.into();
         assert_eq!(result, std);
 
@@ -55,6 +70,9 @@ mod tests {
         assert_eq!(result, std);
 
         let result: IPAddress = std.into();
+        assert_eq!(result, ip);
+
+        let result: IPAddress = Ipv6Addr::LOCALHOST.into();
         assert_eq!(result, ip);
 
         let result: IpAddr = ip.into();

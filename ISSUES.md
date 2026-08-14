@@ -6,8 +6,6 @@
 
 ## API
 
-- Add `From` impls for std concrete types to crate aggregates: `Ipv4Addr`/`Ipv6Addr` -> `IPAddress` and
-  `SocketAddrV4`/`SocketAddrV6` -> `SocketAddress`, matching the std `IpAddr`/`SocketAddr` conversions.
 - Add direct `to_authority()` for `SocketAddressV4` & `SocketAddressV6`, avoiding `.to_socket().to_authority()`.
 - Align error accessor naming: `InvalidDomainName` exposes `name()` & `into_name()` while the coding rules say
   `value()` & `into_value()`. Rename the accessors or amend the rule.
