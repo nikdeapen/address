@@ -1,4 +1,4 @@
-use crate::Domain;
+use crate::{Domain, NameClass};
 
 impl Domain {
     //! Label Validation
@@ -6,9 +6,23 @@ impl Domain {
     /// The maximum length of a domain label.
     pub const MAX_LABEL_LEN: usize = 63;
 
-    /// Checks if the char `c` is valid. (excludes dots and dashes)
-    const fn is_valid_char(c: u8, ignore_case: bool) -> bool {
-        c.is_ascii_lowercase() || c.is_ascii_digit() || (ignore_case && c.is_ascii_uppercase())
+    /// Classifies the domain `label`.
+    pub(crate) fn classify_label(label: &[u8]) -> NameClass {
+        if (label.is_empty() || label.len() > Self::MAX_LABEL_LEN)
+            || (label[0] == b'-' || label[label.len() - 1] == b'-')
+        {
+            NameClass::Invalid
+        } else {
+            let mut class: NameClass = NameClass::Lowercase;
+            for c in label {
+                if c.is_ascii_uppercase() {
+                    class = NameClass::MixedCase;
+                } else if !(c.is_ascii_lowercase() || c.is_ascii_digit() || *c == b'-') {
+                    return NameClass::Invalid;
+                }
+            }
+            class
+        }
     }
 
     /// Checks if the domain `label` is valid.
@@ -17,12 +31,10 @@ impl Domain {
     /// start or end with a dash. Uppercase letters are also valid with `ignore_case`.
     #[must_use]
     pub fn is_valid_label(label: &[u8], ignore_case: bool) -> bool {
-        if (label.is_empty() || label.len() > Self::MAX_LABEL_LEN)
-            || (label[0] == b'-' || label[label.len() - 1] == b'-')
-        {
-            false
-        } else {
-            label.iter().all(|c| Self::is_valid_char(*c, ignore_case) || *c == b'-')
+        match Self::classify_label(label) {
+            NameClass::Lowercase => true,
+            NameClass::MixedCase => ignore_case,
+            NameClass::Invalid => false,
         }
     }
 
@@ -39,6 +51,23 @@ impl Domain {
     /// The maximum length of a domain name.
     pub const MAX_NAME_LEN: usize = 253;
 
+    /// Classifies the domain `name`.
+    pub(crate) fn classify_name(name: &[u8]) -> NameClass {
+        if name.is_empty() || name.len() > Self::MAX_NAME_LEN {
+            NameClass::Invalid
+        } else {
+            let mut class: NameClass = NameClass::Lowercase;
+            for label in name.split(|c| *c == b'.') {
+                match Self::classify_label(label) {
+                    NameClass::Invalid => return NameClass::Invalid,
+                    NameClass::MixedCase => class = NameClass::MixedCase,
+                    NameClass::Lowercase => {}
+                }
+            }
+            class
+        }
+    }
+
     /// Checks if the domain `name` is valid.
     ///
     /// A valid name is 1 to 253 (`MAX_NAME_LEN`) bytes of dot-separated valid labels. Labels cannot be empty, so
@@ -46,17 +75,10 @@ impl Domain {
     /// so service names like `_sip._tcp.example.com` cannot be represented.
     #[must_use]
     pub fn is_valid_name(name: &[u8], ignore_case: bool) -> bool {
-        if name.is_empty() || name.len() > Self::MAX_NAME_LEN {
-            false
-        } else {
-            let mut rem: &[u8] = name;
-            while let Some(dot) = rem.iter().position(|c| *c == b'.') {
-                if !Self::is_valid_label(&rem[..dot], ignore_case) {
-                    return false;
-                }
-                rem = &rem[dot + 1..];
-            }
-            Self::is_valid_label(rem, ignore_case)
+        match Self::classify_name(name) {
+            NameClass::Lowercase => true,
+            NameClass::MixedCase => ignore_case,
+            NameClass::Invalid => false,
         }
     }
 

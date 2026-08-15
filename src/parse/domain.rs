@@ -1,22 +1,63 @@
 use crate::ParseError::InvalidDomain;
-use crate::{Domain, InvalidDomainName, ParseError, impl_parse};
+use crate::{Domain, InvalidDomainName, NameClass, ParseError, impl_parse};
 
 impl_parse!(Domain, "The name is normalized to lowercase.");
+
+impl Domain {
+    //! Owned Parsing
+
+    /// Creates a domain from the first `len` bytes of `name`, normalizing the name to lowercase.
+    ///
+    /// Returns the unmodified `name` if the prefix is not a valid domain name.
+    pub(crate) fn from_string_prefix(name: String, len: usize) -> Result<Self, String> {
+        match Self::classify_name(&name.as_bytes()[..len]) {
+            NameClass::Invalid => Err(name),
+            class => {
+                let mut name: String = name;
+                name.truncate(len);
+                if class == NameClass::MixedCase {
+                    name.make_ascii_lowercase();
+                }
+                Ok(unsafe { Self::new_unchecked(name) })
+            }
+        }
+    }
+
+    /// Creates a domain from the first `len` bytes of `name`, normalizing the name to lowercase.
+    ///
+    /// Returns the unmodified `name` if the prefix is not a valid domain name.
+    pub(crate) fn from_vec_prefix(name: Vec<u8>, len: usize) -> Result<Self, Vec<u8>> {
+        match Self::classify_name(&name[..len]) {
+            NameClass::Invalid => Err(name),
+            class => {
+                let mut name: Vec<u8> = name;
+                name.truncate(len);
+                if class == NameClass::MixedCase {
+                    name.make_ascii_lowercase();
+                }
+                let name: String = unsafe { String::from_utf8_unchecked(name) };
+                Ok(unsafe { Self::new_unchecked(name) })
+            }
+        }
+    }
+}
 
 impl TryFrom<&[u8]> for Domain {
     type Error = ParseError;
 
     /// The name is normalized to lowercase.
     fn try_from(name: &[u8]) -> Result<Self, Self::Error> {
-        if Self::is_valid_name(name, false) {
-            let name: &str = unsafe { std::str::from_utf8_unchecked(name) };
-            Ok(unsafe { Self::new_unchecked(name) })
-        } else if Self::is_valid_name(name, true) {
-            let name: &str = unsafe { std::str::from_utf8_unchecked(name) };
-            let name: String = name.to_ascii_lowercase();
-            Ok(unsafe { Self::new_unchecked(name) })
-        } else {
-            Err(InvalidDomain)
+        match Self::classify_name(name) {
+            NameClass::Lowercase => {
+                let name: &str = unsafe { std::str::from_utf8_unchecked(name) };
+                Ok(unsafe { Self::new_unchecked(name) })
+            }
+            NameClass::MixedCase => {
+                let name: &str = unsafe { std::str::from_utf8_unchecked(name) };
+                let name: String = name.to_ascii_lowercase();
+                Ok(unsafe { Self::new_unchecked(name) })
+            }
+            NameClass::Invalid => Err(InvalidDomain),
         }
     }
 }
@@ -26,15 +67,8 @@ impl TryFrom<String> for Domain {
 
     /// The name is normalized to lowercase.
     fn try_from(name: String) -> Result<Self, Self::Error> {
-        if Self::is_valid_name_str(name.as_str(), false) {
-            Ok(unsafe { Self::new_unchecked(name) })
-        } else if Self::is_valid_name_str(name.as_str(), true) {
-            let mut name: String = name;
-            name.make_ascii_lowercase();
-            Ok(unsafe { Self::new_unchecked(name) })
-        } else {
-            Err(InvalidDomainName::new(name))
-        }
+        let len: usize = name.len();
+        Self::from_string_prefix(name, len).map_err(InvalidDomainName::new)
     }
 }
 
@@ -43,16 +77,8 @@ impl TryFrom<Vec<u8>> for Domain {
 
     /// The name is normalized to lowercase.
     fn try_from(name: Vec<u8>) -> Result<Self, Self::Error> {
-        if Self::is_valid_name(name.as_slice(), false) {
-            let name: String = unsafe { String::from_utf8_unchecked(name) };
-            Ok(unsafe { Self::new_unchecked(name) })
-        } else if Self::is_valid_name(name.as_slice(), true) {
-            let mut name: String = unsafe { String::from_utf8_unchecked(name) };
-            name.make_ascii_lowercase();
-            Ok(unsafe { Self::new_unchecked(name) })
-        } else {
-            Err(InvalidDomainName::new(name))
-        }
+        let len: usize = name.len();
+        Self::from_vec_prefix(name, len).map_err(InvalidDomainName::new)
     }
 }
 
