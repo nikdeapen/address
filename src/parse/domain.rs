@@ -115,7 +115,7 @@ mod tests {
 
         for (input, expected) in test_cases {
             let result: Result<Domain, InvalidDomainName<String>> = Domain::try_from(input.to_string());
-            let result: Result<Domain, String> = result.map_err(|e| e.into_name());
+            let result: Result<Domain, String> = result.map_err(|e| e.into_value());
             assert_eq!(result, expected.clone().map_err(String::from), "input={}", input);
         }
     }
@@ -130,7 +130,7 @@ mod tests {
 
         for (input, expected) in test_cases {
             let result: Result<Domain, InvalidDomainName<Vec<u8>>> = Domain::try_from(Vec::from(*input));
-            let result: Result<Domain, Vec<u8>> = result.map_err(|e| e.into_name());
+            let result: Result<Domain, Vec<u8>> = result.map_err(|e| e.into_value());
             assert_eq!(result, expected.clone().map_err(Vec::from), "input={}", input);
         }
     }

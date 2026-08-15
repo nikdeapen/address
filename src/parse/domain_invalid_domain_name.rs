@@ -6,35 +6,35 @@ use std::fmt::{Debug, Display, Formatter};
 /// The invalid name value can be recovered, like `std::string::FromUtf8Error`.
 #[derive(Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Debug)]
 pub struct InvalidDomainName<T> {
-    name: T,
+    value: T,
 }
 
 impl<T> InvalidDomainName<T> {
     //! Construction
 
     /// Creates a new invalid domain name error.
-    pub(crate) const fn new(name: T) -> Self {
-        Self { name }
+    pub(crate) const fn new(value: T) -> Self {
+        Self { value }
     }
 }
 
 impl<T> InvalidDomainName<T> {
     //! Properties
 
-    /// Gets the invalid domain name.
+    /// Gets the invalid domain name value.
     #[must_use]
-    pub const fn name(&self) -> &T {
-        &self.name
+    pub const fn value(&self) -> &T {
+        &self.value
     }
 }
 
 impl<T> InvalidDomainName<T> {
     //! Deconstruction
 
-    /// Converts the error back into the invalid domain name.
+    /// Converts the error back into the invalid domain name value.
     #[must_use]
-    pub fn into_name(self) -> T {
-        self.name
+    pub fn into_value(self) -> T {
+        self.value
     }
 }
 
