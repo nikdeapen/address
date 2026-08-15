@@ -75,5 +75,6 @@ can be converted to their ASCII form with the `idna` feature.
 
 The IP & socket address types are separate from their standard library counterparts so the host & authority types can
 compose them and the whole family behaves uniformly. They convert to & from the standard library types. IPv6 socket
-addresses do not model `flow_info` or `scope_id`: converting from the standard library discards them & converting to
-it zeroes them.
+addresses do not model `flow_info` or `scope_id`: converting from the standard library discards them, converting to it
+zeroes them, & socket parsing accepts the numeric zone syntax the standard library accepts (`[fe80::1%1]:80`) while
+ignoring the zone.
