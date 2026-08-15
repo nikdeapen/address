@@ -1,5 +1,6 @@
+use crate::ParseError::InvalidDomain;
 use crate::parse_port;
-use crate::{Domain, Endpoint, EndpointRef, InvalidAddress, ParseError, impl_parse};
+use crate::{Domain, Endpoint, InvalidAddress, ParseError, impl_parse};
 
 impl_parse!(Endpoint, "Domain names are normalized to lowercase.");
 
@@ -8,20 +9,9 @@ impl TryFrom<&[u8]> for Endpoint {
 
     /// Domain names are normalized to lowercase.
     fn try_from(endpoint: &[u8]) -> Result<Self, Self::Error> {
-        match EndpointRef::try_from(endpoint) {
-            Ok(endpoint) => Ok(endpoint.to_endpoint()),
-            Err(error) => {
-                // Lowercasing can only rescue a mixed-case domain; other failures keep the original error.
-                if endpoint.iter().any(|b| b.is_ascii_uppercase())
-                    && let Ok((domain, port)) = parse_port(endpoint)
-                    && let Ok(domain) = Domain::try_from(domain)
-                {
-                    Ok(domain.to_endpoint(port))
-                } else {
-                    Err(error)
-                }
-            }
-        }
+        let (name, port): (&[u8], u16) = parse_port(endpoint)?;
+        let domain: Domain = Domain::try_from(name)?;
+        Ok(domain.to_endpoint(port))
     }
 }
 
@@ -30,28 +20,14 @@ impl TryFrom<String> for Endpoint {
 
     /// Domain names are normalized to lowercase.
     fn try_from(endpoint: String) -> Result<Self, Self::Error> {
-        match EndpointRef::try_from(endpoint.as_bytes()) {
-            Ok(endpoint_ref) => {
-                let name_len: usize = endpoint_ref.domain().name().len();
-                let port: u16 = endpoint_ref.port();
-                let mut name: String = endpoint;
-                name.truncate(name_len);
-                Ok(unsafe { Domain::new_unchecked(name) }.to_endpoint(port))
+        match parse_port(endpoint.as_bytes()) {
+            Ok((name, port)) => {
+                let name_len: usize = name.len();
+                Domain::from_string_prefix(endpoint, name_len)
+                    .map(|domain| domain.to_endpoint(port))
+                    .map_err(|name| InvalidAddress::new(name, InvalidDomain))
             }
-            Err(error) => {
-                // Lowercasing can only rescue a mixed-case domain; other failures keep the original error.
-                if let Ok((domain, port)) = parse_port(endpoint.as_bytes())
-                    && Domain::is_valid_name(domain, true)
-                {
-                    let name_len: usize = domain.len();
-                    let mut name: String = endpoint;
-                    name.truncate(name_len);
-                    name.make_ascii_lowercase();
-                    Ok(unsafe { Domain::new_unchecked(name) }.to_endpoint(port))
-                } else {
-                    Err(InvalidAddress::new(endpoint, error))
-                }
-            }
+            Err(error) => Err(InvalidAddress::new(endpoint, error)),
         }
     }
 }
@@ -61,30 +37,14 @@ impl TryFrom<Vec<u8>> for Endpoint {
 
     /// Domain names are normalized to lowercase.
     fn try_from(endpoint: Vec<u8>) -> Result<Self, Self::Error> {
-        match EndpointRef::try_from(endpoint.as_slice()) {
-            Ok(endpoint_ref) => {
-                let name_len: usize = endpoint_ref.domain().name().len();
-                let port: u16 = endpoint_ref.port();
-                let mut name: Vec<u8> = endpoint;
-                name.truncate(name_len);
-                let name: String = unsafe { String::from_utf8_unchecked(name) };
-                Ok(unsafe { Domain::new_unchecked(name) }.to_endpoint(port))
+        match parse_port(endpoint.as_slice()) {
+            Ok((name, port)) => {
+                let name_len: usize = name.len();
+                Domain::from_vec_prefix(endpoint, name_len)
+                    .map(|domain| domain.to_endpoint(port))
+                    .map_err(|name| InvalidAddress::new(name, InvalidDomain))
             }
-            Err(error) => {
-                // Lowercasing can only rescue a mixed-case domain; other failures keep the original error.
-                if let Ok((domain, port)) = parse_port(endpoint.as_slice())
-                    && Domain::is_valid_name(domain, true)
-                {
-                    let name_len: usize = domain.len();
-                    let mut name: Vec<u8> = endpoint;
-                    name.truncate(name_len);
-                    name.make_ascii_lowercase();
-                    let name: String = unsafe { String::from_utf8_unchecked(name) };
-                    Ok(unsafe { Domain::new_unchecked(name) }.to_endpoint(port))
-                } else {
-                    Err(InvalidAddress::new(endpoint, error))
-                }
-            }
+            Err(error) => Err(InvalidAddress::new(endpoint, error)),
         }
     }
 }

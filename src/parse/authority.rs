@@ -1,5 +1,6 @@
-use crate::parse_port;
-use crate::{Authority, AuthorityRef, Domain, HostRef, InvalidAddress, ParseError, impl_parse};
+use crate::ParseError::{InvalidAuthority, InvalidHost};
+use crate::{Authority, Domain, Host, IPAddress, IPv6Address, InvalidAddress, ParseError, impl_parse};
+use crate::{parse_port, strip_brackets};
 
 impl_parse!(Authority, "Domain names are normalized to lowercase.");
 
@@ -8,19 +9,18 @@ impl TryFrom<&[u8]> for Authority {
 
     /// Domain names are normalized to lowercase.
     fn try_from(authority: &[u8]) -> Result<Self, Self::Error> {
-        match AuthorityRef::try_from(authority) {
-            Ok(authority) => Ok(authority.to_authority()),
-            Err(error) => {
-                // Lowercasing can only rescue a mixed-case domain host; other failures keep the original error.
-                if authority.iter().any(|b| b.is_ascii_uppercase())
-                    && let Ok((host, port)) = parse_port(authority)
-                    && let Ok(domain) = Domain::try_from(host)
-                {
-                    Ok(domain.to_host().to_authority(port))
-                } else {
-                    Err(error)
-                }
+        let (s, port): (&[u8], u16) = parse_port(authority)?;
+        if let Some(s) = strip_brackets(s) {
+            let host: Host = IPv6Address::parse(s)?.to_host();
+            Ok(host.to_authority(port))
+        } else {
+            let host: Host = Host::try_from(s)?;
+            if let Host::Address(ip) = &host
+                && ip.is_v6()
+            {
+                return Err(InvalidAuthority);
             }
+            Ok(host.to_authority(port))
         }
     }
 }
@@ -30,31 +30,28 @@ impl TryFrom<String> for Authority {
 
     /// Domain names are normalized to lowercase.
     fn try_from(authority: String) -> Result<Self, Self::Error> {
-        match AuthorityRef::try_from(authority.as_bytes()) {
-            Ok(authority_ref) => match authority_ref.host() {
-                HostRef::Address(ip) => Ok(ip.to_host().to_authority(authority_ref.port())),
-                HostRef::Name(domain) => {
-                    let name_len: usize = domain.name().len();
-                    let port: u16 = authority_ref.port();
-                    let mut name: String = authority;
-                    name.truncate(name_len);
-                    Ok(unsafe { Domain::new_unchecked(name) }.to_host().to_authority(port))
-                }
-            },
-            Err(error) => {
-                // Lowercasing can only rescue a mixed-case domain host; other failures keep the original error.
-                if let Ok((host, port)) = parse_port(authority.as_bytes())
-                    && Domain::is_valid_name(host, true)
-                {
-                    let name_len: usize = host.len();
-                    let mut name: String = authority;
-                    name.truncate(name_len);
-                    name.make_ascii_lowercase();
-                    Ok(unsafe { Domain::new_unchecked(name) }.to_host().to_authority(port))
+        match parse_port(authority.as_bytes()) {
+            Ok((s, port)) => {
+                if let Some(s) = strip_brackets(s) {
+                    match IPv6Address::parse(s) {
+                        Ok(ip) => Ok(ip.to_host().to_authority(port)),
+                        Err(error) => Err(InvalidAddress::new(authority, error)),
+                    }
+                } else if let Ok(ip) = IPAddress::parse(s) {
+                    if ip.is_v6() {
+                        Err(InvalidAddress::new(authority, InvalidAuthority))
+                    } else {
+                        Ok(ip.to_host().to_authority(port))
+                    }
                 } else {
-                    Err(InvalidAddress::new(authority, error))
+                    let name_len: usize = s.len();
+                    match Domain::from_string_prefix(authority, name_len) {
+                        Ok(domain) => Ok(domain.to_host().to_authority(port)),
+                        Err(name) => Err(InvalidAddress::new(name, InvalidHost)),
+                    }
                 }
             }
+            Err(error) => Err(InvalidAddress::new(authority, error)),
         }
     }
 }
@@ -64,33 +61,28 @@ impl TryFrom<Vec<u8>> for Authority {
 
     /// Domain names are normalized to lowercase.
     fn try_from(authority: Vec<u8>) -> Result<Self, Self::Error> {
-        match AuthorityRef::try_from(authority.as_slice()) {
-            Ok(authority_ref) => match authority_ref.host() {
-                HostRef::Address(ip) => Ok(ip.to_host().to_authority(authority_ref.port())),
-                HostRef::Name(domain) => {
-                    let name_len: usize = domain.name().len();
-                    let port: u16 = authority_ref.port();
-                    let mut name: Vec<u8> = authority;
-                    name.truncate(name_len);
-                    let name: String = unsafe { String::from_utf8_unchecked(name) };
-                    Ok(unsafe { Domain::new_unchecked(name) }.to_host().to_authority(port))
-                }
-            },
-            Err(error) => {
-                // Lowercasing can only rescue a mixed-case domain host; other failures keep the original error.
-                if let Ok((host, port)) = parse_port(authority.as_slice())
-                    && Domain::is_valid_name(host, true)
-                {
-                    let name_len: usize = host.len();
-                    let mut name: Vec<u8> = authority;
-                    name.truncate(name_len);
-                    name.make_ascii_lowercase();
-                    let name: String = unsafe { String::from_utf8_unchecked(name) };
-                    Ok(unsafe { Domain::new_unchecked(name) }.to_host().to_authority(port))
+        match parse_port(authority.as_slice()) {
+            Ok((s, port)) => {
+                if let Some(s) = strip_brackets(s) {
+                    match IPv6Address::parse(s) {
+                        Ok(ip) => Ok(ip.to_host().to_authority(port)),
+                        Err(error) => Err(InvalidAddress::new(authority, error)),
+                    }
+                } else if let Ok(ip) = IPAddress::parse(s) {
+                    if ip.is_v6() {
+                        Err(InvalidAddress::new(authority, InvalidAuthority))
+                    } else {
+                        Ok(ip.to_host().to_authority(port))
+                    }
                 } else {
-                    Err(InvalidAddress::new(authority, error))
+                    let name_len: usize = s.len();
+                    match Domain::from_vec_prefix(authority, name_len) {
+                        Ok(domain) => Ok(domain.to_host().to_authority(port)),
+                        Err(name) => Err(InvalidAddress::new(name, InvalidHost)),
+                    }
                 }
             }
+            Err(error) => Err(InvalidAddress::new(authority, error)),
         }
     }
 }

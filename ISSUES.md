@@ -14,13 +14,6 @@
 - `Domain` allows an all-numeric final label (e.g. `999.1.1.1`), so malformed IPv4 strings parse as domains in
   `Host`/`Authority`. RFC 1123/3696 hostname rules forbid this; raw DNS allows it. Decide which profile to follow.
 
-## Parsing
-
-- Compose the owned `Endpoint`/`Host`/`Authority` parsers from owned components directly, replacing the triplicated
-  Ref-parse-then-lowercase-rescue blocks.
-- Consolidate `Domain`'s triple validate-then-lowercase ladder into a single classifier & route all construction
-  through `new_unchecked`.
-
 ## Testing
 
 - Refactor the `tests/` folder: rework the `tests/canonical/` corpus (free consts in `mod.rs`, frozen composite

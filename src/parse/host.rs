@@ -1,4 +1,5 @@
-use crate::{Domain, Host, HostRef, InvalidAddress, ParseError, impl_parse};
+use crate::ParseError::InvalidHost;
+use crate::{Domain, Host, IPAddress, InvalidAddress, ParseError, impl_parse};
 
 impl_parse!(Host, "Domain names are normalized to lowercase.");
 
@@ -7,18 +8,12 @@ impl TryFrom<&[u8]> for Host {
 
     /// Domain names are normalized to lowercase.
     fn try_from(host: &[u8]) -> Result<Self, Self::Error> {
-        match HostRef::try_from(host) {
-            Ok(host) => Ok(host.to_host()),
-            Err(error) => {
-                // Lowercasing can only rescue a mixed-case domain; other failures keep the original error.
-                if host.iter().any(|b| b.is_ascii_uppercase())
-                    && let Ok(domain) = Domain::try_from(host)
-                {
-                    Ok(domain.to_host())
-                } else {
-                    Err(error)
-                }
-            }
+        if let Ok(ip) = IPAddress::parse(host) {
+            Ok(ip.to_host())
+        } else if let Ok(domain) = Domain::try_from(host) {
+            Ok(domain.to_host())
+        } else {
+            Err(InvalidHost)
         }
     }
 }
@@ -28,19 +23,13 @@ impl TryFrom<String> for Host {
 
     /// Domain names are normalized to lowercase.
     fn try_from(host: String) -> Result<Self, Self::Error> {
-        match HostRef::try_from(host.as_bytes()) {
-            Ok(HostRef::Address(ip)) => Ok(Self::Address(ip)),
-            Ok(HostRef::Name(_)) => Ok(Self::Name(unsafe { Domain::new_unchecked(host) })),
-            Err(error) => {
-                // Lowercasing can only rescue a mixed-case domain; other failures keep the original error.
-                if Domain::is_valid_name(host.as_bytes(), true) {
-                    let mut name: String = host;
-                    name.make_ascii_lowercase();
-                    Ok(Self::Name(unsafe { Domain::new_unchecked(name) }))
-                } else {
-                    Err(InvalidAddress::new(host, error))
-                }
-            }
+        if let Ok(ip) = IPAddress::parse(host.as_bytes()) {
+            Ok(ip.to_host())
+        } else {
+            let len: usize = host.len();
+            Domain::from_string_prefix(host, len)
+                .map(Domain::to_host)
+                .map_err(|name| InvalidAddress::new(name, InvalidHost))
         }
     }
 }
@@ -50,23 +39,13 @@ impl TryFrom<Vec<u8>> for Host {
 
     /// Domain names are normalized to lowercase.
     fn try_from(host: Vec<u8>) -> Result<Self, Self::Error> {
-        match HostRef::try_from(host.as_slice()) {
-            Ok(HostRef::Address(ip)) => Ok(Self::Address(ip)),
-            Ok(HostRef::Name(_)) => {
-                let name: String = unsafe { String::from_utf8_unchecked(host) };
-                Ok(Self::Name(unsafe { Domain::new_unchecked(name) }))
-            }
-            Err(error) => {
-                // Lowercasing can only rescue a mixed-case domain; other failures keep the original error.
-                if Domain::is_valid_name(host.as_slice(), true) {
-                    let mut name: Vec<u8> = host;
-                    name.make_ascii_lowercase();
-                    let name: String = unsafe { String::from_utf8_unchecked(name) };
-                    Ok(Self::Name(unsafe { Domain::new_unchecked(name) }))
-                } else {
-                    Err(InvalidAddress::new(host, error))
-                }
-            }
+        if let Ok(ip) = IPAddress::parse(host.as_slice()) {
+            Ok(ip.to_host())
+        } else {
+            let len: usize = host.len();
+            Domain::from_vec_prefix(host, len)
+                .map(Domain::to_host)
+                .map_err(|name| InvalidAddress::new(name, InvalidHost))
         }
     }
 }
