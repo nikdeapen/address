@@ -1,4 +1,4 @@
-use crate::Domain;
+use crate::{Domain, Labels};
 
 /// A domain name reference.
 ///
@@ -39,6 +39,18 @@ impl<'a> PartialEq<Domain> for DomainRef<'a> {
     }
 }
 
+impl<'a> PartialEq<&str> for DomainRef<'a> {
+    fn eq(&self, other: &&str) -> bool {
+        self.name == *other
+    }
+}
+
+impl<'a> PartialEq<DomainRef<'a>> for &str {
+    fn eq(&self, other: &DomainRef<'a>) -> bool {
+        *self == other.name
+    }
+}
+
 impl<'a> DomainRef<'a> {
     //! Properties
 
@@ -46,6 +58,11 @@ impl<'a> DomainRef<'a> {
     #[must_use]
     pub const fn name(self) -> &'a str {
         self.name
+    }
+
+    /// Gets the labels.
+    pub fn labels(self) -> Labels<'a> {
+        Labels::new(self.name)
     }
 }
 
@@ -64,6 +81,10 @@ mod tests {
         let owned: Domain = Domain::localhost();
         assert_eq!(DomainRef::LOCALHOST, owned);
         assert_ne!(DomainRef::EXAMPLE, owned);
+        assert_eq!(DomainRef::LOCALHOST, "localhost");
+        assert_ne!(DomainRef::LOCALHOST, "example.com");
+        assert_eq!("localhost", DomainRef::LOCALHOST);
+        assert_ne!("example.com", DomainRef::LOCALHOST);
     }
 
     #[test]
