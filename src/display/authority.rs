@@ -45,4 +45,16 @@ mod tests {
             assert_eq!(result, *expected, "authority={:?}", authority);
         }
     }
+
+    #[test]
+    fn display_spec() {
+        let authority: Authority = Domain::localhost().to_host().to_authority(80);
+        assert_eq!(format!("{:>15}", authority), "   localhost:80");
+        assert_eq!(format!("{:<15}|", authority), "localhost:80   |");
+        assert_eq!(format!("{:.5}", authority), "local");
+
+        let authority: Authority = IPv6Address::LOCALHOST.to_host().to_authority(80);
+        assert_eq!(format!("{:>12}", authority), "    [::1]:80");
+        assert_eq!(format!("{:.5}", authority), "[::1]");
+    }
 }

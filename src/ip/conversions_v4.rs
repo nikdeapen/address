@@ -76,11 +76,11 @@ mod tests {
         let ip: IPv4Address = IPv4Address::LOCALHOST;
 
         let result: Host = ip.to_host();
-        let expected: Host = Host::Address(IPv4Address::LOCALHOST.to_ip());
+        let expected: Host = Host::Address(IPAddress::V4(IPv4Address::LOCALHOST));
         assert_eq!(result, expected);
 
         let result: HostRef = ip.to_host_ref();
-        let expected: HostRef = HostRef::Address(IPv4Address::LOCALHOST.to_ip());
+        let expected: HostRef = HostRef::Address(IPAddress::V4(IPv4Address::LOCALHOST));
         assert_eq!(result, expected);
     }
 }

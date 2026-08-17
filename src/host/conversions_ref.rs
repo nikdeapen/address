@@ -41,13 +41,13 @@ impl<'a> From<&'a Host> for HostRef<'a> {
 
 impl<'a> From<DomainRef<'a>> for HostRef<'a> {
     fn from(domain: DomainRef<'a>) -> Self {
-        Self::Name(domain)
+        domain.to_host_ref()
     }
 }
 
 impl<'a, A: Into<IPAddress>> From<A> for HostRef<'a> {
     fn from(ip: A) -> Self {
-        Self::Address(ip.into())
+        ip.into().to_host_ref()
     }
 }
 
@@ -72,12 +72,12 @@ mod tests {
     fn ref_to_authority() {
         let host: HostRef = DomainRef::LOCALHOST.to_host_ref();
         let result: AuthorityRef = host.to_authority_ref(80);
-        let expected: AuthorityRef = AuthorityRef::new(DomainRef::LOCALHOST.to_host_ref(), 80);
+        let expected: AuthorityRef = AuthorityRef::new(HostRef::Name(DomainRef::LOCALHOST), 80);
         assert_eq!(result, expected);
 
         let host: HostRef = IPv4Address::LOCALHOST.to_host_ref();
         let result: AuthorityRef = host.to_authority_ref(80);
-        let expected: AuthorityRef = AuthorityRef::new(IPv4Address::LOCALHOST.to_host_ref(), 80);
+        let expected: AuthorityRef = AuthorityRef::new(HostRef::Address(IPAddress::V4(IPv4Address::LOCALHOST)), 80);
         assert_eq!(result, expected);
     }
 

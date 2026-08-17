@@ -1,6 +1,6 @@
 use crate::IPv6Address;
 
-/// An IPv6 address with an associated port.
+/// An [IPv6Address] with an associated port.
 #[must_use]
 #[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
 pub struct SocketAddressV6 {
@@ -11,7 +11,7 @@ pub struct SocketAddressV6 {
 impl SocketAddressV6 {
     //! Construction
 
-    /// Creates a new IPv6 socket address.
+    /// Creates a new [SocketAddressV6].
     pub const fn new(ip: IPv6Address, port: u16) -> Self {
         Self { ip, port }
     }

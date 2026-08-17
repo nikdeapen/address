@@ -1,9 +1,9 @@
 use crate::{AuthorityRef, Host, HostRef};
 
-/// A host with an associated port.
+/// A [Host] with an associated port.
 ///
 /// Diverging from [RFC 3986](https://www.rfc-editor.org/rfc/rfc3986#section-3.2), the port is required and user-info
-/// is not supported.
+/// is not supported. For optional ports and user-info, see the [web-url](https://crates.io/search?q=web-url) crate.
 #[must_use]
 #[derive(Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
 pub struct Authority {
@@ -14,7 +14,7 @@ pub struct Authority {
 impl Authority {
     //! Construction
 
-    /// Creates a new authority.
+    /// Creates a new [Authority].
     pub const fn new(host: Host, port: u16) -> Self {
         Self { host, port }
     }
@@ -53,9 +53,25 @@ impl Authority {
     }
 }
 
+impl Authority {
+    //! Matching
+
+    /// Checks if the authority is an endpoint.
+    #[must_use]
+    pub const fn is_endpoint(&self) -> bool {
+        self.host.is_domain()
+    }
+
+    /// Checks if the authority is a socket address.
+    #[must_use]
+    pub const fn is_socket(&self) -> bool {
+        self.host.is_ip()
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use crate::{Authority, Domain, DomainRef, Host, HostRef};
+    use crate::{Authority, Domain, DomainRef, Host, HostRef, IPv4Address};
 
     #[test]
     fn construction() {
@@ -94,5 +110,16 @@ mod tests {
         let authority: Authority = Authority::new(Host::Name(Domain::localhost()), 80);
         assert_eq!(authority.host(), HostRef::Name(DomainRef::LOCALHOST));
         assert_eq!(authority.port(), 80);
+    }
+
+    #[test]
+    fn matching() {
+        let authority: Authority = Authority::new(Host::Name(Domain::localhost()), 80);
+        assert!(authority.is_endpoint());
+        assert!(!authority.is_socket());
+
+        let authority: Authority = Authority::new(IPv4Address::LOCALHOST.to_host(), 80);
+        assert!(!authority.is_endpoint());
+        assert!(authority.is_socket());
     }
 }

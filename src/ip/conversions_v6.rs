@@ -104,11 +104,11 @@ mod tests {
         let ip: IPv6Address = IPv6Address::LOCALHOST;
 
         let result: Host = ip.to_host();
-        let expected: Host = Host::Address(IPv6Address::LOCALHOST.to_ip());
+        let expected: Host = Host::Address(IPAddress::V6(IPv6Address::LOCALHOST));
         assert_eq!(result, expected);
 
         let result: HostRef = ip.to_host_ref();
-        let expected: HostRef = HostRef::Address(IPv6Address::LOCALHOST.to_ip());
+        let expected: HostRef = HostRef::Address(IPAddress::V6(IPv6Address::LOCALHOST));
         assert_eq!(result, expected);
     }
 }

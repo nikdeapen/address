@@ -1,13 +1,13 @@
-use std::str::FromStr;
-
 use crate::ParseError;
 use crate::ParseError::InvalidPort;
+use std::str::FromStr;
 
 /// Parses the port from the `address`.
 ///
 /// Returns `(address_without_last_colon, port)`.
 ///
 /// The port must be decimal digits only, with no sign. Leading zeros are allowed to match the standard library.
+/// The digit check runs first, so the port is known to be ASCII before it is read as a string.
 ///
 /// # Examples
 /// `localhost:80` -> `Ok(("localhost", 80))`
@@ -24,7 +24,7 @@ pub(crate) fn parse_port(address: &[u8]) -> Result<(&[u8], u16), ParseError> {
         if !valid {
             return Err(InvalidPort);
         }
-        let port: &str = std::str::from_utf8(port).map_err(|_| InvalidPort)?;
+        let port: &str = unsafe { std::str::from_utf8_unchecked(port) };
         let port: u16 = u16::from_str(port).map_err(|_| InvalidPort)?;
         Ok((&address[..colon], port))
     } else {
@@ -71,6 +71,18 @@ mod tests {
                 Err(error) => Err(*error),
             };
             assert_eq!(result, expected, "input={}", input);
+        }
+    }
+
+    /// Non-UTF-8 bytes reach `parse_port` through the `&[u8]` parse impls; the digit check must reject them
+    /// before the port is read as a string.
+    #[test]
+    fn non_utf8_ports() {
+        let test_cases: &[&[u8]] = &[b":\xFF", b":8\xFF", b"localhost:\xFF", b":\xC3\xA9"];
+
+        for input in test_cases {
+            let result: Result<(&[u8], u16), ParseError> = parse_port(input);
+            assert_eq!(result, Err(InvalidPort), "input={:?}", input);
         }
     }
 }

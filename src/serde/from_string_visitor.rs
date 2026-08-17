@@ -5,12 +5,12 @@ use std::str::FromStr;
 
 /// A serde visitor that parses a string with `FromStr`, reusing the buffers of owned strings and byte vectors
 /// with the consuming `TryFrom` conversions.
-pub(crate) struct FromStringVisitor<T: FromStr + TryFrom<String> + TryFrom<Vec<u8>>> {
+pub(crate) struct FromStringVisitor<T> {
     expecting: &'static str,
     phantom: PhantomData<fn() -> T>,
 }
 
-impl<T: FromStr + TryFrom<String> + TryFrom<Vec<u8>>> FromStringVisitor<T> {
+impl<T> FromStringVisitor<T> {
     //! Construction
 
     /// Creates a new visitor with the `expecting` message.

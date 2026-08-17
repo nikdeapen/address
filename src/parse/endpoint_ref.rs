@@ -1,15 +1,12 @@
 use crate::parse_port;
-use crate::{DomainRef, EndpointRef, ParseError, impl_parse_ref};
+use crate::{DomainRef, EndpointRef, ParseError, doc_lowercase_required, impl_parse_ref};
 
-impl_parse_ref!(
-    EndpointRef,
-    "Domain names must already be in lowercase. Use [`Endpoint`](crate::Endpoint) to parse mixed-case input."
-);
+impl_parse_ref!(EndpointRef, doc_lowercase_required!(Endpoint));
 
 impl<'a> TryFrom<&'a [u8]> for EndpointRef<'a> {
     type Error = ParseError;
 
-    /// Domain names must already be in lowercase. Use [`Endpoint`](crate::Endpoint) to parse mixed-case input.
+    #[doc = doc_lowercase_required!(Endpoint)]
     fn try_from(endpoint: &'a [u8]) -> Result<Self, Self::Error> {
         let (domain, port): (&[u8], u16) = parse_port(endpoint)?;
         let domain: DomainRef = DomainRef::try_from(domain)?;
@@ -48,6 +45,17 @@ mod tests {
         for (input, expected) in test_cases {
             let result: Result<EndpointRef, ParseError> = EndpointRef::try_from(*input);
             assert_eq!(result, *expected, "input={:?}", input);
+        }
+    }
+
+    /// Each canonical string must parse and display back to the exact same string.
+    #[test]
+    fn round_trip() {
+        let canonical: &[&str] = &["localhost:80", "example.com:443", "a.b.c:65535", "x:0"];
+
+        for input in canonical {
+            let value: EndpointRef = EndpointRef::try_from(*input).unwrap();
+            assert_eq!(value.to_string(), *input, "input={}", input);
         }
     }
 }

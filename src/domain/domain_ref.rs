@@ -1,31 +1,29 @@
-use crate::{Domain, Labels};
+use crate::{Domain, doc_exact_comparison};
 
-/// A domain name reference.
-///
-/// See [`Domain`] for the domain name validation rules.
+/// A [Domain] reference.
 #[must_use]
 #[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
 pub struct DomainRef<'a> {
-    name: &'a str,
+    pub(super) name: &'a str,
 }
 
 impl<'a> DomainRef<'a> {
     //! Special Domains
 
-    /// The `localhost` domain reference.
+    /// The `localhost` domain.
     pub const LOCALHOST: Self = Self { name: "localhost" };
 
-    /// The `example.com` domain reference.
+    /// The `example.com` domain.
     pub const EXAMPLE: Self = Self { name: "example.com" };
 }
 
 impl<'a> DomainRef<'a> {
     //! Construction
 
-    /// Creates a new domain reference.
+    /// Creates a new [DomainRef].
     ///
     /// # Safety
-    /// The `name` must be valid and lowercase. Validity is a struct invariant that unsafe code may rely on.
+    /// The `name` must be valid and lowercase.
     pub unsafe fn new_unchecked(name: &'a str) -> Self {
         debug_assert!(Domain::is_valid_name_str(name, false));
 
@@ -40,12 +38,14 @@ impl<'a> PartialEq<Domain> for DomainRef<'a> {
 }
 
 impl<'a> PartialEq<&str> for DomainRef<'a> {
+    #[doc = doc_exact_comparison!()]
     fn eq(&self, other: &&str) -> bool {
         self.name == *other
     }
 }
 
 impl<'a> PartialEq<DomainRef<'a>> for &str {
+    #[doc = doc_exact_comparison!()]
     fn eq(&self, other: &DomainRef<'a>) -> bool {
         *self == other.name
     }
@@ -58,11 +58,6 @@ impl<'a> DomainRef<'a> {
     #[must_use]
     pub const fn name(self) -> &'a str {
         self.name
-    }
-
-    /// Gets the labels.
-    pub fn labels(self) -> Labels<'a> {
-        Labels::new(self.name)
     }
 }
 

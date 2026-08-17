@@ -52,13 +52,13 @@ impl From<SocketAddress> for Authority {
 
 impl From<SocketAddressV4> for Authority {
     fn from(socket: SocketAddressV4) -> Self {
-        socket.to_socket().to_authority()
+        socket.to_authority()
     }
 }
 
 impl From<SocketAddressV6> for Authority {
     fn from(socket: SocketAddressV6) -> Self {
-        socket.to_socket().to_authority()
+        socket.to_authority()
     }
 }
 

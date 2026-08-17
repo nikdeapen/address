@@ -1,6 +1,6 @@
 use crate::{DomainRef, Endpoint};
 
-/// A domain reference with an associated port.
+/// An [Endpoint] reference.
 #[must_use]
 #[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
 pub struct EndpointRef<'a> {
@@ -11,7 +11,7 @@ pub struct EndpointRef<'a> {
 impl<'a> EndpointRef<'a> {
     //! Construction
 
-    /// Creates a new endpoint reference.
+    /// Creates a new [EndpointRef].
     pub const fn new(domain: DomainRef<'a>, port: u16) -> Self {
         Self { domain, port }
     }

@@ -40,4 +40,15 @@ mod tests {
             assert_eq!(result, *expected, "input={}", input);
         }
     }
+
+    /// Each canonical string must parse and display back to the exact same string.
+    #[test]
+    fn round_trip() {
+        let canonical: &[&str] = &["127.0.0.1", "255.255.255.255", "::1", "fe80::1", "::ffff:1.2.3.4"];
+
+        for input in canonical {
+            let value: IPAddress = input.parse().unwrap();
+            assert_eq!(value.to_string(), *input, "input={}", input);
+        }
+    }
 }

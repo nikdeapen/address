@@ -50,7 +50,7 @@ impl IPv6Address {
 
 impl From<[u8; 16]> for IPv6Address {
     fn from(address: [u8; 16]) -> Self {
-        Self { address }
+        Self::new(address)
     }
 }
 

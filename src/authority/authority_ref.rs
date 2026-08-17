@@ -1,9 +1,6 @@
 use crate::{Authority, HostRef};
 
-/// A host reference with an associated port.
-///
-/// Diverging from [RFC 3986](https://www.rfc-editor.org/rfc/rfc3986#section-3.2), the port is required and user-info
-/// is not supported.
+/// An [Authority] reference.
 #[must_use]
 #[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
 pub struct AuthorityRef<'a> {
@@ -14,7 +11,7 @@ pub struct AuthorityRef<'a> {
 impl<'a> AuthorityRef<'a> {
     //! Construction
 
-    /// Creates a new authority reference.
+    /// Creates a new [AuthorityRef].
     pub const fn new(host: HostRef<'a>, port: u16) -> Self {
         Self { host, port }
     }
@@ -53,9 +50,25 @@ impl<'a> AuthorityRef<'a> {
     }
 }
 
+impl<'a> AuthorityRef<'a> {
+    //! Matching
+
+    /// Checks if the authority is an endpoint.
+    #[must_use]
+    pub const fn is_endpoint(self) -> bool {
+        self.host.is_domain()
+    }
+
+    /// Checks if the authority is a socket address.
+    #[must_use]
+    pub const fn is_socket(self) -> bool {
+        self.host.is_ip()
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use crate::{Authority, AuthorityRef, Domain, DomainRef, Host, HostRef};
+    use crate::{Authority, AuthorityRef, Domain, DomainRef, Host, HostRef, IPv4Address};
 
     #[test]
     fn construction() {
@@ -90,5 +103,16 @@ mod tests {
         let authority: AuthorityRef = AuthorityRef::new(HostRef::Name(DomainRef::LOCALHOST), 80);
         assert_eq!(authority.host(), HostRef::Name(DomainRef::LOCALHOST));
         assert_eq!(authority.port(), 80);
+    }
+
+    #[test]
+    fn matching() {
+        let authority: AuthorityRef = AuthorityRef::new(HostRef::Name(DomainRef::LOCALHOST), 80);
+        assert!(authority.is_endpoint());
+        assert!(!authority.is_socket());
+
+        let authority: AuthorityRef = AuthorityRef::new(IPv4Address::LOCALHOST.to_host_ref(), 80);
+        assert!(!authority.is_endpoint());
+        assert!(authority.is_socket());
     }
 }

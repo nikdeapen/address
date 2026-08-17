@@ -69,4 +69,21 @@ mod tests {
         let expected: &str = "[::1]:80";
         assert_eq!(result, expected);
     }
+
+    #[test]
+    fn display_spec() {
+        assert_eq!(
+            format!("{:>15}", IPv4Address::LOCALHOST.to_socket(80)),
+            "   127.0.0.1:80"
+        );
+        assert_eq!(
+            format!("{:<15}|", IPv4Address::LOCALHOST.to_socket(80)),
+            "127.0.0.1:80   |"
+        );
+        assert_eq!(format!("{:>11}", IPv6Address::LOCALHOST.to_socket(80)), "   [::1]:80");
+        assert_eq!(
+            format!("{:>15}", IPv4Address::LOCALHOST.to_socket(80).to_socket()),
+            "   127.0.0.1:80"
+        );
+    }
 }

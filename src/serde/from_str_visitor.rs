@@ -4,12 +4,12 @@ use std::marker::PhantomData;
 use std::str::FromStr;
 
 /// A serde visitor that parses a string with `FromStr`.
-pub(crate) struct FromStrVisitor<T: FromStr> {
+pub(crate) struct FromStrVisitor<T> {
     expecting: &'static str,
     phantom: PhantomData<fn() -> T>,
 }
 
-impl<T: FromStr> FromStrVisitor<T> {
+impl<T> FromStrVisitor<T> {
     //! Construction
 
     /// Creates a new visitor with the `expecting` message.

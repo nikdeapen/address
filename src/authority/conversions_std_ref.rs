@@ -1,23 +1,26 @@
-use crate::{AuthorityRef, SocketAddress, SocketAddressV4, SocketAddressV6};
+use crate::{
+    AuthorityRef, SocketAddress, SocketAddressV4, SocketAddressV6, doc_discards_zone_info,
+    doc_discards_zone_info_for_v6,
+};
 use std::net::{SocketAddr, SocketAddrV4, SocketAddrV6};
 
 impl<'a> From<SocketAddr> for AuthorityRef<'a> {
-    /// The `flow_info` & `scope_id` are discarded for IPv6 socket addresses.
+    #[doc = doc_discards_zone_info_for_v6!()]
     fn from(socket: SocketAddr) -> Self {
-        Self::from(SocketAddress::from(socket))
+        SocketAddress::from(socket).to_authority_ref()
     }
 }
 
 impl<'a> From<SocketAddrV4> for AuthorityRef<'a> {
     fn from(socket: SocketAddrV4) -> Self {
-        Self::from(SocketAddressV4::from(socket))
+        SocketAddressV4::from(socket).to_authority_ref()
     }
 }
 
 impl<'a> From<SocketAddrV6> for AuthorityRef<'a> {
-    /// The `flow_info` & `scope_id` are discarded.
+    #[doc = doc_discards_zone_info!()]
     fn from(socket: SocketAddrV6) -> Self {
-        Self::from(SocketAddressV6::from(socket))
+        SocketAddressV6::from(socket).to_authority_ref()
     }
 }
 
