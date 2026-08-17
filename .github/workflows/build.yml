@@ -44,20 +44,54 @@ jobs:
         with:
           key: ${{ matrix.name }}
       - name: Test
-        run: cargo test ${{ matrix.features }} --verbose
+        run: cargo test --locked ${{ matrix.features }} --verbose
       - name: Lint
-        run: cargo clippy --all-targets ${{ matrix.features }} -- -D warnings
+        run: cargo clippy --locked --all-targets ${{ matrix.features }} -- -D warnings
       - name: Docs
-        run: cargo doc ${{ matrix.features }} --no-deps
+        run: cargo doc --locked ${{ matrix.features }} --no-deps
         env:
           RUSTDOCFLAGS: -D warnings
+  package:
+    name: Package
+    runs-on: ubuntu-latest
+    steps:
+      - name: Git Checkout
+        uses: actions/checkout@v6
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+      - name: Cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          key: package
+      - name: Package
+        run: cargo package --locked --all-features
+  docs_rs:
+    name: Docs.rs
+    runs-on: ubuntu-latest
+    # Reproduces the docs.rs build, which is the only configuration that sets `--cfg docsrs` & needs nightly.
+    # Advisory: nightly can break for unrelated reasons, so this is not part of the `build` gate.
+    continue-on-error: true
+    steps:
+      - name: Git Checkout
+        uses: actions/checkout@v6
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@nightly
+      - name: Cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          key: docs_rs
+      - name: Docs
+        run: cargo doc --locked --all-features --no-deps
+        env:
+          RUSTDOCFLAGS: --cfg docsrs -D warnings
   build:
     name: Build
     runs-on: ubuntu-latest
-    needs: [ fmt, test ]
+    needs: [ fmt, test, package ]
     if: always()
     steps:
       - name: Check Results
         run: |
           test "${{ needs.fmt.result }}" = "success"
           test "${{ needs.test.result }}" = "success"
+          test "${{ needs.package.result }}" = "success"

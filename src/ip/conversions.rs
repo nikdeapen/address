@@ -33,13 +33,13 @@ impl IPAddress {
 
 impl From<IPv4Address> for IPAddress {
     fn from(v4: IPv4Address) -> Self {
-        Self::V4(v4)
+        v4.to_ip()
     }
 }
 
 impl From<IPv6Address> for IPAddress {
     fn from(v6: IPv6Address) -> Self {
-        Self::V6(v6)
+        v6.to_ip()
     }
 }
 
@@ -77,20 +77,20 @@ mod tests {
     fn ip_to_socket() {
         let ip: IPAddress = IPv4Address::LOCALHOST.to_ip();
         let result: SocketAddress = ip.to_socket(80);
-        let expected: SocketAddress = SocketAddress::new(IPv4Address::LOCALHOST.to_ip(), 80);
+        let expected: SocketAddress = SocketAddress::new(IPAddress::V4(IPv4Address::LOCALHOST), 80);
         assert_eq!(result, expected);
     }
 
     #[test]
     fn ip_to_host() {
-        let ip: IPAddress = IPv4Address::LOCALHOST.to_ip();
+        let ip: IPAddress = IPAddress::V4(IPv4Address::LOCALHOST);
 
         let result: Host = ip.to_host();
-        let expected: Host = Host::Address(IPv4Address::LOCALHOST.to_ip());
+        let expected: Host = Host::Address(IPAddress::V4(IPv4Address::LOCALHOST));
         assert_eq!(result, expected);
 
         let result: HostRef = ip.to_host_ref();
-        let expected: HostRef = HostRef::Address(IPv4Address::LOCALHOST.to_ip());
+        let expected: HostRef = HostRef::Address(IPAddress::V4(IPv4Address::LOCALHOST));
         assert_eq!(result, expected);
     }
 

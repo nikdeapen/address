@@ -1,18 +1,15 @@
 use crate::ParseError::InvalidDomain;
-use crate::{Domain, DomainRef, ParseError, impl_parse_ref};
+use crate::{Domain, DomainRef, ParseError, doc_name_lowercase_required, impl_parse_ref};
 
-impl_parse_ref!(
-    DomainRef,
-    "The name must already be in lowercase. Use [`Domain`](crate::Domain) to parse mixed-case input."
-);
+impl_parse_ref!(DomainRef, doc_name_lowercase_required!());
 
 impl<'a> TryFrom<&'a [u8]> for DomainRef<'a> {
     type Error = ParseError;
 
-    /// The name must already be in lowercase. Use [`Domain`](crate::Domain) to parse mixed-case input.
+    #[doc = doc_name_lowercase_required!()]
     fn try_from(name: &'a [u8]) -> Result<Self, Self::Error> {
         if Domain::is_valid_name(name, false) {
-            let name: &str = std::str::from_utf8(name).map_err(|_| InvalidDomain)?;
+            let name: &str = unsafe { std::str::from_utf8_unchecked(name) };
             Ok(unsafe { Self::new_unchecked(name) })
         } else {
             Err(InvalidDomain)
@@ -48,6 +45,23 @@ mod tests {
         for (input, expected) in test_cases {
             let result: Result<DomainRef, ParseError> = DomainRef::try_from(*input);
             assert_eq!(result, *expected, "input={:?}", input);
+        }
+    }
+
+    /// Each canonical string must parse and display back to the exact same string.
+    #[test]
+    fn round_trip() {
+        let canonical: &[&str] = &[
+            "localhost",
+            "example.com",
+            "a-b.c--d.example",
+            "xn--bcher-kva.example",
+            "123.example",
+        ];
+
+        for input in canonical {
+            let value: DomainRef = DomainRef::try_from(*input).unwrap();
+            assert_eq!(value.to_string(), *input, "input={}", input);
         }
     }
 }

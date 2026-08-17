@@ -1,4 +1,4 @@
-use crate::SocketAddressV6;
+use crate::{SocketAddressV6, doc_discards_zone_info};
 use std::net::SocketAddrV6;
 
 impl SocketAddressV6 {
@@ -18,7 +18,7 @@ impl SocketAddressV6 {
 }
 
 impl From<SocketAddrV6> for SocketAddressV6 {
-    /// Converts the standard library address, discarding its `flow_info` & `scope_id`.
+    #[doc = doc_discards_zone_info!()]
     fn from(std: SocketAddrV6) -> Self {
         Self::new((*std.ip()).into(), std.port())
     }

@@ -28,8 +28,8 @@ impl Host {
 
     /// Converts the host to an optional IP address.
     #[must_use]
-    pub fn to_ip(&self) -> Option<IPAddress> {
-        self.to_ref().to_ip()
+    pub const fn to_ip(&self) -> Option<IPAddress> {
+        if let Self::Address(ip) = self { Some(*ip) } else { None }
     }
 }
 
@@ -41,19 +41,19 @@ impl<'a> From<HostRef<'a>> for Host {
 
 impl From<Domain> for Host {
     fn from(domain: Domain) -> Self {
-        Self::Name(domain)
+        domain.to_host()
     }
 }
 
 impl<'a> From<DomainRef<'a>> for Host {
     fn from(domain: DomainRef<'a>) -> Self {
-        Self::Name(domain.to_domain())
+        domain.to_domain().to_host()
     }
 }
 
 impl<A: Into<IPAddress>> From<A> for Host {
     fn from(ip: A) -> Self {
-        Self::Address(ip.into())
+        ip.into().to_host()
     }
 }
 
@@ -78,12 +78,12 @@ mod tests {
     fn host_to_authority() {
         let host: Host = Domain::localhost().to_host();
         let result: Authority = host.to_authority(80);
-        let expected: Authority = Authority::new(Domain::localhost().to_host(), 80);
+        let expected: Authority = Authority::new(Host::Name(Domain::localhost()), 80);
         assert_eq!(result, expected);
 
         let host: Host = IPv4Address::LOCALHOST.to_host();
         let result: Authority = host.to_authority(80);
-        let expected: Authority = Authority::new(IPv4Address::LOCALHOST.to_host(), 80);
+        let expected: Authority = Authority::new(Host::Address(IPAddress::V4(IPv4Address::LOCALHOST)), 80);
         assert_eq!(result, expected);
     }
 

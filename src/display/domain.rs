@@ -72,4 +72,17 @@ mod tests {
         let result: &str = domain.as_ref();
         assert_eq!(result, "localhost");
     }
+
+    #[test]
+    fn display_spec() {
+        let domain: Domain = Domain::localhost();
+        assert_eq!(format!("{:>12}", domain), "   localhost");
+        assert_eq!(format!("{:<12}|", domain), "localhost   |");
+        assert_eq!(format!("{:*^13}", domain), "**localhost**");
+        assert_eq!(format!("{:.5}", domain), "local");
+
+        let domain: DomainRef = DomainRef::LOCALHOST;
+        assert_eq!(format!("{:>12}", domain), "   localhost");
+        assert_eq!(format!("{:.5}", domain), "local");
+    }
 }

@@ -1,13 +1,13 @@
 use crate::{DomainRef, Host, IPAddress};
 
-/// Either a domain reference or an IP address.
+/// Either a [DomainRef] or an [IPAddress].
 #[must_use]
 #[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
 pub enum HostRef<'a> {
-    /// A domain reference.
+    /// A [DomainRef].
     Name(DomainRef<'a>),
 
-    /// An IP address.
+    /// An [IPAddress].
     Address(IPAddress),
 }
 

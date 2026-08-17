@@ -1,13 +1,13 @@
 use crate::{IPv4Address, IPv6Address};
 
-/// Either an IPv4 address or an IPv6 address.
+/// Either an [IPv4Address] or an [IPv6Address].
 #[must_use]
 #[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
 pub enum IPAddress {
-    /// An IPv4 address.
+    /// An [IPv4Address].
     V4(IPv4Address),
 
-    /// An IPv6 address.
+    /// An [IPv6Address].
     V6(IPv6Address),
 }
 

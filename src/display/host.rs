@@ -45,4 +45,15 @@ mod tests {
             assert_eq!(result, *expected, "host={:?}", host);
         }
     }
+
+    #[test]
+    fn display_spec() {
+        let host: Host = Domain::localhost().to_host();
+        assert_eq!(format!("{:>12}", host), "   localhost");
+        assert_eq!(format!("{:.5}", host), "local");
+
+        let host: Host = IPv4Address::LOCALHOST.to_host();
+        assert_eq!(format!("{:>12}", host), "   127.0.0.1");
+        assert_eq!(format!("{:.3}", host), "127");
+    }
 }

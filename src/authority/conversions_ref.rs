@@ -43,19 +43,19 @@ impl<'a> From<EndpointRef<'a>> for AuthorityRef<'a> {
 
 impl<'a> From<SocketAddress> for AuthorityRef<'a> {
     fn from(socket: SocketAddress) -> Self {
-        Self::new(HostRef::Address(socket.ip()), socket.port())
+        socket.to_authority_ref()
     }
 }
 
 impl<'a> From<SocketAddressV4> for AuthorityRef<'a> {
     fn from(socket: SocketAddressV4) -> Self {
-        Self::from(socket.to_socket())
+        socket.to_authority_ref()
     }
 }
 
 impl<'a> From<SocketAddressV6> for AuthorityRef<'a> {
     fn from(socket: SocketAddressV6) -> Self {
-        Self::from(socket.to_socket())
+        socket.to_authority_ref()
     }
 }
 
@@ -68,10 +68,9 @@ mod tests {
 
     #[test]
     fn ref_to_authority() {
-        let host: HostRef = HostRef::Name(DomainRef::LOCALHOST);
-        let authority: AuthorityRef = AuthorityRef::new(host, 80);
+        let authority: AuthorityRef = AuthorityRef::new(HostRef::Name(DomainRef::LOCALHOST), 80);
         let result: Authority = authority.to_authority();
-        let expected: Authority = Authority::new(host.to_host(), 80);
+        let expected: Authority = Authority::new(Host::Name(Domain::localhost()), 80);
         assert_eq!(result, expected);
     }
 

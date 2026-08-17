@@ -1,4 +1,13 @@
-use crate::{DomainRef, Labels};
+use crate::DomainRef;
+
+/// The exactness note for the string comparison impls.
+macro_rules! doc_exact_comparison {
+    () => {
+        "Compares the name exactly; domain names are lowercase, so mixed-case strings are never equal."
+    };
+}
+
+pub(crate) use doc_exact_comparison;
 
 /// A domain name.
 ///
@@ -7,7 +16,7 @@ use crate::{DomainRef, Labels};
 #[must_use]
 #[derive(Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
 pub struct Domain {
-    name: String,
+    pub(super) name: String,
 }
 
 impl Domain {
@@ -27,10 +36,10 @@ impl Domain {
 impl Domain {
     //! Construction
 
-    /// Creates a new domain.
+    /// Creates a new [Domain].
     ///
     /// # Safety
-    /// The `name` must be valid and lowercase. Validity is a struct invariant that unsafe code may rely on.
+    /// The `name` must be valid and lowercase.
     pub unsafe fn new_unchecked<S>(name: S) -> Self
     where
         S: Into<String>,
@@ -49,12 +58,6 @@ impl From<Domain> for String {
     }
 }
 
-impl From<Domain> for Vec<u8> {
-    fn from(domain: Domain) -> Self {
-        domain.name.into_bytes()
-    }
-}
-
 impl<'a> PartialEq<DomainRef<'a>> for Domain {
     fn eq(&self, other: &DomainRef<'a>) -> bool {
         self.to_ref() == *other
@@ -62,12 +65,14 @@ impl<'a> PartialEq<DomainRef<'a>> for Domain {
 }
 
 impl PartialEq<&str> for Domain {
+    #[doc = doc_exact_comparison!()]
     fn eq(&self, other: &&str) -> bool {
         self.name == *other
     }
 }
 
 impl PartialEq<Domain> for &str {
+    #[doc = doc_exact_comparison!()]
     fn eq(&self, other: &Domain) -> bool {
         *self == other.name
     }
@@ -80,11 +85,6 @@ impl Domain {
     #[must_use]
     pub fn name(&self) -> &str {
         self.name.as_str()
-    }
-
-    /// Gets the labels.
-    pub fn labels(&self) -> Labels<'_> {
-        Labels::new(self.name.as_str())
     }
 }
 
@@ -103,11 +103,6 @@ mod tests {
         let domain: Domain = Domain::localhost();
         let result: String = domain.into();
         let expected: &str = "localhost";
-        assert_eq!(result, expected);
-
-        let domain: Domain = Domain::localhost();
-        let result: Vec<u8> = domain.into();
-        let expected: &[u8] = b"localhost";
         assert_eq!(result, expected);
     }
 

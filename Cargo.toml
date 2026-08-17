@@ -1,6 +1,6 @@
 [package]
 name = "address"
-version = "0.20.0-rc.2"
+version = "0.20.0-rc.3"
 description = "Network address types with strict validation, owned & borrowed variants, and standard library conversions."
 readme = "README.md"
 repository = "https://github.com/nikdeapen/address"
@@ -26,3 +26,11 @@ serde_json = "1.0"
 [features]
 idna = ["dep:idna"]
 serde = ["dep:serde"]
+
+[lints.rust]
+missing_debug_implementations = "warn"
+missing_docs = "warn"
+
+[lints.clippy]
+module_inception = "allow"
+must_use_candidate = "warn"

@@ -33,7 +33,7 @@ mod tests {
     fn ref_to_domain() {
         let domain: DomainRef = DomainRef::LOCALHOST;
         let result: Domain = domain.to_domain();
-        let expected: Domain = Domain::localhost();
+        let expected: &str = "localhost";
         assert_eq!(result, expected);
     }
 

@@ -1,6 +1,23 @@
 use crate::IPAddress;
 
-/// An IP address with an associated port.
+/// The discarded-zone-info note for conversions from the IPv6 standard library socket address type.
+macro_rules! doc_discards_zone_info {
+    () => {
+        "The `flow_info` & `scope_id` are discarded."
+    };
+}
+
+/// The discarded-zone-info note for conversions from the version-agnostic standard library socket address type.
+macro_rules! doc_discards_zone_info_for_v6 {
+    () => {
+        "The `flow_info` & `scope_id` are discarded for IPv6 socket addresses."
+    };
+}
+
+pub(crate) use doc_discards_zone_info;
+pub(crate) use doc_discards_zone_info_for_v6;
+
+/// An [IPAddress] with an associated port.
 #[must_use]
 #[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
 pub struct SocketAddress {
@@ -11,7 +28,7 @@ pub struct SocketAddress {
 impl SocketAddress {
     //! Construction
 
-    /// Creates a new socket address.
+    /// Creates a new [SocketAddress].
     pub const fn new(ip: IPAddress, port: u16) -> Self {
         Self { ip, port }
     }

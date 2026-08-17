@@ -19,7 +19,11 @@ impl IPv4Address {
     }
 }
 
-impl_parse!(IPv4Address, parse);
+impl_parse!(
+    IPv4Address,
+    parse,
+    "Matches the standard library: four decimal octets, no leading zeros. (`127.0.0.01` is invalid)"
+);
 
 #[cfg(test)]
 mod tests {
@@ -31,6 +35,12 @@ mod tests {
     fn parse() {
         let test_cases: &[(&str, Result<IPv4Address, ParseError>)] = &[
             ("", Err(InvalidIPv4Address)),
+            ("127.0.0.01", Err(InvalidIPv4Address)),
+            ("127.000.000.001", Err(InvalidIPv4Address)),
+            ("1.2.3", Err(InvalidIPv4Address)),
+            ("1.2.3.4.5", Err(InvalidIPv4Address)),
+            ("256.1.1.1", Err(InvalidIPv4Address)),
+            ("1.2.3.4", Ok(IPv4Address::from([1, 2, 3, 4]))),
             ("0.0.0.0", Ok(IPv4Address::UNSPECIFIED)),
             ("127.0.0.1", Ok(IPv4Address::LOCALHOST)),
             ("255.255.255.255", Ok(IPv4Address::BROADCAST)),
@@ -42,6 +52,17 @@ mod tests {
 
             let result: Result<IPv4Address, ParseError> = IPv4Address::try_from(*input);
             assert_eq!(result, *expected, "input={}", input);
+        }
+    }
+
+    /// Each canonical string must parse and display back to the exact same string.
+    #[test]
+    fn round_trip() {
+        let canonical: &[&str] = &["0.0.0.0", "127.0.0.1", "1.2.3.4", "255.255.255.255"];
+
+        for input in canonical {
+            let value: IPv4Address = input.parse().unwrap();
+            assert_eq!(value.to_string(), *input, "input={}", input);
         }
     }
 }

@@ -1,6 +1,6 @@
 use crate::{Domain, DomainRef, EndpointRef};
 
-/// A domain with an associated port.
+/// A [Domain] with an associated port.
 #[must_use]
 #[derive(Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
 pub struct Endpoint {
@@ -11,7 +11,7 @@ pub struct Endpoint {
 impl Endpoint {
     //! Construction
 
-    /// Creates a new endpoint.
+    /// Creates a new [Endpoint].
     pub const fn new(domain: Domain, port: u16) -> Self {
         Self { domain, port }
     }

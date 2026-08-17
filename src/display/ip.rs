@@ -83,4 +83,14 @@ mod tests {
         let expected: &str = "::1";
         assert_eq!(result, expected);
     }
+
+    #[test]
+    fn display_spec() {
+        assert_eq!(format!("{:>12}", IPv4Address::LOCALHOST), "   127.0.0.1");
+        assert_eq!(format!("{:<12}|", IPv4Address::LOCALHOST), "127.0.0.1   |");
+        assert_eq!(format!("{:.3}", IPv4Address::LOCALHOST), "127");
+
+        assert_eq!(format!("{:>6}", IPv6Address::LOCALHOST), "   ::1");
+        assert_eq!(format!("{:>12}", IPv4Address::LOCALHOST.to_ip()), "   127.0.0.1");
+    }
 }

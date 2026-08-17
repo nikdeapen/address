@@ -16,14 +16,12 @@
 
 ## Testing
 
-- Refactor the `tests/` folder: rework the `tests/canonical/` corpus (free consts in `mod.rs`, frozen composite
-  subsets) & dedupe the duplicated round-trip/serde macros & wiring.
 - Coverage is representative, not exhaustive: most items get a single happy-path case. Edge cases could be much
   deeper across the crate.
-- Test the README claim that version-specific types match the std wire format: assert binary-serialized
-  `IPv4Address`/`IPv6Address`/`SocketAddressV4`/`SocketAddressV6` bytes equal their std counterparts.
+- Run `cargo miri test` on the `from_utf8_unchecked` sites & decide whether to gate CI on it: a regressed ASCII
+  guard is undefined behavior that the tests still pass.
 
 ## Performance
 
 - Revisit the `parse` byte -> str conversions with `[u8]::as_ascii()` when nightly `ascii_char` (rust#110998)
-  stabilizes; safe `from_utf8` currently relies on its ASCII fast path being equivalent.
+  stabilizes; they use `from_utf8_unchecked` behind an ASCII check that `as_ascii` would make safe.

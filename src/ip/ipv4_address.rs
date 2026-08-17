@@ -29,7 +29,7 @@ impl IPv4Address {
 
 impl From<[u8; 4]> for IPv4Address {
     fn from(address: [u8; 4]) -> Self {
-        Self { address }
+        Self::new(address)
     }
 }
 

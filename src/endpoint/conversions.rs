@@ -1,4 +1,4 @@
-use crate::{Authority, Domain, Endpoint, EndpointRef, Host};
+use crate::{Authority, Domain, Endpoint, EndpointRef};
 
 impl Endpoint {
     //! Conversions
@@ -11,7 +11,7 @@ impl Endpoint {
     /// Converts the endpoint to an authority.
     pub fn to_authority(self) -> Authority {
         let (domain, port): (Domain, u16) = self.into();
-        Authority::new(Host::Name(domain), port)
+        Authority::new(domain.to_host(), port)
     }
 }
 

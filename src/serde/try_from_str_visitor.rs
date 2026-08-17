@@ -3,12 +3,12 @@ use std::fmt::{Display, Formatter};
 use std::marker::PhantomData;
 
 /// A serde visitor that parses a string with `TryFrom`.
-pub(crate) struct TryFromStrVisitor<'de, T: TryFrom<&'de str>> {
+pub(crate) struct TryFromStrVisitor<'de, T> {
     expecting: &'static str,
     phantom: PhantomData<fn(&'de str) -> T>,
 }
 
-impl<'de, T: TryFrom<&'de str>> TryFromStrVisitor<'de, T> {
+impl<'de, T> TryFromStrVisitor<'de, T> {
     //! Construction
 
     /// Creates a new visitor with the `expecting` message.

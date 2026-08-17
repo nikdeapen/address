@@ -7,6 +7,10 @@ impl Domain {
     pub const MAX_LABEL_LEN: usize = 63;
 
     /// Classifies the domain `label`.
+    ///
+    /// The accepted bytes are ASCII, so a non-`Invalid` class proves the label is valid UTF-8. The parse impls
+    /// rely on that to convert classified bytes without re-validating; widening the byte set here would make
+    /// those conversions unsound.
     pub(crate) fn classify_label(label: &[u8]) -> NameClass {
         if (label.is_empty() || label.len() > Self::MAX_LABEL_LEN)
             || (label[0] == b'-' || label[label.len() - 1] == b'-')
@@ -72,7 +76,8 @@ impl Domain {
     ///
     /// A valid name is 1 to 253 (`MAX_NAME_LEN`) bytes of dot-separated valid labels. Labels cannot be empty, so
     /// leading, trailing, and consecutive dots are invalid. Labels may be entirely numeric. Underscores are invalid,
-    /// so service names like `_sip._tcp.example.com` cannot be represented.
+    /// so service names like `_sip._tcp.example.com` cannot be represented. Valid names are ASCII, so they are
+    /// always valid UTF-8. Uppercase letters are also valid with `ignore_case`.
     #[must_use]
     pub fn is_valid_name(name: &[u8], ignore_case: bool) -> bool {
         match Self::classify_name(name) {

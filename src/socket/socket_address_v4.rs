@@ -1,6 +1,6 @@
 use crate::IPv4Address;
 
-/// An IPv4 address with an associated port.
+/// An [IPv4Address] with an associated port.
 #[must_use]
 #[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
 pub struct SocketAddressV4 {
@@ -11,7 +11,7 @@ pub struct SocketAddressV4 {
 impl SocketAddressV4 {
     //! Construction
 
-    /// Creates a new IPv4 socket address.
+    /// Creates a new [SocketAddressV4].
     pub const fn new(ip: IPv4Address, port: u16) -> Self {
         Self { ip, port }
     }
