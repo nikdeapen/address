@@ -48,3 +48,23 @@ where
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::DomainRef;
+    use crate::serde::TryFromStrVisitor;
+    use serde::Deserializer;
+    use serde::de::value::{BorrowedBytesDeserializer, Error as ValueError};
+
+    /// Formats that hand the visitor borrowed bytes take the `visit_borrowed_bytes` path.
+    #[test]
+    fn visit_borrowed_bytes() {
+        let visitor: TryFromStrVisitor<DomainRef> = TryFromStrVisitor::new("a borrowed domain string");
+        let deserializer: BorrowedBytesDeserializer<ValueError> = BorrowedBytesDeserializer::new(b"localhost");
+        assert_eq!(deserializer.deserialize_str(visitor).unwrap(), DomainRef::LOCALHOST);
+
+        let visitor: TryFromStrVisitor<DomainRef> = TryFromStrVisitor::new("a borrowed domain string");
+        let deserializer: BorrowedBytesDeserializer<ValueError> = BorrowedBytesDeserializer::new(b"\xFF");
+        assert!(deserializer.deserialize_str(visitor).is_err());
+    }
+}

@@ -66,3 +66,36 @@ where
         T::try_from(v).map_err(E::custom)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::Domain;
+    use crate::serde::FromStringVisitor;
+    use serde::Deserializer;
+    use serde::de::Visitor;
+    use serde::de::value::{BytesDeserializer, Error as ValueError};
+
+    /// Formats that present a string as an owned byte buffer take the `visit_byte_buf` path, which is the
+    /// buffer-reusing half this visitor exists for.
+    #[test]
+    fn visit_byte_buf() {
+        let visitor: FromStringVisitor<Domain> = FromStringVisitor::new("a domain string");
+        let result: Domain = visitor.visit_byte_buf::<ValueError>(Vec::from("LocalHost")).unwrap();
+        assert_eq!(result, "localhost");
+
+        let visitor: FromStringVisitor<Domain> = FromStringVisitor::new("a domain string");
+        assert!(visitor.visit_byte_buf::<ValueError>(Vec::from("Local!Host")).is_err());
+    }
+
+    /// Formats that hand the visitor borrowed bytes take the `visit_bytes` path, which must reject non-UTF-8.
+    #[test]
+    fn visit_bytes() {
+        let visitor: FromStringVisitor<Domain> = FromStringVisitor::new("a domain string");
+        let deserializer: BytesDeserializer<ValueError> = BytesDeserializer::new(b"LocalHost");
+        assert_eq!(deserializer.deserialize_string(visitor).unwrap(), "localhost");
+
+        let visitor: FromStringVisitor<Domain> = FromStringVisitor::new("a domain string");
+        let deserializer: BytesDeserializer<ValueError> = BytesDeserializer::new(b"\xFF");
+        assert!(deserializer.deserialize_string(visitor).is_err());
+    }
+}

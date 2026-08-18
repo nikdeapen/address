@@ -18,12 +18,12 @@ impl IPv6Address {
 impl IPv6Address {
     //! Construction
 
-    /// Creates a new IPv6 address. [a-high, a-low, b-high, b-low, ..., h-high, h-low]
+    /// Creates a new [IPv6Address]. [a-high, a-low, b-high, b-low, ..., h-high, h-low]
     pub const fn new(address: [u8; 16]) -> Self {
         Self { address }
     }
 
-    /// Creates an IPv6 address from the `segments`. [a, b, c, d, e, f, g, h]
+    /// Creates an [IPv6Address] from the `segments`. [a, b, c, d, e, f, g, h]
     pub const fn from_segments(segments: [u16; 8]) -> Self {
         Self {
             address: [

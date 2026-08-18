@@ -6,7 +6,7 @@ impl Domain {
 
     /// Gets the labels.
     pub const fn labels(&self) -> Labels<'_> {
-        Labels::new(self.name.as_str())
+        Labels::new(self.name())
     }
 }
 
@@ -15,7 +15,7 @@ impl<'a> DomainRef<'a> {
 
     /// Gets the labels.
     pub const fn labels(self) -> Labels<'a> {
-        Labels::new(self.name)
+        Labels::new(self.name())
     }
 }
 
@@ -51,7 +51,6 @@ impl<'a> Iterator for Labels<'a> {
 
     fn size_hint(&self) -> (usize, Option<usize>) {
         match self.name {
-            // Labels are at least 1 byte & dot-separated, so at most `len / 2 + 1` labels remain.
             Some(name) => (1, Some(name.len() / 2 + 1)),
             None => (0, Some(0)),
         }
@@ -75,7 +74,7 @@ impl<'a> FusedIterator for Labels<'a> {}
 
 #[cfg(test)]
 mod tests {
-    use crate::{Domain, DomainRef};
+    use crate::{Domain, DomainRef, Labels};
 
     #[test]
     fn labels() {
@@ -97,9 +96,67 @@ mod tests {
 
     #[test]
     fn labels_rev() {
-        let domain: DomainRef = DomainRef::EXAMPLE;
-        let result: Vec<&str> = domain.labels().rev().collect();
-        let expected: Vec<&str> = vec!["com", "example"];
-        assert_eq!(result, expected);
+        let test_cases: &[(&str, &[&str])] = &[
+            ("localhost", &["localhost"]),
+            ("example.com", &["com", "example"]),
+            ("www.example.com", &["com", "example", "www"]),
+        ];
+
+        for (name, expected) in test_cases {
+            let domain: Domain = name.parse().unwrap();
+            let result: Vec<&str> = domain.labels().rev().collect();
+            assert_eq!(result, *expected, "name={}", name);
+
+            let result: Vec<&str> = domain.to_ref().labels().rev().collect();
+            assert_eq!(result, *expected, "name={}", name);
+        }
+    }
+
+    #[test]
+    fn labels_mixed() {
+        let domain: Domain = "a.b.c.d.e".parse().unwrap();
+        let mut labels: Labels = domain.labels();
+
+        assert_eq!(labels.next(), Some("a"));
+        assert_eq!(labels.next_back(), Some("e"));
+        assert_eq!(labels.next(), Some("b"));
+        assert_eq!(labels.next_back(), Some("d"));
+        assert_eq!(labels.next(), Some("c"));
+        assert_eq!(labels.next(), None);
+        assert_eq!(labels.next_back(), None);
+    }
+
+    #[test]
+    fn labels_size_hint() {
+        let test_cases: &[&str] = &["x", "a.b", "a.b.c", "www.example.com", "a.bb.ccc.dddd"];
+
+        for name in test_cases {
+            let domain: Domain = name.parse().unwrap();
+            let total: usize = domain.labels().count();
+            let mut labels: Labels = domain.labels();
+
+            for taken in 0..=total {
+                let remaining: usize = total - taken;
+                let (low, high): (usize, Option<usize>) = labels.size_hint();
+                assert!(low <= remaining, "name={} taken={} low={}", name, taken, low);
+                assert!(
+                    high.is_some_and(|high| remaining <= high),
+                    "name={} taken={} high={:?}",
+                    name,
+                    taken,
+                    high
+                );
+                labels.next();
+            }
+        }
+    }
+
+    #[test]
+    fn labels_fused() {
+        let mut labels: Labels = DomainRef::LOCALHOST.labels();
+        assert_eq!(labels.next(), Some("localhost"));
+        assert_eq!(labels.next(), None);
+        assert_eq!(labels.next(), None);
+        assert_eq!(labels.next_back(), None);
     }
 }

@@ -39,17 +39,20 @@ mod tests {
     use std::net::Ipv6Addr;
 
     #[test]
-    fn v6() {
+    fn v6_to_std() {
         let ip: IPv6Address = IPv6Address::LOCALHOST;
         let std: Ipv6Addr = Ipv6Addr::LOCALHOST;
 
         let result: Ipv6Addr = ip.to_std();
         assert_eq!(result, std);
 
-        let result: IPv6Address = std.into();
-        assert_eq!(result, ip);
-
         let result: Ipv6Addr = ip.into();
         assert_eq!(result, std);
+    }
+
+    #[test]
+    fn v6_from_std() {
+        let result: IPv6Address = Ipv6Addr::LOCALHOST.into();
+        assert_eq!(result, IPv6Address::LOCALHOST);
     }
 }

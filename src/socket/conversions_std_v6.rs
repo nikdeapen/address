@@ -1,4 +1,4 @@
-use crate::{SocketAddressV6, doc_discards_zone_info};
+use crate::SocketAddressV6;
 use std::net::SocketAddrV6;
 
 impl SocketAddressV6 {
@@ -18,7 +18,7 @@ impl SocketAddressV6 {
 }
 
 impl From<SocketAddrV6> for SocketAddressV6 {
-    #[doc = doc_discards_zone_info!()]
+    /// The `flow_info` & `scope_id` are discarded.
     fn from(std: SocketAddrV6) -> Self {
         Self::new((*std.ip()).into(), std.port())
     }
@@ -36,26 +36,34 @@ mod tests {
     use std::net::{Ipv6Addr, SocketAddrV6};
 
     #[test]
-    fn v6() {
+    fn v6_to_std() {
         let socket: SocketAddressV6 = SocketAddressV6::new(IPv6Address::LOCALHOST, 80);
         let std: SocketAddrV6 = SocketAddrV6::new(Ipv6Addr::LOCALHOST, 80, 0, 0);
 
         let result: SocketAddrV6 = socket.to_std();
         assert_eq!(result, std);
 
-        let result: SocketAddressV6 = std.into();
-        assert_eq!(result, socket);
-
         let result: SocketAddrV6 = socket.into();
         assert_eq!(result, std);
+    }
 
+    #[test]
+    fn v6_to_std_with() {
+        let socket: SocketAddressV6 = SocketAddressV6::new(IPv6Address::LOCALHOST, 80);
         let result: SocketAddrV6 = socket.to_std_with(123, 456);
         let expected: SocketAddrV6 = SocketAddrV6::new(Ipv6Addr::LOCALHOST, 80, 123, 456);
         assert_eq!(result, expected);
+    }
 
-        let std: SocketAddrV6 = SocketAddrV6::new(Ipv6Addr::LOCALHOST, 80, 123, 456);
-        let result: SocketAddressV6 = std.into();
+    /// The `flow_info` & `scope_id` are discarded, so both zones give the same address.
+    #[test]
+    fn v6_from_std() {
         let expected: SocketAddressV6 = SocketAddressV6::new(IPv6Address::LOCALHOST, 80);
+
+        let result: SocketAddressV6 = SocketAddrV6::new(Ipv6Addr::LOCALHOST, 80, 0, 0).into();
+        assert_eq!(result, expected);
+
+        let result: SocketAddressV6 = SocketAddrV6::new(Ipv6Addr::LOCALHOST, 80, 123, 456).into();
         assert_eq!(result, expected);
     }
 }

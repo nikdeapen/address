@@ -1,4 +1,4 @@
-use crate::{AuthorityRef, DomainRef, Host, HostRef, IPAddress};
+use crate::{Authority, AuthorityRef, Domain, DomainRef, Host, HostRef, IPAddress};
 
 impl<'a> HostRef<'a> {
     //! Conversions
@@ -11,9 +11,24 @@ impl<'a> HostRef<'a> {
         }
     }
 
+    /// Converts the host reference to an authority with the `port`.
+    pub fn to_authority(self, port: u16) -> Authority {
+        Authority::new(self.to_host(), port)
+    }
+
     /// Converts the host reference to an authority reference with the `port`.
     pub const fn to_authority_ref(self, port: u16) -> AuthorityRef<'a> {
         AuthorityRef::new(self, port)
+    }
+
+    /// Converts the host reference to an optional domain.
+    #[must_use]
+    pub fn to_domain(self) -> Option<Domain> {
+        if let Self::Name(domain) = self {
+            Some(domain.to_domain())
+        } else {
+            None
+        }
     }
 
     /// Converts the host reference to an optional domain reference.
@@ -53,7 +68,7 @@ impl<'a, A: Into<IPAddress>> From<A> for HostRef<'a> {
 
 #[cfg(test)]
 mod tests {
-    use crate::{AuthorityRef, Domain, DomainRef, Host, HostRef, IPAddress, IPv4Address};
+    use crate::{Authority, AuthorityRef, Domain, DomainRef, Host, HostRef, IPAddress, IPv4Address};
 
     #[test]
     fn ref_to_host() {
@@ -71,11 +86,19 @@ mod tests {
     #[test]
     fn ref_to_authority() {
         let host: HostRef = DomainRef::LOCALHOST.to_host_ref();
+        let result: Authority = host.to_authority(80);
+        let expected: Authority = Authority::new(Host::Name(Domain::localhost()), 80);
+        assert_eq!(result, expected);
+
         let result: AuthorityRef = host.to_authority_ref(80);
         let expected: AuthorityRef = AuthorityRef::new(HostRef::Name(DomainRef::LOCALHOST), 80);
         assert_eq!(result, expected);
 
         let host: HostRef = IPv4Address::LOCALHOST.to_host_ref();
+        let result: Authority = host.to_authority(80);
+        let expected: Authority = Authority::new(Host::Address(IPAddress::V4(IPv4Address::LOCALHOST)), 80);
+        assert_eq!(result, expected);
+
         let result: AuthorityRef = host.to_authority_ref(80);
         let expected: AuthorityRef = AuthorityRef::new(HostRef::Address(IPAddress::V4(IPv4Address::LOCALHOST)), 80);
         assert_eq!(result, expected);
@@ -84,11 +107,19 @@ mod tests {
     #[test]
     fn ref_to_domain() {
         let host: HostRef = DomainRef::LOCALHOST.to_host_ref();
+        let result: Option<Domain> = host.to_domain();
+        let expected: Option<Domain> = Some(Domain::localhost());
+        assert_eq!(result, expected);
+
         let result: Option<DomainRef> = host.to_domain_ref();
         let expected: Option<DomainRef> = Some(DomainRef::LOCALHOST);
         assert_eq!(result, expected);
 
         let host: HostRef = IPv4Address::LOCALHOST.to_host_ref();
+        let result: Option<Domain> = host.to_domain();
+        let expected: Option<Domain> = None;
+        assert_eq!(result, expected);
+
         let result: Option<DomainRef> = host.to_domain_ref();
         let expected: Option<DomainRef> = None;
         assert_eq!(result, expected);

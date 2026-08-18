@@ -33,7 +33,7 @@ mod tests {
     use crate::{Domain, Host, IPv4Address, IPv6Address};
 
     #[test]
-    fn display() {
+    fn host_display() {
         let test_cases: &[(Host, &str)] = &[
             (Domain::localhost().to_host(), "localhost"),
             (IPv4Address::LOCALHOST.to_host(), "127.0.0.1"),

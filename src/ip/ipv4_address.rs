@@ -21,7 +21,7 @@ impl IPv4Address {
 impl IPv4Address {
     //! Construction
 
-    /// Creates a new IPv4 address. [a, b, c, d]
+    /// Creates a new [IPv4Address]. [a, b, c, d]
     pub const fn new(address: [u8; 4]) -> Self {
         Self { address }
     }

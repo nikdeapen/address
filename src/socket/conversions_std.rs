@@ -1,6 +1,4 @@
-use crate::{
-    IPAddress, SocketAddress, SocketAddressV4, SocketAddressV6, doc_discards_zone_info, doc_discards_zone_info_for_v6,
-};
+use crate::{IPAddress, SocketAddress, SocketAddressV4, SocketAddressV6};
 use std::net::{SocketAddr, SocketAddrV4, SocketAddrV6};
 
 impl SocketAddress {
@@ -23,7 +21,7 @@ impl SocketAddress {
 }
 
 impl From<SocketAddr> for SocketAddress {
-    #[doc = doc_discards_zone_info_for_v6!()]
+    /// The `flow_info` & `scope_id` are discarded for IPv6 socket addresses.
     fn from(std: SocketAddr) -> Self {
         Self::new(std.ip().into(), std.port())
     }
@@ -36,7 +34,7 @@ impl From<SocketAddrV4> for SocketAddress {
 }
 
 impl From<SocketAddrV6> for SocketAddress {
-    #[doc = doc_discards_zone_info!()]
+    /// The `flow_info` & `scope_id` are discarded.
     fn from(std: SocketAddrV6) -> Self {
         SocketAddressV6::from(std).to_socket()
     }
@@ -54,18 +52,12 @@ mod tests {
     use std::net::{Ipv4Addr, Ipv6Addr, SocketAddr, SocketAddrV4, SocketAddrV6};
 
     #[test]
-    fn socket() {
+    fn socket_to_std() {
         let socket: SocketAddress = SocketAddress::new(IPv4Address::LOCALHOST.to_ip(), 80);
         let std: SocketAddr = SocketAddr::V4(SocketAddrV4::new(Ipv4Addr::LOCALHOST, 80));
 
         let result: SocketAddr = socket.to_std();
         assert_eq!(result, std);
-
-        let result: SocketAddress = std.into();
-        assert_eq!(result, socket);
-
-        let result: SocketAddress = SocketAddrV4::new(Ipv4Addr::LOCALHOST, 80).into();
-        assert_eq!(result, socket);
 
         let result: SocketAddr = socket.into();
         assert_eq!(result, std);
@@ -76,15 +68,13 @@ mod tests {
         let result: SocketAddr = socket.to_std();
         assert_eq!(result, std);
 
-        let result: SocketAddress = std.into();
-        assert_eq!(result, socket);
-
-        let result: SocketAddress = SocketAddrV6::new(Ipv6Addr::LOCALHOST, 80, 0, 0).into();
-        assert_eq!(result, socket);
-
         let result: SocketAddr = socket.into();
         assert_eq!(result, std);
+    }
 
+    /// The `flow_info` & `scope_id` apply to IPv6 addresses only.
+    #[test]
+    fn socket_to_std_with() {
         let socket: SocketAddress = SocketAddress::new(IPv4Address::LOCALHOST.to_ip(), 80);
         let result: SocketAddr = socket.to_std_with(123, 456);
         let expected: SocketAddr = SocketAddr::V4(SocketAddrV4::new(Ipv4Addr::LOCALHOST, 80));
@@ -94,13 +84,31 @@ mod tests {
         let result: SocketAddr = socket.to_std_with(123, 456);
         let expected: SocketAddr = SocketAddr::V6(SocketAddrV6::new(Ipv6Addr::LOCALHOST, 80, 123, 456));
         assert_eq!(result, expected);
+    }
 
-        let std: SocketAddr = SocketAddr::V6(SocketAddrV6::new(Ipv6Addr::LOCALHOST, 80, 123, 456));
-        let result: SocketAddress = std.into();
-        let expected: SocketAddress = SocketAddress::new(IPv6Address::LOCALHOST.to_ip(), 80);
-        assert_eq!(result, expected);
+    /// The `flow_info` & `scope_id` are discarded, so both zones give the same address.
+    #[test]
+    fn socket_from_std() {
+        let socket: SocketAddress = SocketAddress::new(IPv4Address::LOCALHOST.to_ip(), 80);
+
+        let result: SocketAddress = SocketAddr::V4(SocketAddrV4::new(Ipv4Addr::LOCALHOST, 80)).into();
+        assert_eq!(result, socket);
+
+        let result: SocketAddress = SocketAddrV4::new(Ipv4Addr::LOCALHOST, 80).into();
+        assert_eq!(result, socket);
+
+        let socket: SocketAddress = SocketAddress::new(IPv6Address::LOCALHOST.to_ip(), 80);
+
+        let result: SocketAddress = SocketAddr::V6(SocketAddrV6::new(Ipv6Addr::LOCALHOST, 80, 0, 0)).into();
+        assert_eq!(result, socket);
+
+        let result: SocketAddress = SocketAddrV6::new(Ipv6Addr::LOCALHOST, 80, 0, 0).into();
+        assert_eq!(result, socket);
+
+        let result: SocketAddress = SocketAddr::V6(SocketAddrV6::new(Ipv6Addr::LOCALHOST, 80, 123, 456)).into();
+        assert_eq!(result, socket);
 
         let result: SocketAddress = SocketAddrV6::new(Ipv6Addr::LOCALHOST, 80, 123, 456).into();
-        assert_eq!(result, expected);
+        assert_eq!(result, socket);
     }
 }

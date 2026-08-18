@@ -1,4 +1,4 @@
-use crate::{Authority, AuthorityRef, EndpointRef, HostRef, SocketAddress, SocketAddressV4, SocketAddressV6};
+use crate::{Authority, AuthorityRef, Endpoint, EndpointRef, HostRef, SocketAddress, SocketAddressV4, SocketAddressV6};
 
 impl<'a> AuthorityRef<'a> {
     //! Conversions
@@ -6,6 +6,16 @@ impl<'a> AuthorityRef<'a> {
     /// Converts the authority reference to an authority.
     pub fn to_authority(self) -> Authority {
         Authority::new(self.host().to_host(), self.port())
+    }
+
+    /// Converts the authority reference to an optional endpoint.
+    #[must_use]
+    pub fn to_endpoint(self) -> Option<Endpoint> {
+        if let HostRef::Name(domain) = self.host() {
+            Some(Endpoint::new(domain.to_domain(), self.port()))
+        } else {
+            None
+        }
     }
 
     /// Converts the authority reference to an optional endpoint reference.
@@ -62,7 +72,7 @@ impl<'a> From<SocketAddressV6> for AuthorityRef<'a> {
 #[cfg(test)]
 mod tests {
     use crate::{
-        Authority, AuthorityRef, Domain, DomainRef, EndpointRef, Host, HostRef, IPv4Address, IPv6Address,
+        Authority, AuthorityRef, Domain, DomainRef, Endpoint, EndpointRef, Host, HostRef, IPv4Address, IPv6Address,
         SocketAddress, SocketAddressV4, SocketAddressV6,
     };
 
@@ -77,11 +87,19 @@ mod tests {
     #[test]
     fn ref_to_endpoint() {
         let authority: AuthorityRef = AuthorityRef::new(HostRef::Name(DomainRef::LOCALHOST), 80);
+        let result: Option<Endpoint> = authority.to_endpoint();
+        let expected: Option<Endpoint> = Some(Endpoint::new(Domain::localhost(), 80));
+        assert_eq!(result, expected);
+
         let result: Option<EndpointRef> = authority.to_endpoint_ref();
         let expected: Option<EndpointRef> = Some(EndpointRef::new(DomainRef::LOCALHOST, 80));
         assert_eq!(result, expected);
 
         let authority: AuthorityRef = AuthorityRef::new(IPv4Address::LOCALHOST.to_host_ref(), 80);
+        let result: Option<Endpoint> = authority.to_endpoint();
+        let expected: Option<Endpoint> = None;
+        assert_eq!(result, expected);
+
         let result: Option<EndpointRef> = authority.to_endpoint_ref();
         let expected: Option<EndpointRef> = None;
         assert_eq!(result, expected);

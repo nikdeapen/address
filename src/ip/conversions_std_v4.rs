@@ -30,17 +30,20 @@ mod tests {
     use std::net::Ipv4Addr;
 
     #[test]
-    fn v4() {
+    fn v4_to_std() {
         let ip: IPv4Address = IPv4Address::LOCALHOST;
         let std: Ipv4Addr = Ipv4Addr::LOCALHOST;
 
         let result: Ipv4Addr = ip.to_std();
         assert_eq!(result, std);
 
-        let result: IPv4Address = std.into();
-        assert_eq!(result, ip);
-
         let result: Ipv4Addr = ip.into();
         assert_eq!(result, std);
+    }
+
+    #[test]
+    fn v4_from_std() {
+        let result: IPv4Address = Ipv4Addr::LOCALHOST.into();
+        assert_eq!(result, IPv4Address::LOCALHOST);
     }
 }

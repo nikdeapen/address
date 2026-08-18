@@ -1,20 +1,19 @@
 use crate::ParseError::InvalidAuthority;
 use crate::parse_port;
-use crate::{AuthorityRef, HostRef, IPv6Address, ParseError, doc_ignored_zone, doc_lowercase_required, impl_parse_ref};
+use crate::{AuthorityRef, HostRef, IPv6Address, ParseError, impl_parse_ref};
 
-impl_parse_ref!(AuthorityRef, doc_lowercase_required!(Authority), doc_ignored_zone!());
+impl<'a> AuthorityRef<'a> {
+    //! Parse
 
-impl<'a> TryFrom<&'a [u8]> for AuthorityRef<'a> {
-    type Error = ParseError;
-
-    #[doc = doc_lowercase_required!(Authority)]
-    #[doc = doc_ignored_zone!()]
-    fn try_from(authority: &'a [u8]) -> Result<Self, Self::Error> {
-        let (s, port): (&[u8], u16) = parse_port(authority)?;
-        if let Some(ip) = IPv6Address::parse_bracketed(s) {
+    /// A host & a decimal port; an IPv6 host must be bracketed: `localhost:80` or `[::1]:80`.
+    /// Domain names must already be in lowercase. Use [`Authority`](crate::Authority) to parse mixed-case input.
+    /// A numeric IPv6 zone is accepted & ignored: `[fe80::1%1]:80` parses as `[fe80::1]:80`.
+    pub fn parse_text(text: &'a [u8]) -> Result<Self, ParseError> {
+        let (host, port): (&[u8], u16) = parse_port(text)?;
+        if let Some(ip) = IPv6Address::parse_bracketed(host) {
             Ok(ip?.to_host_ref().to_authority_ref(port))
         } else {
-            let host: HostRef = HostRef::try_from(s)?;
+            let host: HostRef = HostRef::parse_text(host)?;
             if let HostRef::Address(ip) = host
                 && ip.is_v6()
             {
@@ -24,6 +23,13 @@ impl<'a> TryFrom<&'a [u8]> for AuthorityRef<'a> {
         }
     }
 }
+
+impl_parse_ref!(
+    AuthorityRef,
+    "A host & a decimal port; an IPv6 host must be bracketed: `localhost:80` or `[::1]:80`.",
+    "Domain names must already be in lowercase. Use [`Authority`](crate::Authority) to parse mixed-case input.",
+    "A numeric IPv6 zone is accepted & ignored: `[fe80::1%1]:80` parses as `[fe80::1]:80`."
+);
 
 #[cfg(test)]
 mod tests {
@@ -46,7 +52,7 @@ mod tests {
     }
 
     #[test]
-    fn try_from_slice() {
+    fn parse_text() {
         let test_cases: &[(&[u8], Result<AuthorityRef, ParseError>)] = &[
             (
                 "localhost:80".as_bytes(),
@@ -70,7 +76,7 @@ mod tests {
         ];
 
         for (input, expected) in test_cases {
-            let result: Result<AuthorityRef, ParseError> = AuthorityRef::try_from(*input);
+            let result: Result<AuthorityRef, ParseError> = AuthorityRef::parse_text(input);
             assert_eq!(result, *expected, "input={:?}", input);
         }
     }

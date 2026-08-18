@@ -47,18 +47,12 @@ mod tests {
     use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 
     #[test]
-    fn ip() {
+    fn ip_to_std() {
         let ip: IPAddress = IPv4Address::LOCALHOST.to_ip();
         let std: IpAddr = IpAddr::V4(Ipv4Addr::LOCALHOST);
 
         let result: IpAddr = ip.to_std();
         assert_eq!(result, std);
-
-        let result: IPAddress = std.into();
-        assert_eq!(result, ip);
-
-        let result: IPAddress = Ipv4Addr::LOCALHOST.into();
-        assert_eq!(result, ip);
 
         let result: IpAddr = ip.into();
         assert_eq!(result, std);
@@ -69,13 +63,26 @@ mod tests {
         let result: IpAddr = ip.to_std();
         assert_eq!(result, std);
 
-        let result: IPAddress = std.into();
+        let result: IpAddr = ip.into();
+        assert_eq!(result, std);
+    }
+
+    #[test]
+    fn ip_from_std() {
+        let ip: IPAddress = IPv4Address::LOCALHOST.to_ip();
+
+        let result: IPAddress = IpAddr::V4(Ipv4Addr::LOCALHOST).into();
+        assert_eq!(result, ip);
+
+        let result: IPAddress = Ipv4Addr::LOCALHOST.into();
+        assert_eq!(result, ip);
+
+        let ip: IPAddress = IPv6Address::LOCALHOST.to_ip();
+
+        let result: IPAddress = IpAddr::V6(Ipv6Addr::LOCALHOST).into();
         assert_eq!(result, ip);
 
         let result: IPAddress = Ipv6Addr::LOCALHOST.into();
         assert_eq!(result, ip);
-
-        let result: IpAddr = ip.into();
-        assert_eq!(result, std);
     }
 }

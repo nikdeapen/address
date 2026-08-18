@@ -1,57 +1,61 @@
 use crate::ParseError::InvalidHost;
-use crate::{
-    Domain, Host, IPAddress, InvalidAddress, ParseError, doc_normalized, doc_recovers_value, impl_parse,
-    impl_parse_string,
-};
-
-impl_parse!(Host, doc_normalized!());
-impl_parse_string!(Host, doc_normalized!());
+use crate::{Domain, Host, IPAddress, InvalidAddressError, ParseError, impl_parse, impl_parse_string};
 
 impl Host {
-    //! Owned Parsing
+    //! Parse
 
-    /// Creates a host from the first `len` bytes of `host`, normalizing domain names to lowercase.
-    ///
-    /// Returns the unmodified `host` if the prefix is not a valid host.
-    pub(crate) fn from_vec_prefix(host: Vec<u8>, len: usize) -> Result<Self, Vec<u8>> {
-        if let Ok(ip) = IPAddress::parse(&host[..len]) {
+    /// A domain name or an unbracketed IP address: `localhost`, `127.0.0.1`, or `::1`.
+    /// Domain names are normalized to lowercase.
+    pub fn parse_text(text: &[u8]) -> Result<Self, ParseError> {
+        if let Ok(ip) = IPAddress::parse_text(text) {
             Ok(ip.to_host())
-        } else {
-            Domain::from_vec_prefix(host, len).map(Domain::to_host)
-        }
-    }
-}
-
-impl TryFrom<&[u8]> for Host {
-    type Error = ParseError;
-
-    #[doc = doc_normalized!()]
-    fn try_from(host: &[u8]) -> Result<Self, Self::Error> {
-        if let Ok(ip) = IPAddress::parse(host) {
-            Ok(ip.to_host())
-        } else if let Ok(domain) = Domain::try_from(host) {
+        } else if let Ok(domain) = Domain::parse_text(text) {
             Ok(domain.to_host())
         } else {
             Err(InvalidHost)
         }
     }
+
+    /// Creates a host from the first `len` bytes of `text`, normalizing domain names to lowercase.
+    ///
+    /// Returns the unmodified `text` if the prefix is not a valid host.
+    pub(crate) fn parse_vec_prefix(text: Vec<u8>, len: usize) -> Result<Self, Vec<u8>> {
+        if let Ok(ip) = IPAddress::parse_text(&text[..len]) {
+            Ok(ip.to_host())
+        } else {
+            Domain::parse_vec_prefix(text, len).map(Domain::to_host)
+        }
+    }
 }
 
-impl TryFrom<Vec<u8>> for Host {
-    type Error = InvalidAddress<Vec<u8>>;
+impl_parse!(
+    Host,
+    "A domain name or an unbracketed IP address: `localhost`, `127.0.0.1`, or `::1`.",
+    "Domain names are normalized to lowercase."
+);
 
-    #[doc = doc_normalized!()]
-    #[doc = doc_recovers_value!("host")]
-    fn try_from(host: Vec<u8>) -> Result<Self, Self::Error> {
-        let len: usize = host.len();
-        Self::from_vec_prefix(host, len).map_err(|host| InvalidAddress::new(host, InvalidHost))
+impl_parse_string!(
+    Host,
+    "A domain name or an unbracketed IP address: `localhost`, `127.0.0.1`, or `::1`.",
+    "Domain names are normalized to lowercase."
+);
+
+impl TryFrom<Vec<u8>> for Host {
+    type Error = InvalidAddressError<Vec<u8>>;
+
+    /// A domain name or an unbracketed IP address: `localhost`, `127.0.0.1`, or `::1`.
+    /// Domain names are normalized to lowercase.
+    /// The error contains the unmodified `text`, which `TryFrom<String>` soundly recovers as a string.
+    fn try_from(text: Vec<u8>) -> Result<Self, Self::Error> {
+        let len: usize = text.len();
+        Self::parse_vec_prefix(text, len).map_err(|text| InvalidAddressError::new(text, InvalidHost))
     }
 }
 
 #[cfg(test)]
 mod tests {
     use crate::ParseError::InvalidHost;
-    use crate::{Domain, Host, IPv4Address, IPv6Address, InvalidAddress, ParseError};
+    use crate::{Domain, Host, IPv4Address, IPv6Address, InvalidAddressError, ParseError};
     use std::str::FromStr;
 
     #[test]
@@ -85,12 +89,12 @@ mod tests {
     }
 
     #[test]
-    fn try_from_slice() {
-        let result: Result<Host, ParseError> = Host::try_from("LocalHost".as_bytes());
+    fn parse_text() {
+        let result: Result<Host, ParseError> = Host::parse_text("LocalHost".as_bytes());
         let expected: Result<Host, ParseError> = Ok(Domain::localhost().to_host());
         assert_eq!(result, expected);
 
-        let result: Result<Host, ParseError> = Host::try_from(b"\xFF".as_slice());
+        let result: Result<Host, ParseError> = Host::parse_text(b"\xFF".as_slice());
         let expected: Result<Host, ParseError> = Err(InvalidHost);
         assert_eq!(result, expected);
     }
@@ -105,7 +109,7 @@ mod tests {
         ];
 
         for (input, expected) in test_cases {
-            let result: Result<Host, InvalidAddress<String>> = Host::try_from(input.to_string());
+            let result: Result<Host, InvalidAddressError<String>> = Host::try_from(input.to_string());
             match result {
                 Ok(value) => assert_eq!(Ok(value), *expected, "input={}", input),
                 Err(error) => {
@@ -126,7 +130,7 @@ mod tests {
         ];
 
         for (input, expected) in test_cases {
-            let result: Result<Host, InvalidAddress<Vec<u8>>> = Host::try_from(Vec::from(*input));
+            let result: Result<Host, InvalidAddressError<Vec<u8>>> = Host::try_from(Vec::from(*input));
             match result {
                 Ok(value) => assert_eq!(Ok(value), *expected, "input={}", input),
                 Err(error) => {
@@ -139,6 +143,33 @@ mod tests {
                     );
                 }
             }
+        }
+    }
+
+    /// Mixed-case domain names are lowercased on every owned parse path.
+    #[test]
+    fn normalizes_case() {
+        let test_cases: &[(&str, &str)] = &[
+            ("LocalHost", "localhost"),
+            ("WWW.Example.COM", "www.example.com"),
+            ("A-B.C--D.EXAMPLE", "a-b.c--d.example"),
+        ];
+
+        for (input, expected) in test_cases {
+            let host: Host = input.parse().unwrap();
+            assert_eq!(host.to_string(), *expected, "from_str input={}", input);
+
+            let host: Host = Host::try_from(*input).unwrap();
+            assert_eq!(host.to_string(), *expected, "try_from(&str) input={}", input);
+
+            let host: Host = Host::parse_text(input.as_bytes()).unwrap();
+            assert_eq!(host.to_string(), *expected, "parse_text input={}", input);
+
+            let host: Host = Host::try_from(input.to_string()).unwrap();
+            assert_eq!(host.to_string(), *expected, "try_from(String) input={}", input);
+
+            let host: Host = Host::try_from(Vec::from(*input)).unwrap();
+            assert_eq!(host.to_string(), *expected, "try_from(Vec<u8>) input={}", input);
         }
     }
 

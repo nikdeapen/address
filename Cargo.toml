@@ -1,6 +1,6 @@
 [package]
 name = "address"
-version = "0.20.0-rc.3"
+version = "0.20.0"
 description = "Network address types with strict validation, owned & borrowed variants, and standard library conversions."
 readme = "README.md"
 repository = "https://github.com/nikdeapen/address"

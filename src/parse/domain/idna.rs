@@ -4,12 +4,12 @@ use crate::{Domain, DomainRef, ParseError};
 impl Domain {
     //! International Domain Names
 
-    /// Creates a domain from the Unicode `name`.
+    /// Parses the Unicode domain `text`.
     ///
     /// Unicode labels are converted to their ASCII A-label form, so the domain will only contain ASCII.
     /// (example: `Bücher.example` becomes `xn--bcher-kva.example`)
-    pub fn from_unicode(name: &str) -> Result<Self, ParseError> {
-        let name: String = idna::domain_to_ascii(name).map_err(|_| InvalidDomain)?;
+    pub fn parse_unicode(text: &str) -> Result<Self, ParseError> {
+        let name: String = idna::domain_to_ascii(text).map_err(|_| InvalidDomain)?;
         Self::try_from(name).map_err(ParseError::from)
     }
 
@@ -40,7 +40,7 @@ mod tests {
     use crate::{Domain, DomainRef, ParseError};
 
     #[test]
-    fn from_unicode() {
+    fn parse_unicode() {
         let test_cases: &[(&str, Result<Domain, ParseError>)] = &[
             ("Bücher.example", Ok(Domain::try_from("xn--bcher-kva.example").unwrap())),
             ("localhost", Ok(Domain::localhost())),
@@ -48,7 +48,7 @@ mod tests {
         ];
 
         for (input, expected) in test_cases {
-            let result: Result<Domain, ParseError> = Domain::from_unicode(input);
+            let result: Result<Domain, ParseError> = Domain::parse_unicode(input);
             assert_eq!(result, *expected, "input={}", input);
         }
     }

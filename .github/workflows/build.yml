@@ -84,6 +84,27 @@ jobs:
         run: cargo doc --locked --all-features --no-deps
         env:
           RUSTDOCFLAGS: --cfg docsrs -D warnings
+  latest_deps:
+    name: Latest Dependencies
+    runs-on: ubuntu-latest
+    # Tests the versions consumers actually resolve: a library's `Cargo.lock` is ignored by its dependents, so the
+    # `--locked` jobs never exercise a dependency release. `cargo update` is required; dropping `--locked` alone
+    # still reuses the committed lock file.
+    # Advisory: a dependency release can break this for unrelated reasons, so this is not part of the `build` gate.
+    continue-on-error: true
+    steps:
+      - name: Git Checkout
+        uses: actions/checkout@v7
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+      - name: Cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          key: latest_deps
+      - name: Update
+        run: cargo update
+      - name: Test
+        run: cargo test --all-features --verbose
   build:
     name: Build
     runs-on: ubuntu-latest

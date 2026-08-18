@@ -34,7 +34,7 @@ mod tests {
     use crate::{Domain, DomainRef, Endpoint, EndpointRef};
 
     #[test]
-    fn display() {
+    fn endpoint_display() {
         let endpoint: Endpoint = Domain::localhost().to_endpoint(80);
         let result: String = endpoint.to_string();
         let expected: &str = "localhost:80";

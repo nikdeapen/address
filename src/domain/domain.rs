@@ -1,22 +1,10 @@
 use crate::DomainRef;
 
-/// The exactness note for the string comparison impls.
-macro_rules! doc_exact_comparison {
-    () => {
-        "Compares the name exactly; domain names are lowercase, so mixed-case strings are never equal."
-    };
-}
-
-pub(crate) use doc_exact_comparison;
-
 /// A domain name.
-///
-/// Domain names are lowercase ASCII letters, digits, and dashes: dot-separated labels that must not start or end
-/// with a dash (see [`Domain::is_valid_name`]). Mixed-case input is normalized to lowercase when parsed.
 #[must_use]
 #[derive(Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
 pub struct Domain {
-    pub(super) name: String,
+    name: String,
 }
 
 impl Domain {
@@ -46,7 +34,7 @@ impl Domain {
     {
         let name: String = name.into();
 
-        debug_assert!(Self::is_valid_name_str(name.as_str(), false));
+        debug_assert!(Self::is_valid_name_str(name.as_str()));
 
         Self { name }
     }
@@ -65,14 +53,28 @@ impl<'a> PartialEq<DomainRef<'a>> for Domain {
 }
 
 impl PartialEq<&str> for Domain {
-    #[doc = doc_exact_comparison!()]
+    /// Compares the name exactly; domain names are lowercase, so mixed-case strings are never equal.
     fn eq(&self, other: &&str) -> bool {
         self.name == *other
     }
 }
 
 impl PartialEq<Domain> for &str {
-    #[doc = doc_exact_comparison!()]
+    /// Compares the name exactly; domain names are lowercase, so mixed-case strings are never equal.
+    fn eq(&self, other: &Domain) -> bool {
+        *self == other.name
+    }
+}
+
+impl PartialEq<String> for Domain {
+    /// Compares the name exactly; domain names are lowercase, so mixed-case strings are never equal.
+    fn eq(&self, other: &String) -> bool {
+        self.name == *other
+    }
+}
+
+impl PartialEq<Domain> for String {
+    /// Compares the name exactly; domain names are lowercase, so mixed-case strings are never equal.
     fn eq(&self, other: &Domain) -> bool {
         *self == other.name
     }
@@ -83,7 +85,7 @@ impl Domain {
 
     /// Gets the name.
     #[must_use]
-    pub fn name(&self) -> &str {
+    pub const fn name(&self) -> &str {
         self.name.as_str()
     }
 }
@@ -115,6 +117,10 @@ mod tests {
         assert_ne!(domain, "example.com");
         assert_eq!("localhost", domain);
         assert_ne!("example.com", domain);
+        assert_eq!(domain, String::from("localhost"));
+        assert_ne!(domain, String::from("example.com"));
+        assert_eq!(String::from("localhost"), domain);
+        assert_ne!(String::from("example.com"), domain);
     }
 
     #[test]

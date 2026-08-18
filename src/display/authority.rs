@@ -33,7 +33,7 @@ mod tests {
     use crate::{Authority, Domain, IPv4Address, IPv6Address};
 
     #[test]
-    fn display() {
+    fn authority_display() {
         let test_cases: &[(Authority, &str)] = &[
             (Domain::localhost().to_host().to_authority(80), "localhost:80"),
             (IPv4Address::LOCALHOST.to_host().to_authority(80), "127.0.0.1:80"),

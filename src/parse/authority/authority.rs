@@ -1,24 +1,21 @@
 use crate::ParseError::{InvalidAuthority, InvalidHost};
 use crate::parse_port;
 use crate::{
-    Authority, Domain, Host, IPAddress, IPv6Address, InvalidAddress, ParseError, doc_ignored_zone, doc_normalized,
-    doc_recovers_value, impl_parse, impl_parse_string,
+    Authority, Domain, Host, IPAddress, IPv6Address, InvalidAddressError, ParseError, impl_parse, impl_parse_string,
 };
 
-impl_parse!(Authority, doc_normalized!(), doc_ignored_zone!());
-impl_parse_string!(Authority, doc_normalized!(), doc_ignored_zone!());
+impl Authority {
+    //! Parse
 
-impl TryFrom<&[u8]> for Authority {
-    type Error = ParseError;
-
-    #[doc = doc_normalized!()]
-    #[doc = doc_ignored_zone!()]
-    fn try_from(authority: &[u8]) -> Result<Self, Self::Error> {
-        let (s, port): (&[u8], u16) = parse_port(authority)?;
-        if let Some(ip) = IPv6Address::parse_bracketed(s) {
+    /// A host & a decimal port; an IPv6 host must be bracketed: `localhost:80` or `[::1]:80`.
+    /// Domain names are normalized to lowercase.
+    /// A numeric IPv6 zone is accepted & ignored: `[fe80::1%1]:80` parses as `[fe80::1]:80`.
+    pub fn parse_text(text: &[u8]) -> Result<Self, ParseError> {
+        let (host, port): (&[u8], u16) = parse_port(text)?;
+        if let Some(ip) = IPv6Address::parse_bracketed(host) {
             Ok(ip?.to_host().to_authority(port))
         } else {
-            let host: Host = Host::try_from(s)?;
+            let host: Host = Host::parse_text(host)?;
             if let Host::Address(ip) = &host
                 && ip.is_v6()
             {
@@ -29,32 +26,47 @@ impl TryFrom<&[u8]> for Authority {
     }
 }
 
-impl TryFrom<Vec<u8>> for Authority {
-    type Error = InvalidAddress<Vec<u8>>;
+impl_parse!(
+    Authority,
+    "A host & a decimal port; an IPv6 host must be bracketed: `localhost:80` or `[::1]:80`.",
+    "Domain names are normalized to lowercase.",
+    "A numeric IPv6 zone is accepted & ignored: `[fe80::1%1]:80` parses as `[fe80::1]:80`."
+);
 
-    #[doc = doc_normalized!()]
-    #[doc = doc_ignored_zone!()]
-    #[doc = doc_recovers_value!("authority")]
-    fn try_from(authority: Vec<u8>) -> Result<Self, Self::Error> {
-        match parse_port(authority.as_slice()) {
-            Ok((s, port)) => {
-                if let Some(ip) = IPv6Address::parse_bracketed(s) {
+impl_parse_string!(
+    Authority,
+    "A host & a decimal port; an IPv6 host must be bracketed: `localhost:80` or `[::1]:80`.",
+    "Domain names are normalized to lowercase.",
+    "A numeric IPv6 zone is accepted & ignored: `[fe80::1%1]:80` parses as `[fe80::1]:80`."
+);
+
+impl TryFrom<Vec<u8>> for Authority {
+    type Error = InvalidAddressError<Vec<u8>>;
+
+    /// A host & a decimal port; an IPv6 host must be bracketed: `localhost:80` or `[::1]:80`.
+    /// Domain names are normalized to lowercase.
+    /// A numeric IPv6 zone is accepted & ignored: `[fe80::1%1]:80` parses as `[fe80::1]:80`.
+    /// The error contains the unmodified `text`, which `TryFrom<String>` soundly recovers as a string.
+    fn try_from(text: Vec<u8>) -> Result<Self, Self::Error> {
+        match parse_port(text.as_slice()) {
+            Ok((host, port)) => {
+                if let Some(ip) = IPv6Address::parse_bracketed(host) {
                     ip.map(|ip| ip.to_host().to_authority(port))
-                        .map_err(|error| InvalidAddress::new(authority, error))
-                } else if let Ok(ip) = IPAddress::parse(s) {
+                        .map_err(|error| InvalidAddressError::new(text, error))
+                } else if let Ok(ip) = IPAddress::parse_text(host) {
                     if ip.is_v6() {
-                        Err(InvalidAddress::new(authority, InvalidAuthority))
+                        Err(InvalidAddressError::new(text, InvalidAuthority))
                     } else {
                         Ok(ip.to_host().to_authority(port))
                     }
                 } else {
-                    let name_len: usize = s.len();
-                    Domain::from_vec_prefix(authority, name_len)
+                    let name_len: usize = host.len();
+                    Domain::parse_vec_prefix(text, name_len)
                         .map(|domain| domain.to_host().to_authority(port))
-                        .map_err(|name| InvalidAddress::new(name, InvalidHost))
+                        .map_err(|text| InvalidAddressError::new(text, InvalidHost))
                 }
             }
-            Err(error) => Err(InvalidAddress::new(authority, error)),
+            Err(error) => Err(InvalidAddressError::new(text, error)),
         }
     }
 }
@@ -62,7 +74,7 @@ impl TryFrom<Vec<u8>> for Authority {
 #[cfg(test)]
 mod tests {
     use crate::ParseError::{InvalidAuthority, InvalidHost, InvalidIPv6Address, InvalidPort};
-    use crate::{Authority, Domain, IPv4Address, IPv6Address, InvalidAddress, ParseError};
+    use crate::{Authority, Domain, IPv4Address, IPv6Address, InvalidAddressError, ParseError};
     use std::str::FromStr;
 
     #[test]
@@ -106,12 +118,12 @@ mod tests {
     }
 
     #[test]
-    fn try_from_slice() {
-        let result: Result<Authority, ParseError> = Authority::try_from("LocalHost:80".as_bytes());
+    fn parse_text() {
+        let result: Result<Authority, ParseError> = Authority::parse_text("LocalHost:80".as_bytes());
         let expected: Result<Authority, ParseError> = Ok(Domain::localhost().to_host().to_authority(80));
         assert_eq!(result, expected);
 
-        let result: Result<Authority, ParseError> = Authority::try_from(b"\xFF:80".as_slice());
+        let result: Result<Authority, ParseError> = Authority::parse_text(b"\xFF:80".as_slice());
         let expected: Result<Authority, ParseError> = Err(InvalidHost);
         assert_eq!(result, expected);
     }
@@ -131,7 +143,7 @@ mod tests {
         ];
 
         for (input, expected) in test_cases {
-            let result: Result<Authority, InvalidAddress<String>> = Authority::try_from(input.to_string());
+            let result: Result<Authority, InvalidAddressError<String>> = Authority::try_from(input.to_string());
             match result {
                 Ok(value) => assert_eq!(Ok(value), *expected, "input={}", input),
                 Err(error) => {
@@ -157,7 +169,7 @@ mod tests {
         ];
 
         for (input, expected) in test_cases {
-            let result: Result<Authority, InvalidAddress<Vec<u8>>> = Authority::try_from(Vec::from(*input));
+            let result: Result<Authority, InvalidAddressError<Vec<u8>>> = Authority::try_from(Vec::from(*input));
             match result {
                 Ok(value) => assert_eq!(Ok(value), *expected, "input={}", input),
                 Err(error) => {
@@ -185,6 +197,9 @@ mod tests {
         for (input, expected) in test_cases {
             let authority: Authority = input.parse().unwrap();
             assert_eq!(authority.to_string(), *expected, "from_str input={}", input);
+
+            let authority: Authority = Authority::parse_text(input.as_bytes()).unwrap();
+            assert_eq!(authority.to_string(), *expected, "parse_text input={}", input);
 
             let authority: Authority = Authority::try_from(input.to_string()).unwrap();
             assert_eq!(authority.to_string(), *expected, "try_from(String) input={}", input);

@@ -1,43 +1,16 @@
 use crate::ParseError::InvalidDomain;
-use crate::{
-    Domain, InvalidAddress, NameClass, ParseError, doc_name_normalized, doc_recovers_value, impl_parse,
-    impl_parse_string,
-};
-
-impl_parse!(Domain, doc_name_normalized!());
-impl_parse_string!(Domain, doc_name_normalized!());
+use crate::{Domain, InvalidAddressError, NameClass, ParseError, impl_parse, impl_parse_string};
 
 impl Domain {
-    //! Owned Parsing
+    //! Parse
 
-    /// Creates a domain from the first `len` bytes of `name`, normalizing the name to lowercase.
-    ///
-    /// Returns the unmodified `name` if the prefix is not a valid domain name.
-    pub(crate) fn from_vec_prefix(name: Vec<u8>, len: usize) -> Result<Self, Vec<u8>> {
-        match Self::classify_name(&name[..len]) {
-            NameClass::Invalid => Err(name),
-            class => {
-                let mut name: Vec<u8> = name;
-                name.truncate(len);
-                if class == NameClass::MixedCase {
-                    name.make_ascii_lowercase();
-                }
-                let name: String = unsafe { String::from_utf8_unchecked(name) };
-                Ok(unsafe { Self::new_unchecked(name) })
-            }
-        }
-    }
-}
-
-impl TryFrom<&[u8]> for Domain {
-    type Error = ParseError;
-
-    #[doc = doc_name_normalized!()]
-    fn try_from(name: &[u8]) -> Result<Self, Self::Error> {
-        match Self::classify_name(name) {
+    /// Dot-separated labels of ASCII letters, digits, & dashes. (see [`Domain::is_valid_name`])
+    /// The name is normalized to lowercase.
+    pub fn parse_text(text: &[u8]) -> Result<Self, ParseError> {
+        match Self::classify_name(text) {
             NameClass::Invalid => Err(InvalidDomain),
             class => {
-                let name: &str = unsafe { std::str::from_utf8_unchecked(name) };
+                let name: &str = unsafe { std::str::from_utf8_unchecked(text) };
                 if class == NameClass::MixedCase {
                     Ok(unsafe { Self::new_unchecked(name.to_ascii_lowercase()) })
                 } else {
@@ -46,23 +19,54 @@ impl TryFrom<&[u8]> for Domain {
             }
         }
     }
+
+    /// Creates a domain from the first `len` bytes of `text`, normalizing the name to lowercase.
+    ///
+    /// Returns the unmodified `text` if the prefix is not a valid domain name.
+    pub(crate) fn parse_vec_prefix(text: Vec<u8>, len: usize) -> Result<Self, Vec<u8>> {
+        match Self::classify_name(&text[..len]) {
+            NameClass::Invalid => Err(text),
+            class => {
+                let mut text: Vec<u8> = text;
+                text.truncate(len);
+                if class == NameClass::MixedCase {
+                    text.make_ascii_lowercase();
+                }
+                let name: String = unsafe { String::from_utf8_unchecked(text) };
+                Ok(unsafe { Self::new_unchecked(name) })
+            }
+        }
+    }
 }
 
-impl TryFrom<Vec<u8>> for Domain {
-    type Error = InvalidAddress<Vec<u8>>;
+impl_parse!(
+    Domain,
+    "Dot-separated labels of ASCII letters, digits, & dashes. (see [`Domain::is_valid_name`])",
+    "The name is normalized to lowercase."
+);
 
-    #[doc = doc_name_normalized!()]
-    #[doc = doc_recovers_value!("name")]
-    fn try_from(name: Vec<u8>) -> Result<Self, Self::Error> {
-        let len: usize = name.len();
-        Self::from_vec_prefix(name, len).map_err(|name| InvalidAddress::new(name, InvalidDomain))
+impl_parse_string!(
+    Domain,
+    "Dot-separated labels of ASCII letters, digits, & dashes. (see [`Domain::is_valid_name`])",
+    "The name is normalized to lowercase."
+);
+
+impl TryFrom<Vec<u8>> for Domain {
+    type Error = InvalidAddressError<Vec<u8>>;
+
+    /// Dot-separated labels of ASCII letters, digits, & dashes. (see [`Domain::is_valid_name`])
+    /// The name is normalized to lowercase.
+    /// The error contains the unmodified `text`, which `TryFrom<String>` soundly recovers as a string.
+    fn try_from(text: Vec<u8>) -> Result<Self, Self::Error> {
+        let len: usize = text.len();
+        Self::parse_vec_prefix(text, len).map_err(|text| InvalidAddressError::new(text, InvalidDomain))
     }
 }
 
 #[cfg(test)]
 mod tests {
     use crate::ParseError::InvalidDomain;
-    use crate::{Domain, InvalidAddress, ParseError};
+    use crate::{Domain, InvalidAddressError, ParseError};
     use std::str::FromStr;
 
     #[test]
@@ -94,7 +98,7 @@ mod tests {
     }
 
     #[test]
-    fn try_from_slice() {
+    fn parse_text() {
         let test_cases: &[(&[u8], Result<Domain, ParseError>)] = &[
             ("localhost".as_bytes(), Ok(Domain::localhost())),
             ("LocalHost".as_bytes(), Ok(Domain::localhost())),
@@ -103,7 +107,7 @@ mod tests {
         ];
 
         for (input, expected) in test_cases {
-            let result: Result<Domain, ParseError> = Domain::try_from(*input);
+            let result: Result<Domain, ParseError> = Domain::parse_text(input);
             assert_eq!(result, *expected, "input={:?}", input);
         }
     }
@@ -117,7 +121,7 @@ mod tests {
         ];
 
         for (input, expected) in test_cases {
-            let result: Result<Domain, InvalidAddress<String>> = Domain::try_from(input.to_string());
+            let result: Result<Domain, InvalidAddressError<String>> = Domain::try_from(input.to_string());
             match result {
                 Ok(value) => assert_eq!(Ok(value), *expected, "input={}", input),
                 Err(error) => {
@@ -137,7 +141,7 @@ mod tests {
         ];
 
         for (input, expected) in test_cases {
-            let result: Result<Domain, InvalidAddress<Vec<u8>>> = Domain::try_from(Vec::from(*input));
+            let result: Result<Domain, InvalidAddressError<Vec<u8>>> = Domain::try_from(Vec::from(*input));
             match result {
                 Ok(value) => assert_eq!(Ok(value), *expected, "input={}", input),
                 Err(error) => {
@@ -170,8 +174,8 @@ mod tests {
             let domain: Domain = Domain::try_from(*input).unwrap();
             assert_eq!(domain, *expected, "try_from(&str) input={}", input);
 
-            let domain: Domain = Domain::try_from(input.as_bytes()).unwrap();
-            assert_eq!(domain, *expected, "try_from(&[u8]) input={}", input);
+            let domain: Domain = Domain::parse_text(input.as_bytes()).unwrap();
+            assert_eq!(domain, *expected, "parse_text input={}", input);
 
             let domain: Domain = Domain::try_from(input.to_string()).unwrap();
             assert_eq!(domain, *expected, "try_from(String) input={}", input);
