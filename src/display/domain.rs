@@ -55,7 +55,7 @@ mod tests {
     use crate::{Domain, DomainRef};
 
     #[test]
-    fn display() {
+    fn domain_display() {
         let domain: Domain = Domain::localhost();
         let result: String = domain.to_string();
         let expected: &str = "localhost";

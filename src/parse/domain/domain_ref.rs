@@ -1,21 +1,26 @@
 use crate::ParseError::InvalidDomain;
-use crate::{Domain, DomainRef, ParseError, doc_name_lowercase_required, impl_parse_ref};
+use crate::{Domain, DomainRef, ParseError, impl_parse_ref};
 
-impl_parse_ref!(DomainRef, doc_name_lowercase_required!());
+impl<'a> DomainRef<'a> {
+    //! Parse
 
-impl<'a> TryFrom<&'a [u8]> for DomainRef<'a> {
-    type Error = ParseError;
-
-    #[doc = doc_name_lowercase_required!()]
-    fn try_from(name: &'a [u8]) -> Result<Self, Self::Error> {
-        if Domain::is_valid_name(name, false) {
-            let name: &str = unsafe { std::str::from_utf8_unchecked(name) };
+    /// Dot-separated labels of ASCII letters, digits, & dashes. (see [`Domain::is_valid_name`])
+    /// The name must already be in lowercase. Use [`Domain`](crate::Domain) to parse mixed-case input.
+    pub fn parse_text(text: &'a [u8]) -> Result<Self, ParseError> {
+        if Domain::is_valid_name(text) {
+            let name: &str = unsafe { std::str::from_utf8_unchecked(text) };
             Ok(unsafe { Self::new_unchecked(name) })
         } else {
             Err(InvalidDomain)
         }
     }
 }
+
+impl_parse_ref!(
+    DomainRef,
+    "Dot-separated labels of ASCII letters, digits, & dashes. (see [`Domain::is_valid_name`])",
+    "The name must already be in lowercase. Use [`Domain`](crate::Domain) to parse mixed-case input."
+);
 
 #[cfg(test)]
 mod tests {
@@ -34,7 +39,7 @@ mod tests {
     }
 
     #[test]
-    fn try_from_slice() {
+    fn parse_text() {
         let test_cases: &[(&[u8], Result<DomainRef, ParseError>)] = &[
             ("localhost".as_bytes(), Ok(DomainRef::LOCALHOST)),
             ("LocalHost".as_bytes(), Err(InvalidDomain)),
@@ -43,7 +48,7 @@ mod tests {
         ];
 
         for (input, expected) in test_cases {
-            let result: Result<DomainRef, ParseError> = DomainRef::try_from(*input);
+            let result: Result<DomainRef, ParseError> = DomainRef::parse_text(input);
             assert_eq!(result, *expected, "input={:?}", input);
         }
     }

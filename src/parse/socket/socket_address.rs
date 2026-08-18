@@ -1,23 +1,28 @@
 use crate::ParseError::InvalidSocketAddress;
 use crate::parse_port;
-use crate::{IPv4Address, IPv6Address, ParseError, SocketAddress, doc_ignored_zone, impl_parse};
+use crate::{IPv4Address, IPv6Address, ParseError, SocketAddress, impl_parse};
 
-impl_parse!(SocketAddress, doc_ignored_zone!());
+impl SocketAddress {
+    //! Parse
 
-impl TryFrom<&[u8]> for SocketAddress {
-    type Error = ParseError;
-
-    #[doc = doc_ignored_zone!()]
-    fn try_from(socket: &[u8]) -> Result<Self, Self::Error> {
-        let (s, port): (&[u8], u16) = parse_port(socket)?;
-        if let Some(ip) = IPv6Address::parse_bracketed(s) {
+    /// An IPv4 address or a bracketed IPv6 address, & a decimal port: `127.0.0.1:80` or `[::1]:80`.
+    /// A numeric IPv6 zone is accepted & ignored: `[fe80::1%1]:80` parses as `[fe80::1]:80`.
+    pub fn parse_text(text: &[u8]) -> Result<Self, ParseError> {
+        let (ip, port): (&[u8], u16) = parse_port(text)?;
+        if let Some(ip) = IPv6Address::parse_bracketed(ip) {
             Ok(ip?.to_ip().to_socket(port))
         } else {
-            let ip: IPv4Address = IPv4Address::parse(s).map_err(|_| InvalidSocketAddress)?;
+            let ip: IPv4Address = IPv4Address::parse_text(ip).map_err(|_| InvalidSocketAddress)?;
             Ok(ip.to_ip().to_socket(port))
         }
     }
 }
+
+impl_parse!(
+    SocketAddress,
+    "An IPv4 address or a bracketed IPv6 address, & a decimal port: `127.0.0.1:80` or `[::1]:80`.",
+    "A numeric IPv6 zone is accepted & ignored: `[fe80::1%1]:80` parses as `[fe80::1]:80`."
+);
 
 #[cfg(test)]
 mod tests {
@@ -45,6 +50,10 @@ mod tests {
             ),
             ("[::1]:80", Ok(IPv6Address::LOCALHOST.to_socket(80).to_socket())),
             ("[::1%1]:80", Ok(IPv6Address::LOCALHOST.to_socket(80).to_socket())),
+            ("[::1%]:80", Err(InvalidIPv6Address)),
+            ("[::1%4294967296]:80", Err(InvalidIPv6Address)),
+            ("[127.0.0.1]:80", Err(InvalidIPv6Address)),
+            ("127.0.0.1:65536", Err(InvalidPort)),
         ];
 
         for (input, expected) in test_cases {
@@ -54,8 +63,23 @@ mod tests {
             let result: Result<SocketAddress, ParseError> = SocketAddress::try_from(*input);
             assert_eq!(result, *expected, "input={}", input);
 
-            let result: Result<SocketAddress, ParseError> = SocketAddress::try_from(input.as_bytes());
+            let result: Result<SocketAddress, ParseError> = SocketAddress::parse_text(input.as_bytes());
             assert_eq!(result, *expected, "input={}", input);
+        }
+    }
+
+    /// Non-UTF-8 bytes reach the parser through the public `parse_text`.
+    #[test]
+    fn parse_text_non_utf8() {
+        let test_cases: &[(&[u8], ParseError)] = &[
+            (b"\xFF:80", InvalidSocketAddress),
+            (b"[\xFF]:80", InvalidIPv6Address),
+            (b"127.0.0.1:\xFF", InvalidPort),
+        ];
+
+        for (input, expected) in test_cases {
+            let result: Result<SocketAddress, ParseError> = SocketAddress::parse_text(input);
+            assert_eq!(result, Err(*expected), "input={:?}", input);
         }
     }
 

@@ -11,7 +11,7 @@ validation, owned & borrowed variants, and standard library conversions.
 ## Usage
 
 ```toml
-address = "0.19.0"
+address = "0.20.0"
 ```
 
 ## Example
@@ -41,7 +41,7 @@ assert_eq!(socket, "[::1]:443".parse().unwrap());
 
 This crate has no dependencies by default.
 
-- `idna`: Adds `Domain::from_unicode` & `to_unicode` for international domain names. Uses the `idna` crate.
+- `idna`: Adds `Domain::parse_unicode` & `to_unicode` for international domain names. Uses the `idna` crate.
 - `serde`: Adds `Serialize` & `Deserialize` implementations via the `serde` crate. See the wire contract below.
 
 ### Serde Wire Contract
@@ -78,6 +78,40 @@ There are 6 core address types:
 
 Address types that are not `Copy` come in owned & reference pairs (example: `Domain` & `DomainRef`). The `Ref` types
 borrow their text, so they parse & convert without allocating; each side converts to the other.
+
+## Parsing
+
+Every address type parses from text. The owned types implement `FromStr`; every type implements `TryFrom<&str>` and
+a `parse_text` method that takes the text as bytes:
+
+```rust
+use address::{Authority, AuthorityRef};
+
+let authority: Authority = "example.com:443".parse().unwrap();
+assert_eq!(Authority::try_from("example.com:443").unwrap(), authority);
+assert_eq!(Authority::parse_text(b"example.com:443").unwrap(), authority);
+
+// The reference types borrow their text, so they parse without allocating.
+let borrowed: AuthorityRef = AuthorityRef::try_from("example.com:443").unwrap();
+assert_eq!(borrowed, authority);
+```
+
+The byte form is a named method rather than `TryFrom<&[u8]>` because on an address type a byte slice reads as raw
+octets rather than as text; the name says which one it is.
+
+The owned types that can hold a domain name also accept `String` & `Vec<u8>`. These reuse the input buffer instead of
+allocating a new one, and on failure return an `InvalidAddressError` that hands the value back:
+
+```rust
+use address::{Domain, InvalidAddressError, ParseError};
+
+let domain: Domain = Domain::try_from(String::from("Example.COM")).unwrap();
+assert_eq!(domain, "example.com");
+
+let error: InvalidAddressError<String> = Domain::try_from(String::from("not a domain")).unwrap_err();
+assert_eq!(error.error(), ParseError::InvalidDomain);
+assert_eq!(error.into_value(), "not a domain");
+```
 
 ## Domain Names
 

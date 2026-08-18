@@ -42,7 +42,7 @@ mod tests {
     use crate::{IPv4Address, IPv6Address, SocketAddress, SocketAddressV4, SocketAddressV6};
 
     #[test]
-    fn v4() {
+    fn v4_display() {
         let socket: SocketAddressV4 = IPv4Address::LOCALHOST.to_socket(80);
         let result: String = socket.to_string();
         let expected: &str = "127.0.0.1:80";
@@ -50,7 +50,7 @@ mod tests {
     }
 
     #[test]
-    fn v6() {
+    fn v6_display() {
         let socket: SocketAddressV6 = IPv6Address::LOCALHOST.to_socket(80);
         let result: String = socket.to_string();
         let expected: &str = "[::1]:80";
@@ -58,7 +58,7 @@ mod tests {
     }
 
     #[test]
-    fn socket() {
+    fn socket_display() {
         let socket: SocketAddress = IPv4Address::LOCALHOST.to_socket(80).to_socket();
         let result: String = socket.to_string();
         let expected: &str = "127.0.0.1:80";

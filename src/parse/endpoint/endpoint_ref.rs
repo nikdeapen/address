@@ -1,18 +1,23 @@
 use crate::parse_port;
-use crate::{DomainRef, EndpointRef, ParseError, doc_lowercase_required, impl_parse_ref};
+use crate::{DomainRef, EndpointRef, ParseError, impl_parse_ref};
 
-impl_parse_ref!(EndpointRef, doc_lowercase_required!(Endpoint));
+impl<'a> EndpointRef<'a> {
+    //! Parse
 
-impl<'a> TryFrom<&'a [u8]> for EndpointRef<'a> {
-    type Error = ParseError;
-
-    #[doc = doc_lowercase_required!(Endpoint)]
-    fn try_from(endpoint: &'a [u8]) -> Result<Self, Self::Error> {
-        let (domain, port): (&[u8], u16) = parse_port(endpoint)?;
-        let domain: DomainRef = DomainRef::try_from(domain)?;
+    /// A domain name & a decimal port: `localhost:80`.
+    /// Domain names must already be in lowercase. Use [`Endpoint`](crate::Endpoint) to parse mixed-case input.
+    pub fn parse_text(text: &'a [u8]) -> Result<Self, ParseError> {
+        let (domain, port): (&[u8], u16) = parse_port(text)?;
+        let domain: DomainRef = DomainRef::parse_text(domain)?;
         Ok(Self::new(domain, port))
     }
 }
+
+impl_parse_ref!(
+    EndpointRef,
+    "A domain name & a decimal port: `localhost:80`.",
+    "Domain names must already be in lowercase. Use [`Endpoint`](crate::Endpoint) to parse mixed-case input."
+);
 
 #[cfg(test)]
 mod tests {
@@ -31,7 +36,7 @@ mod tests {
     }
 
     #[test]
-    fn try_from_slice() {
+    fn parse_text() {
         let test_cases: &[(&[u8], Result<EndpointRef, ParseError>)] = &[
             (
                 "localhost:80".as_bytes(),
@@ -43,7 +48,7 @@ mod tests {
         ];
 
         for (input, expected) in test_cases {
-            let result: Result<EndpointRef, ParseError> = EndpointRef::try_from(*input);
+            let result: Result<EndpointRef, ParseError> = EndpointRef::parse_text(input);
             assert_eq!(result, *expected, "input={:?}", input);
         }
     }

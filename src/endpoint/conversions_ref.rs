@@ -1,4 +1,4 @@
-use crate::{AuthorityRef, Endpoint, EndpointRef};
+use crate::{Authority, AuthorityRef, Endpoint, EndpointRef};
 
 impl<'a> EndpointRef<'a> {
     //! Conversions
@@ -6,6 +6,11 @@ impl<'a> EndpointRef<'a> {
     /// Converts the endpoint reference to an endpoint.
     pub fn to_endpoint(self) -> Endpoint {
         Endpoint::new(self.domain().to_domain(), self.port())
+    }
+
+    /// Converts the endpoint reference to an authority.
+    pub fn to_authority(self) -> Authority {
+        Authority::new(self.domain().to_host(), self.port())
     }
 
     /// Converts the endpoint reference to an authority reference.
@@ -22,7 +27,7 @@ impl<'a> From<&'a Endpoint> for EndpointRef<'a> {
 
 #[cfg(test)]
 mod tests {
-    use crate::{AuthorityRef, Domain, DomainRef, Endpoint, EndpointRef, HostRef};
+    use crate::{Authority, AuthorityRef, Domain, DomainRef, Endpoint, EndpointRef, Host, HostRef};
 
     #[test]
     fn ref_to_endpoint() {
@@ -35,6 +40,10 @@ mod tests {
     #[test]
     fn ref_to_authority() {
         let endpoint: EndpointRef = EndpointRef::new(DomainRef::LOCALHOST, 80);
+        let result: Authority = endpoint.to_authority();
+        let expected: Authority = Authority::new(Host::Name(Domain::localhost()), 80);
+        assert_eq!(result, expected);
+
         let result: AuthorityRef = endpoint.to_authority_ref();
         let expected: AuthorityRef = AuthorityRef::new(HostRef::Name(DomainRef::LOCALHOST), 80);
         assert_eq!(result, expected);

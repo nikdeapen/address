@@ -1,22 +1,5 @@
 use crate::IPAddress;
 
-/// The discarded-zone-info note for conversions from the IPv6 standard library socket address type.
-macro_rules! doc_discards_zone_info {
-    () => {
-        "The `flow_info` & `scope_id` are discarded."
-    };
-}
-
-/// The discarded-zone-info note for conversions from the version-agnostic standard library socket address type.
-macro_rules! doc_discards_zone_info_for_v6 {
-    () => {
-        "The `flow_info` & `scope_id` are discarded for IPv6 socket addresses."
-    };
-}
-
-pub(crate) use doc_discards_zone_info;
-pub(crate) use doc_discards_zone_info_for_v6;
-
 /// An [IPAddress] with an associated port.
 #[must_use]
 #[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
@@ -61,9 +44,25 @@ impl SocketAddress {
     }
 }
 
+impl SocketAddress {
+    //! Matching
+
+    /// Checks if the socket address is an IPv4 socket address.
+    #[must_use]
+    pub const fn is_v4(self) -> bool {
+        self.ip.is_v4()
+    }
+
+    /// Checks if the socket address is an IPv6 socket address.
+    #[must_use]
+    pub const fn is_v6(self) -> bool {
+        self.ip.is_v6()
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use crate::{IPAddress, IPv4Address, SocketAddress};
+    use crate::{IPAddress, IPv4Address, IPv6Address, SocketAddress};
 
     #[test]
     fn construction() {
@@ -89,5 +88,16 @@ mod tests {
         let socket: SocketAddress = (IPv4Address::LOCALHOST, 80).into();
         assert_eq!(socket.ip(), IPAddress::V4(IPv4Address::LOCALHOST));
         assert_eq!(socket.port(), 80);
+    }
+
+    #[test]
+    fn matching() {
+        let socket: SocketAddress = (IPv4Address::LOCALHOST, 80).into();
+        assert!(socket.is_v4());
+        assert!(!socket.is_v6());
+
+        let socket: SocketAddress = (IPv6Address::LOCALHOST, 80).into();
+        assert!(!socket.is_v4());
+        assert!(socket.is_v6());
     }
 }

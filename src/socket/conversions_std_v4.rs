@@ -29,17 +29,20 @@ mod tests {
     use std::net::{Ipv4Addr, SocketAddrV4};
 
     #[test]
-    fn v4() {
+    fn v4_to_std() {
         let socket: SocketAddressV4 = SocketAddressV4::new(IPv4Address::LOCALHOST, 80);
         let std: SocketAddrV4 = SocketAddrV4::new(Ipv4Addr::LOCALHOST, 80);
 
         let result: SocketAddrV4 = socket.to_std();
         assert_eq!(result, std);
 
-        let result: SocketAddressV4 = std.into();
-        assert_eq!(result, socket);
-
         let result: SocketAddrV4 = socket.into();
         assert_eq!(result, std);
+    }
+
+    #[test]
+    fn v4_from_std() {
+        let result: SocketAddressV4 = SocketAddrV4::new(Ipv4Addr::LOCALHOST, 80).into();
+        assert_eq!(result, SocketAddressV4::new(IPv4Address::LOCALHOST, 80));
     }
 }

@@ -49,3 +49,23 @@ where
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::IPv4Address;
+    use crate::serde::FromStrVisitor;
+    use serde::Deserializer;
+    use serde::de::value::{BytesDeserializer, Error as ValueError};
+
+    /// Formats that hand the visitor raw bytes take the `visit_bytes` path, which must reject non-UTF-8.
+    #[test]
+    fn visit_bytes() {
+        let visitor: FromStrVisitor<IPv4Address> = FromStrVisitor::new("an IPv4 address string");
+        let deserializer: BytesDeserializer<ValueError> = BytesDeserializer::new(b"127.0.0.1");
+        assert_eq!(deserializer.deserialize_str(visitor).unwrap(), IPv4Address::LOCALHOST);
+
+        let visitor: FromStrVisitor<IPv4Address> = FromStrVisitor::new("an IPv4 address string");
+        let deserializer: BytesDeserializer<ValueError> = BytesDeserializer::new(b"\xFF");
+        assert!(deserializer.deserialize_str(visitor).is_err());
+    }
+}

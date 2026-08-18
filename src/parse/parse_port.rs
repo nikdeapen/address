@@ -2,9 +2,9 @@ use crate::ParseError;
 use crate::ParseError::InvalidPort;
 use std::str::FromStr;
 
-/// Parses the port from the `address`.
+/// Parses the port from the `text`.
 ///
-/// Returns `(address_without_last_colon, port)`.
+/// Returns `(text_without_last_colon, port)`.
 ///
 /// The port must be decimal digits only, with no sign. Leading zeros are allowed to match the standard library.
 /// The digit check runs first, so the port is known to be ASCII before it is read as a string.
@@ -17,16 +17,16 @@ use std::str::FromStr;
 /// `:8x`          -> `Err(InvalidPort)`
 /// `:+80`         -> `Err(InvalidPort)`
 /// `80`           -> `Err(InvalidPort)`
-pub(crate) fn parse_port(address: &[u8]) -> Result<(&[u8], u16), ParseError> {
-    if let Some(colon) = address.iter().rposition(|c| *c == b':') {
-        let port: &[u8] = &address[colon + 1..];
+pub(crate) fn parse_port(text: &[u8]) -> Result<(&[u8], u16), ParseError> {
+    if let Some(colon) = text.iter().rposition(|c| *c == b':') {
+        let port: &[u8] = &text[colon + 1..];
         let valid: bool = !port.is_empty() && port.iter().all(|c| c.is_ascii_digit());
         if !valid {
             return Err(InvalidPort);
         }
         let port: &str = unsafe { std::str::from_utf8_unchecked(port) };
         let port: u16 = u16::from_str(port).map_err(|_| InvalidPort)?;
-        Ok((&address[..colon], port))
+        Ok((&text[..colon], port))
     } else {
         Err(InvalidPort)
     }

@@ -9,19 +9,18 @@ impl IPv4Address {
     /// The maximum length of an IPv4 address string. (255.255.255.255)
     const MAX_STR_LEN: usize = 15;
 
-    /// Parses the IPv4 address text. (a public `&[u8]` conversion would read as raw octets, not text)
-    pub(crate) fn parse(ip: &[u8]) -> Result<Self, ParseError> {
-        if ip.len() > Self::MAX_STR_LEN {
+    /// Parses the IPv4 address text.
+    pub fn parse_text(text: &[u8]) -> Result<Self, ParseError> {
+        if text.len() > Self::MAX_STR_LEN {
             return Err(InvalidIPv4Address);
         }
-        let ip: &str = std::str::from_utf8(ip).map_err(|_| InvalidIPv4Address)?;
-        Ok(Ipv4Addr::from_str(ip).map_err(|_| InvalidIPv4Address)?.into())
+        let text: &str = std::str::from_utf8(text).map_err(|_| InvalidIPv4Address)?;
+        Ok(Ipv4Addr::from_str(text).map_err(|_| InvalidIPv4Address)?.into())
     }
 }
 
 impl_parse!(
     IPv4Address,
-    parse,
     "Matches the standard library: four decimal octets, no leading zeros. (`127.0.0.01` is invalid)"
 );
 
@@ -52,6 +51,21 @@ mod tests {
 
             let result: Result<IPv4Address, ParseError> = IPv4Address::try_from(*input);
             assert_eq!(result, *expected, "input={}", input);
+
+            let result: Result<IPv4Address, ParseError> = IPv4Address::parse_text(input.as_bytes());
+            assert_eq!(result, *expected, "input={}", input);
+        }
+    }
+
+    /// The length guard & the UTF-8 check run before the text is read as a string.
+    #[test]
+    fn parse_text_guards() {
+        let over_max: Vec<u8> = vec![b'1'; IPv4Address::MAX_STR_LEN + 1];
+        let test_cases: &[&[u8]] = &[over_max.as_slice(), b"127.0.0.\xFF", b"\xFF\xFF\xFF\xFF"];
+
+        for input in test_cases {
+            let result: Result<IPv4Address, ParseError> = IPv4Address::parse_text(input);
+            assert_eq!(result, Err(InvalidIPv4Address), "input={:?}", input);
         }
     }
 

@@ -47,7 +47,7 @@ impl From<Domain> for Host {
 
 impl<'a> From<DomainRef<'a>> for Host {
     fn from(domain: DomainRef<'a>) -> Self {
-        domain.to_domain().to_host()
+        domain.to_host()
     }
 }
 

@@ -40,7 +40,7 @@ impl From<Endpoint> for Authority {
 
 impl<'a> From<EndpointRef<'a>> for Authority {
     fn from(endpoint: EndpointRef<'a>) -> Self {
-        endpoint.to_authority_ref().to_authority()
+        endpoint.to_authority()
     }
 }
 

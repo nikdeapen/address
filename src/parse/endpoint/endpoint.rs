@@ -1,37 +1,46 @@
 use crate::ParseError::InvalidDomain;
 use crate::parse_port;
-use crate::{
-    Domain, Endpoint, InvalidAddress, ParseError, doc_normalized, doc_recovers_value, impl_parse, impl_parse_string,
-};
+use crate::{Domain, Endpoint, InvalidAddressError, ParseError, impl_parse, impl_parse_string};
 
-impl_parse!(Endpoint, doc_normalized!());
-impl_parse_string!(Endpoint, doc_normalized!());
+impl Endpoint {
+    //! Parse
 
-impl TryFrom<&[u8]> for Endpoint {
-    type Error = ParseError;
-
-    #[doc = doc_normalized!()]
-    fn try_from(endpoint: &[u8]) -> Result<Self, Self::Error> {
-        let (name, port): (&[u8], u16) = parse_port(endpoint)?;
-        let domain: Domain = Domain::try_from(name)?;
+    /// A domain name & a decimal port: `localhost:80`.
+    /// Domain names are normalized to lowercase.
+    pub fn parse_text(text: &[u8]) -> Result<Self, ParseError> {
+        let (name, port): (&[u8], u16) = parse_port(text)?;
+        let domain: Domain = Domain::parse_text(name)?;
         Ok(domain.to_endpoint(port))
     }
 }
 
-impl TryFrom<Vec<u8>> for Endpoint {
-    type Error = InvalidAddress<Vec<u8>>;
+impl_parse!(
+    Endpoint,
+    "A domain name & a decimal port: `localhost:80`.",
+    "Domain names are normalized to lowercase."
+);
 
-    #[doc = doc_normalized!()]
-    #[doc = doc_recovers_value!("endpoint")]
-    fn try_from(endpoint: Vec<u8>) -> Result<Self, Self::Error> {
-        match parse_port(endpoint.as_slice()) {
+impl_parse_string!(
+    Endpoint,
+    "A domain name & a decimal port: `localhost:80`.",
+    "Domain names are normalized to lowercase."
+);
+
+impl TryFrom<Vec<u8>> for Endpoint {
+    type Error = InvalidAddressError<Vec<u8>>;
+
+    /// A domain name & a decimal port: `localhost:80`.
+    /// Domain names are normalized to lowercase.
+    /// The error contains the unmodified `text`, which `TryFrom<String>` soundly recovers as a string.
+    fn try_from(text: Vec<u8>) -> Result<Self, Self::Error> {
+        match parse_port(text.as_slice()) {
             Ok((name, port)) => {
                 let name_len: usize = name.len();
-                Domain::from_vec_prefix(endpoint, name_len)
+                Domain::parse_vec_prefix(text, name_len)
                     .map(|domain| domain.to_endpoint(port))
-                    .map_err(|name| InvalidAddress::new(name, InvalidDomain))
+                    .map_err(|text| InvalidAddressError::new(text, InvalidDomain))
             }
-            Err(error) => Err(InvalidAddress::new(endpoint, error)),
+            Err(error) => Err(InvalidAddressError::new(text, error)),
         }
     }
 }
@@ -39,7 +48,7 @@ impl TryFrom<Vec<u8>> for Endpoint {
 #[cfg(test)]
 mod tests {
     use crate::ParseError::{InvalidDomain, InvalidPort};
-    use crate::{DomainRef, Endpoint, InvalidAddress, ParseError};
+    use crate::{DomainRef, Endpoint, InvalidAddressError, ParseError};
     use std::str::FromStr;
 
     #[test]
@@ -73,12 +82,12 @@ mod tests {
     }
 
     #[test]
-    fn try_from_slice() {
-        let result: Result<Endpoint, ParseError> = Endpoint::try_from("LocalHost:80".as_bytes());
+    fn parse_text() {
+        let result: Result<Endpoint, ParseError> = Endpoint::parse_text("LocalHost:80".as_bytes());
         let expected: Result<Endpoint, ParseError> = Ok(DomainRef::LOCALHOST.to_domain().to_endpoint(80));
         assert_eq!(result, expected);
 
-        let result: Result<Endpoint, ParseError> = Endpoint::try_from(b"\xFF:80".as_slice());
+        let result: Result<Endpoint, ParseError> = Endpoint::parse_text(b"\xFF:80".as_slice());
         let expected: Result<Endpoint, ParseError> = Err(InvalidDomain);
         assert_eq!(result, expected);
     }
@@ -94,7 +103,7 @@ mod tests {
         ];
 
         for (input, expected) in test_cases {
-            let result: Result<Endpoint, InvalidAddress<String>> = Endpoint::try_from(input.to_string());
+            let result: Result<Endpoint, InvalidAddressError<String>> = Endpoint::try_from(input.to_string());
             match result {
                 Ok(value) => assert_eq!(Ok(value), *expected, "input={}", input),
                 Err(error) => {
@@ -116,7 +125,7 @@ mod tests {
         ];
 
         for (input, expected) in test_cases {
-            let result: Result<Endpoint, InvalidAddress<Vec<u8>>> = Endpoint::try_from(Vec::from(*input));
+            let result: Result<Endpoint, InvalidAddressError<Vec<u8>>> = Endpoint::try_from(Vec::from(*input));
             match result {
                 Ok(value) => assert_eq!(Ok(value), *expected, "input={}", input),
                 Err(error) => {
@@ -143,6 +152,9 @@ mod tests {
         for (input, expected) in test_cases {
             let endpoint: Endpoint = input.parse().unwrap();
             assert_eq!(endpoint.to_string(), *expected, "from_str input={}", input);
+
+            let endpoint: Endpoint = Endpoint::parse_text(input.as_bytes()).unwrap();
+            assert_eq!(endpoint.to_string(), *expected, "parse_text input={}", input);
 
             let endpoint: Endpoint = Endpoint::try_from(input.to_string()).unwrap();
             assert_eq!(endpoint.to_string(), *expected, "try_from(String) input={}", input);

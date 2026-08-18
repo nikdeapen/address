@@ -3,7 +3,7 @@ use crate::{AuthorityRef, Host, HostRef};
 /// A [Host] with an associated port.
 ///
 /// Diverging from [RFC 3986](https://www.rfc-editor.org/rfc/rfc3986#section-3.2), the port is required and user-info
-/// is not supported. For optional ports and user-info, see the [web-url](https://crates.io/search?q=web-url) crate.
+/// is not supported. For optional ports and user-info, see the [web-url](https://crates.io/crates/web-url) crate.
 #[must_use]
 #[derive(Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
 pub struct Authority {

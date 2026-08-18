@@ -45,7 +45,7 @@ mod tests {
     use crate::{IPAddress, IPv4Address, IPv6Address};
 
     #[test]
-    fn v4() {
+    fn v4_display() {
         let test_cases: &[(IPv4Address, &str)] = &[
             (IPv4Address::UNSPECIFIED, "0.0.0.0"),
             (IPv4Address::LOCALHOST, "127.0.0.1"),
@@ -59,7 +59,7 @@ mod tests {
     }
 
     #[test]
-    fn v6() {
+    fn v6_display() {
         let ip: IPv6Address = IPv6Address::UNSPECIFIED;
         let result: String = ip.to_string();
         let expected: &str = "::";
@@ -72,7 +72,7 @@ mod tests {
     }
 
     #[test]
-    fn ip() {
+    fn ip_display() {
         let ip: IPAddress = IPv4Address::LOCALHOST.to_ip();
         let result: String = ip.to_string();
         let expected: &str = "127.0.0.1";

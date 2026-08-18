@@ -29,12 +29,8 @@ impl Domain {
         }
     }
 
-    /// Checks if the domain `label` is valid.
-    ///
-    /// A valid label is 1 to 63 (`MAX_LABEL_LEN`) bytes of ASCII lowercase letters, digits, and dashes and must not
-    /// start or end with a dash. Uppercase letters are also valid with `ignore_case`.
-    #[must_use]
-    pub fn is_valid_label(label: &[u8], ignore_case: bool) -> bool {
+    /// Checks if the domain `label` is valid, optionally ignoring case.
+    pub(crate) fn is_valid_label_op_ignore_case(label: &[u8], ignore_case: bool) -> bool {
         match Self::classify_label(label) {
             NameClass::Lowercase => true,
             NameClass::MixedCase => ignore_case,
@@ -43,9 +39,34 @@ impl Domain {
     }
 
     /// Checks if the domain `label` is valid.
+    ///
+    /// A valid label is 1 to 63 ([`Self::MAX_LABEL_LEN`]) bytes of ASCII lowercase letters, digits, and dashes and
+    /// must not start or end with a dash: the preferred syntax of
+    /// [RFC 1035](https://www.rfc-editor.org/rfc/rfc1035#section-2.3.1), relaxed by
+    /// [RFC 1123](https://www.rfc-editor.org/rfc/rfc1123#section-2.1) to allow a leading digit. Uppercase letters
+    /// are only valid with [`Self::is_valid_label_ignore_case`]; see [`Self::is_valid_name`] for how the crate
+    /// diverges from those documents.
     #[must_use]
-    pub fn is_valid_label_str(label: &str, ignore_case: bool) -> bool {
-        Self::is_valid_label(label.as_bytes(), ignore_case)
+    pub fn is_valid_label(label: &[u8]) -> bool {
+        Self::is_valid_label_op_ignore_case(label, false)
+    }
+
+    /// Checks if the domain `label` is valid, accepting uppercase letters. (see [`Self::is_valid_label`])
+    #[must_use]
+    pub fn is_valid_label_ignore_case(label: &[u8]) -> bool {
+        Self::is_valid_label_op_ignore_case(label, true)
+    }
+
+    /// Checks if the domain `label` is valid.
+    #[must_use]
+    pub fn is_valid_label_str(label: &str) -> bool {
+        Self::is_valid_label(label.as_bytes())
+    }
+
+    /// Checks if the domain `label` is valid, accepting uppercase letters.
+    #[must_use]
+    pub fn is_valid_label_ignore_case_str(label: &str) -> bool {
+        Self::is_valid_label_ignore_case(label.as_bytes())
     }
 }
 
@@ -72,14 +93,8 @@ impl Domain {
         }
     }
 
-    /// Checks if the domain `name` is valid.
-    ///
-    /// A valid name is 1 to 253 (`MAX_NAME_LEN`) bytes of dot-separated valid labels. Labels cannot be empty, so
-    /// leading, trailing, and consecutive dots are invalid. Labels may be entirely numeric. Underscores are invalid,
-    /// so service names like `_sip._tcp.example.com` cannot be represented. Valid names are ASCII, so they are
-    /// always valid UTF-8. Uppercase letters are also valid with `ignore_case`.
-    #[must_use]
-    pub fn is_valid_name(name: &[u8], ignore_case: bool) -> bool {
+    /// Checks if the domain `name` is valid, optionally ignoring case.
+    pub(crate) fn is_valid_name_op_ignore_case(name: &[u8], ignore_case: bool) -> bool {
         match Self::classify_name(name) {
             NameClass::Lowercase => true,
             NameClass::MixedCase => ignore_case,
@@ -88,9 +103,45 @@ impl Domain {
     }
 
     /// Checks if the domain `name` is valid.
+    ///
+    /// A valid name is 1 to 253 ([`Self::MAX_NAME_LEN`]) bytes of dot-separated valid labels: the preferred
+    /// syntax of [RFC 1035](https://www.rfc-editor.org/rfc/rfc1035#section-2.3.1), relaxed by
+    /// [RFC 1123](https://www.rfc-editor.org/rfc/rfc1123#section-2.1) to allow a leading digit, under the size
+    /// limits of [RFC 1035](https://www.rfc-editor.org/rfc/rfc1035#section-2.3.4). The 253 is the presentation
+    /// form of the 255-octet wire limit. Labels cannot be empty, so leading, trailing, and consecutive dots are
+    /// invalid. Names are ASCII, so they are always valid UTF-8, and Unicode must first be converted to its
+    /// [RFC 5890](https://www.rfc-editor.org/rfc/rfc5890) A-label form.
+    ///
+    /// It diverges from those documents in four ways. Case is canonicalized rather than matched
+    /// case-insensitively ([RFC 4343](https://www.rfc-editor.org/rfc/rfc4343)): this function requires
+    /// lowercase and [`Self::is_valid_name_ignore_case`] accepts either. The trailing root dot of a
+    /// fully-qualified name is rejected. An all-numeric final label is accepted, which
+    /// [RFC 1123](https://www.rfc-editor.org/rfc/rfc1123#section-2.1) &
+    /// [RFC 3696](https://www.rfc-editor.org/rfc/rfc3696#section-2) forbid, so `999.1.1.1` is a domain rather
+    /// than a malformed address. Underscores are rejected, so the service labels of
+    /// [RFC 2782](https://www.rfc-editor.org/rfc/rfc2782) cannot be represented, even though
+    /// [RFC 2181](https://www.rfc-editor.org/rfc/rfc2181#section-11) permits any octet in a label.
     #[must_use]
-    pub fn is_valid_name_str(name: &str, ignore_case: bool) -> bool {
-        Self::is_valid_name(name.as_bytes(), ignore_case)
+    pub fn is_valid_name(name: &[u8]) -> bool {
+        Self::is_valid_name_op_ignore_case(name, false)
+    }
+
+    /// Checks if the domain `name` is valid, accepting uppercase letters. (see [`Self::is_valid_name`])
+    #[must_use]
+    pub fn is_valid_name_ignore_case(name: &[u8]) -> bool {
+        Self::is_valid_name_op_ignore_case(name, true)
+    }
+
+    /// Checks if the domain `name` is valid.
+    #[must_use]
+    pub fn is_valid_name_str(name: &str) -> bool {
+        Self::is_valid_name(name.as_bytes())
+    }
+
+    /// Checks if the domain `name` is valid, accepting uppercase letters.
+    #[must_use]
+    pub fn is_valid_name_ignore_case_str(name: &str) -> bool {
+        Self::is_valid_name_ignore_case(name.as_bytes())
     }
 }
 
@@ -112,10 +163,10 @@ mod tests {
             ("a-a-a", true, true),
         ];
         for (label, expected, expected_ignore_case) in test_cases {
-            let result: bool = Domain::is_valid_label_str(label, false);
+            let result: bool = Domain::is_valid_label_str(label);
             assert_eq!(result, *expected, "label={}", label);
 
-            let result: bool = Domain::is_valid_label_str(label, true);
+            let result: bool = Domain::is_valid_label_ignore_case_str(label);
             assert_eq!(result, *expected_ignore_case, "label={}", label);
         }
     }
@@ -126,7 +177,7 @@ mod tests {
 
         for (len, expected) in test_cases {
             let label: String = "a".repeat(*len);
-            let result: bool = Domain::is_valid_label_str(label.as_str(), false);
+            let result: bool = Domain::is_valid_label_str(label.as_str());
             assert_eq!(result, *expected, "len={}", len);
         }
     }
@@ -146,10 +197,10 @@ mod tests {
             ("a-a.a-a.a-a", true, true),
         ];
         for (name, expected, expected_ignore_case) in test_cases {
-            let result: bool = Domain::is_valid_name_str(name, false);
+            let result: bool = Domain::is_valid_name_str(name);
             assert_eq!(result, *expected, "name={}", name);
 
-            let result: bool = Domain::is_valid_name_str(name, true);
+            let result: bool = Domain::is_valid_name_ignore_case_str(name);
             assert_eq!(result, *expected_ignore_case, "name={}", name);
         }
     }
@@ -164,7 +215,7 @@ mod tests {
             let name: String = format!("{}.{}.{}.{}", label, label, label, "a".repeat(*tail_len));
             assert_eq!(name.len(), *expected_len, "tail_len={}", tail_len);
 
-            let result: bool = Domain::is_valid_name_str(name.as_str(), false);
+            let result: bool = Domain::is_valid_name_str(name.as_str());
             assert_eq!(result, *expected, "tail_len={}", tail_len);
         }
     }
