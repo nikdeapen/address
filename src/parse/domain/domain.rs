@@ -59,7 +59,8 @@ impl TryFrom<Vec<u8>> for Domain {
     /// The error contains the unmodified `text`, which `TryFrom<String>` soundly recovers as a string.
     fn try_from(text: Vec<u8>) -> Result<Self, Self::Error> {
         let len: usize = text.len();
-        Self::parse_vec_prefix(text, len).map_err(|text| InvalidAddressError::new(text, InvalidDomain))
+        Self::parse_vec_prefix(text, len)
+            .map_err(|text| InvalidAddressError::new(text, InvalidDomain))
     }
 }
 
@@ -121,7 +122,8 @@ mod tests {
         ];
 
         for (input, expected) in test_cases {
-            let result: Result<Domain, InvalidAddressError<String>> = Domain::try_from(input.to_string());
+            let result: Result<Domain, InvalidAddressError<String>> =
+                Domain::try_from(input.to_string());
             match result {
                 Ok(value) => assert_eq!(Ok(value), *expected, "input={}", input),
                 Err(error) => {
@@ -141,7 +143,8 @@ mod tests {
         ];
 
         for (input, expected) in test_cases {
-            let result: Result<Domain, InvalidAddressError<Vec<u8>>> = Domain::try_from(Vec::from(*input));
+            let result: Result<Domain, InvalidAddressError<Vec<u8>>> =
+                Domain::try_from(Vec::from(*input));
             match result {
                 Ok(value) => assert_eq!(Ok(value), *expected, "input={}", input),
                 Err(error) => {

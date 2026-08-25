@@ -1,5 +1,7 @@
 use crate::ParseError::InvalidHost;
-use crate::{Domain, Host, IPAddress, InvalidAddressError, ParseError, impl_parse, impl_parse_string};
+use crate::{
+    Domain, Host, IPAddress, InvalidAddressError, ParseError, impl_parse, impl_parse_string,
+};
 
 impl Host {
     //! Parse
@@ -64,7 +66,10 @@ mod tests {
             ("", Err(InvalidHost)),
             ("127.0.0.1", Ok(IPv4Address::LOCALHOST.to_host())),
             ("::1", Ok(IPv6Address::LOCALHOST.to_host())),
-            ("::FFFF", Ok(IPv6Address::from([0, 0, 0, 0, 0, 0, 0, 0xFFFF]).to_host())),
+            (
+                "::FFFF",
+                Ok(IPv6Address::from([0, 0, 0, 0, 0, 0, 0, 0xFFFF]).to_host()),
+            ),
             ("[::1]", Err(InvalidHost)),
             ("localhost", Ok(Domain::localhost().to_host())),
             ("LocalHost", Ok(Domain::localhost().to_host())),
@@ -109,7 +114,8 @@ mod tests {
         ];
 
         for (input, expected) in test_cases {
-            let result: Result<Host, InvalidAddressError<String>> = Host::try_from(input.to_string());
+            let result: Result<Host, InvalidAddressError<String>> =
+                Host::try_from(input.to_string());
             match result {
                 Ok(value) => assert_eq!(Ok(value), *expected, "input={}", input),
                 Err(error) => {
@@ -130,7 +136,8 @@ mod tests {
         ];
 
         for (input, expected) in test_cases {
-            let result: Result<Host, InvalidAddressError<Vec<u8>>> = Host::try_from(Vec::from(*input));
+            let result: Result<Host, InvalidAddressError<Vec<u8>>> =
+                Host::try_from(Vec::from(*input));
             match result {
                 Ok(value) => assert_eq!(Ok(value), *expected, "input={}", input),
                 Err(error) => {
@@ -160,16 +167,31 @@ mod tests {
             assert_eq!(host.to_string(), *expected, "from_str input={}", input);
 
             let host: Host = Host::try_from(*input).unwrap();
-            assert_eq!(host.to_string(), *expected, "try_from(&str) input={}", input);
+            assert_eq!(
+                host.to_string(),
+                *expected,
+                "try_from(&str) input={}",
+                input
+            );
 
             let host: Host = Host::parse_text(input.as_bytes()).unwrap();
             assert_eq!(host.to_string(), *expected, "parse_text input={}", input);
 
             let host: Host = Host::try_from(input.to_string()).unwrap();
-            assert_eq!(host.to_string(), *expected, "try_from(String) input={}", input);
+            assert_eq!(
+                host.to_string(),
+                *expected,
+                "try_from(String) input={}",
+                input
+            );
 
             let host: Host = Host::try_from(Vec::from(*input)).unwrap();
-            assert_eq!(host.to_string(), *expected, "try_from(Vec<u8>) input={}", input);
+            assert_eq!(
+                host.to_string(),
+                *expected,
+                "try_from(Vec<u8>) input={}",
+                input
+            );
         }
     }
 

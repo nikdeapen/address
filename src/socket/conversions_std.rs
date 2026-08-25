@@ -15,7 +15,12 @@ impl SocketAddress {
     pub const fn to_std_with(self, flow_info: u32, scope_id: u32) -> SocketAddr {
         match self.ip() {
             IPAddress::V4(ip) => SocketAddr::V4(SocketAddrV4::new(ip.to_std(), self.port())),
-            IPAddress::V6(ip) => SocketAddr::V6(SocketAddrV6::new(ip.to_std(), self.port(), flow_info, scope_id)),
+            IPAddress::V6(ip) => SocketAddr::V6(SocketAddrV6::new(
+                ip.to_std(),
+                self.port(),
+                flow_info,
+                scope_id,
+            )),
         }
     }
 }
@@ -82,7 +87,8 @@ mod tests {
 
         let socket: SocketAddress = SocketAddress::new(IPv6Address::LOCALHOST.to_ip(), 80);
         let result: SocketAddr = socket.to_std_with(123, 456);
-        let expected: SocketAddr = SocketAddr::V6(SocketAddrV6::new(Ipv6Addr::LOCALHOST, 80, 123, 456));
+        let expected: SocketAddr =
+            SocketAddr::V6(SocketAddrV6::new(Ipv6Addr::LOCALHOST, 80, 123, 456));
         assert_eq!(result, expected);
     }
 
@@ -91,7 +97,8 @@ mod tests {
     fn socket_from_std() {
         let socket: SocketAddress = SocketAddress::new(IPv4Address::LOCALHOST.to_ip(), 80);
 
-        let result: SocketAddress = SocketAddr::V4(SocketAddrV4::new(Ipv4Addr::LOCALHOST, 80)).into();
+        let result: SocketAddress =
+            SocketAddr::V4(SocketAddrV4::new(Ipv4Addr::LOCALHOST, 80)).into();
         assert_eq!(result, socket);
 
         let result: SocketAddress = SocketAddrV4::new(Ipv4Addr::LOCALHOST, 80).into();
@@ -99,13 +106,15 @@ mod tests {
 
         let socket: SocketAddress = SocketAddress::new(IPv6Address::LOCALHOST.to_ip(), 80);
 
-        let result: SocketAddress = SocketAddr::V6(SocketAddrV6::new(Ipv6Addr::LOCALHOST, 80, 0, 0)).into();
+        let result: SocketAddress =
+            SocketAddr::V6(SocketAddrV6::new(Ipv6Addr::LOCALHOST, 80, 0, 0)).into();
         assert_eq!(result, socket);
 
         let result: SocketAddress = SocketAddrV6::new(Ipv6Addr::LOCALHOST, 80, 0, 0).into();
         assert_eq!(result, socket);
 
-        let result: SocketAddress = SocketAddr::V6(SocketAddrV6::new(Ipv6Addr::LOCALHOST, 80, 123, 456)).into();
+        let result: SocketAddress =
+            SocketAddr::V6(SocketAddrV6::new(Ipv6Addr::LOCALHOST, 80, 123, 456)).into();
         assert_eq!(result, socket);
 
         let result: SocketAddress = SocketAddrV6::new(Ipv6Addr::LOCALHOST, 80, 123, 456).into();

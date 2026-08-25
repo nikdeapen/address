@@ -54,7 +54,8 @@ mod tests {
             let result: Result<SocketAddressV6, ParseError> = SocketAddressV6::try_from(*input);
             assert_eq!(result, *expected, "input={}", input);
 
-            let result: Result<SocketAddressV6, ParseError> = SocketAddressV6::parse_text(input.as_bytes());
+            let result: Result<SocketAddressV6, ParseError> =
+                SocketAddressV6::parse_text(input.as_bytes());
             assert_eq!(result, *expected, "input={}", input);
         }
     }
@@ -77,7 +78,12 @@ mod tests {
     /// Each canonical string must parse and display back to the exact same string.
     #[test]
     fn round_trip() {
-        let canonical: &[&str] = &["[::]:0", "[::1]:80", "[::ffff:1.2.3.4]:443", "[fe80::1]:65535"];
+        let canonical: &[&str] = &[
+            "[::]:0",
+            "[::1]:80",
+            "[::ffff:1.2.3.4]:443",
+            "[fe80::1]:65535",
+        ];
 
         for input in canonical {
             let value: SocketAddressV6 = input.parse().unwrap();

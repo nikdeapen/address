@@ -59,8 +59,14 @@ mod tests {
             ("localhost:xx", Err(InvalidPort)),
             (":80", Err(InvalidDomain)),
             ("[localhost]:80", Err(InvalidDomain)),
-            ("localhost:80", Ok(DomainRef::LOCALHOST.to_domain().to_endpoint(80))),
-            ("LocalHost:80", Ok(DomainRef::LOCALHOST.to_domain().to_endpoint(80))),
+            (
+                "localhost:80",
+                Ok(DomainRef::LOCALHOST.to_domain().to_endpoint(80)),
+            ),
+            (
+                "LocalHost:80",
+                Ok(DomainRef::LOCALHOST.to_domain().to_endpoint(80)),
+            ),
             ("Local_Host:80", Err(InvalidDomain)),
         ];
 
@@ -73,18 +79,21 @@ mod tests {
     #[test]
     fn try_from_str() {
         let result: Result<Endpoint, ParseError> = Endpoint::try_from("localhost:80");
-        let expected: Result<Endpoint, ParseError> = Ok(DomainRef::LOCALHOST.to_domain().to_endpoint(80));
+        let expected: Result<Endpoint, ParseError> =
+            Ok(DomainRef::LOCALHOST.to_domain().to_endpoint(80));
         assert_eq!(result, expected);
 
         let result: Result<Endpoint, ParseError> = Endpoint::try_from("LocalHost:80");
-        let expected: Result<Endpoint, ParseError> = Ok(DomainRef::LOCALHOST.to_domain().to_endpoint(80));
+        let expected: Result<Endpoint, ParseError> =
+            Ok(DomainRef::LOCALHOST.to_domain().to_endpoint(80));
         assert_eq!(result, expected);
     }
 
     #[test]
     fn parse_text() {
         let result: Result<Endpoint, ParseError> = Endpoint::parse_text("LocalHost:80".as_bytes());
-        let expected: Result<Endpoint, ParseError> = Ok(DomainRef::LOCALHOST.to_domain().to_endpoint(80));
+        let expected: Result<Endpoint, ParseError> =
+            Ok(DomainRef::LOCALHOST.to_domain().to_endpoint(80));
         assert_eq!(result, expected);
 
         let result: Result<Endpoint, ParseError> = Endpoint::parse_text(b"\xFF:80".as_slice());
@@ -95,15 +104,22 @@ mod tests {
     #[test]
     fn try_from_string() {
         let test_cases: &[(&str, Result<Endpoint, ParseError>)] = &[
-            ("localhost:80", Ok(DomainRef::LOCALHOST.to_domain().to_endpoint(80))),
-            ("LocalHost:80", Ok(DomainRef::LOCALHOST.to_domain().to_endpoint(80))),
+            (
+                "localhost:80",
+                Ok(DomainRef::LOCALHOST.to_domain().to_endpoint(80)),
+            ),
+            (
+                "LocalHost:80",
+                Ok(DomainRef::LOCALHOST.to_domain().to_endpoint(80)),
+            ),
             ("Local!Host:80", Err(InvalidDomain)),
             ("localhost:", Err(InvalidPort)),
             ("localhost:99999", Err(InvalidPort)),
         ];
 
         for (input, expected) in test_cases {
-            let result: Result<Endpoint, InvalidAddressError<String>> = Endpoint::try_from(input.to_string());
+            let result: Result<Endpoint, InvalidAddressError<String>> =
+                Endpoint::try_from(input.to_string());
             match result {
                 Ok(value) => assert_eq!(Ok(value), *expected, "input={}", input),
                 Err(error) => {
@@ -117,15 +133,22 @@ mod tests {
     #[test]
     fn try_from_vec() {
         let test_cases: &[(&str, Result<Endpoint, ParseError>)] = &[
-            ("localhost:80", Ok(DomainRef::LOCALHOST.to_domain().to_endpoint(80))),
-            ("LocalHost:80", Ok(DomainRef::LOCALHOST.to_domain().to_endpoint(80))),
+            (
+                "localhost:80",
+                Ok(DomainRef::LOCALHOST.to_domain().to_endpoint(80)),
+            ),
+            (
+                "LocalHost:80",
+                Ok(DomainRef::LOCALHOST.to_domain().to_endpoint(80)),
+            ),
             ("Local!Host:80", Err(InvalidDomain)),
             ("localhost:", Err(InvalidPort)),
             ("localhost:99999", Err(InvalidPort)),
         ];
 
         for (input, expected) in test_cases {
-            let result: Result<Endpoint, InvalidAddressError<Vec<u8>>> = Endpoint::try_from(Vec::from(*input));
+            let result: Result<Endpoint, InvalidAddressError<Vec<u8>>> =
+                Endpoint::try_from(Vec::from(*input));
             match result {
                 Ok(value) => assert_eq!(Ok(value), *expected, "input={}", input),
                 Err(error) => {
@@ -154,13 +177,28 @@ mod tests {
             assert_eq!(endpoint.to_string(), *expected, "from_str input={}", input);
 
             let endpoint: Endpoint = Endpoint::parse_text(input.as_bytes()).unwrap();
-            assert_eq!(endpoint.to_string(), *expected, "parse_text input={}", input);
+            assert_eq!(
+                endpoint.to_string(),
+                *expected,
+                "parse_text input={}",
+                input
+            );
 
             let endpoint: Endpoint = Endpoint::try_from(input.to_string()).unwrap();
-            assert_eq!(endpoint.to_string(), *expected, "try_from(String) input={}", input);
+            assert_eq!(
+                endpoint.to_string(),
+                *expected,
+                "try_from(String) input={}",
+                input
+            );
 
             let endpoint: Endpoint = Endpoint::try_from(Vec::from(*input)).unwrap();
-            assert_eq!(endpoint.to_string(), *expected, "try_from(Vec<u8>) input={}", input);
+            assert_eq!(
+                endpoint.to_string(),
+                *expected,
+                "try_from(Vec<u8>) input={}",
+                input
+            );
         }
     }
 

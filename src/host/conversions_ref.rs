@@ -44,7 +44,11 @@ impl<'a> HostRef<'a> {
     /// Converts the host reference to an optional IP address.
     #[must_use]
     pub const fn to_ip(self) -> Option<IPAddress> {
-        if let Self::Address(ip) = self { Some(ip) } else { None }
+        if let Self::Address(ip) = self {
+            Some(ip)
+        } else {
+            None
+        }
     }
 }
 
@@ -68,7 +72,9 @@ impl<'a, A: Into<IPAddress>> From<A> for HostRef<'a> {
 
 #[cfg(test)]
 mod tests {
-    use crate::{Authority, AuthorityRef, Domain, DomainRef, Host, HostRef, IPAddress, IPv4Address};
+    use crate::{
+        Authority, AuthorityRef, Domain, DomainRef, Host, HostRef, IPAddress, IPv4Address,
+    };
 
     #[test]
     fn ref_to_host() {
@@ -96,11 +102,13 @@ mod tests {
 
         let host: HostRef = IPv4Address::LOCALHOST.to_host_ref();
         let result: Authority = host.to_authority(80);
-        let expected: Authority = Authority::new(Host::Address(IPAddress::V4(IPv4Address::LOCALHOST)), 80);
+        let expected: Authority =
+            Authority::new(Host::Address(IPAddress::V4(IPv4Address::LOCALHOST)), 80);
         assert_eq!(result, expected);
 
         let result: AuthorityRef = host.to_authority_ref(80);
-        let expected: AuthorityRef = AuthorityRef::new(HostRef::Address(IPAddress::V4(IPv4Address::LOCALHOST)), 80);
+        let expected: AuthorityRef =
+            AuthorityRef::new(HostRef::Address(IPAddress::V4(IPv4Address::LOCALHOST)), 80);
         assert_eq!(result, expected);
     }
 

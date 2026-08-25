@@ -80,11 +80,17 @@ mod tests {
     #[test]
     fn visit_byte_buf() {
         let visitor: FromStringVisitor<Domain> = FromStringVisitor::new("a domain string");
-        let result: Domain = visitor.visit_byte_buf::<ValueError>(Vec::from("LocalHost")).unwrap();
+        let result: Domain = visitor
+            .visit_byte_buf::<ValueError>(Vec::from("LocalHost"))
+            .unwrap();
         assert_eq!(result, "localhost");
 
         let visitor: FromStringVisitor<Domain> = FromStringVisitor::new("a domain string");
-        assert!(visitor.visit_byte_buf::<ValueError>(Vec::from("Local!Host")).is_err());
+        assert!(
+            visitor
+                .visit_byte_buf::<ValueError>(Vec::from("Local!Host"))
+                .is_err()
+        );
     }
 
     /// Formats that hand the visitor borrowed bytes take the `visit_bytes` path, which must reject non-UTF-8.
@@ -92,7 +98,10 @@ mod tests {
     fn visit_bytes() {
         let visitor: FromStringVisitor<Domain> = FromStringVisitor::new("a domain string");
         let deserializer: BytesDeserializer<ValueError> = BytesDeserializer::new(b"LocalHost");
-        assert_eq!(deserializer.deserialize_string(visitor).unwrap(), "localhost");
+        assert_eq!(
+            deserializer.deserialize_string(visitor).unwrap(),
+            "localhost"
+        );
 
         let visitor: FromStringVisitor<Domain> = FromStringVisitor::new("a domain string");
         let deserializer: BytesDeserializer<ValueError> = BytesDeserializer::new(b"\xFF");

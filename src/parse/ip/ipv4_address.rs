@@ -15,7 +15,9 @@ impl IPv4Address {
             return Err(InvalidIPv4Address);
         }
         let text: &str = std::str::from_utf8(text).map_err(|_| InvalidIPv4Address)?;
-        Ok(Ipv4Addr::from_str(text).map_err(|_| InvalidIPv4Address)?.into())
+        Ok(Ipv4Addr::from_str(text)
+            .map_err(|_| InvalidIPv4Address)?
+            .into())
     }
 }
 

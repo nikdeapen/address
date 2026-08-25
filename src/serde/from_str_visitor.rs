@@ -62,7 +62,10 @@ mod tests {
     fn visit_bytes() {
         let visitor: FromStrVisitor<IPv4Address> = FromStrVisitor::new("an IPv4 address string");
         let deserializer: BytesDeserializer<ValueError> = BytesDeserializer::new(b"127.0.0.1");
-        assert_eq!(deserializer.deserialize_str(visitor).unwrap(), IPv4Address::LOCALHOST);
+        assert_eq!(
+            deserializer.deserialize_str(visitor).unwrap(),
+            IPv4Address::LOCALHOST
+        );
 
         let visitor: FromStrVisitor<IPv4Address> = FromStrVisitor::new("an IPv4 address string");
         let deserializer: BytesDeserializer<ValueError> = BytesDeserializer::new(b"\xFF");

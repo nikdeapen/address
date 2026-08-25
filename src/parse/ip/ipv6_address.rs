@@ -15,7 +15,9 @@ impl IPv6Address {
             return Err(InvalidIPv6Address);
         }
         let text: &str = std::str::from_utf8(text).map_err(|_| InvalidIPv6Address)?;
-        Ok(Ipv6Addr::from_str(text).map_err(|_| InvalidIPv6Address)?.into())
+        Ok(Ipv6Addr::from_str(text)
+            .map_err(|_| InvalidIPv6Address)?
+            .into())
     }
 
     /// Parses the bracketed IPv6 address text, ignoring an optional numeric zone.
@@ -149,7 +151,13 @@ mod tests {
     /// The bare address takes neither brackets nor a zone; only the bracketed socket parsers accept those.
     #[test]
     fn rejects_brackets_and_zones() {
-        let test_cases: &[&str] = &["[::1]", "[fe80::1]", "fe80::1%1", "fe80::1%0", "[fe80::1%1]"];
+        let test_cases: &[&str] = &[
+            "[::1]",
+            "[fe80::1]",
+            "fe80::1%1",
+            "fe80::1%0",
+            "[fe80::1%1]",
+        ];
 
         for input in test_cases {
             let result: Result<IPv6Address, ParseError> = IPv6Address::from_str(input);

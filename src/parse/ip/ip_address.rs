@@ -16,7 +16,10 @@ impl IPAddress {
     }
 }
 
-impl_parse!(IPAddress, "An IPv4 or an IPv6 address in the standard library syntax.");
+impl_parse!(
+    IPAddress,
+    "An IPv4 or an IPv6 address in the standard library syntax."
+);
 
 #[cfg(test)]
 mod tests {
@@ -52,7 +55,13 @@ mod tests {
 
     #[test]
     fn round_trip() {
-        let canonical: &[&str] = &["127.0.0.1", "255.255.255.255", "::1", "fe80::1", "::ffff:1.2.3.4"];
+        let canonical: &[&str] = &[
+            "127.0.0.1",
+            "255.255.255.255",
+            "::1",
+            "fe80::1",
+            "::ffff:1.2.3.4",
+        ];
 
         for input in canonical {
             let value: IPAddress = input.parse().unwrap();

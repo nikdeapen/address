@@ -68,7 +68,8 @@ impl_serde_string_ref!(HostRef, Host, "a borrowed host string");
 mod tests {
     use crate::serde::test_util::{assert_json, assert_postcard};
     use crate::{
-        Authority, AuthorityRef, Domain, DomainRef, Endpoint, EndpointRef, Host, HostRef, IPv4Address, IPv6Address,
+        Authority, AuthorityRef, Domain, DomainRef, Endpoint, EndpointRef, Host, HostRef,
+        IPv4Address, IPv6Address,
     };
 
     #[test]
@@ -78,8 +79,14 @@ mod tests {
         assert_json(Domain::localhost().to_endpoint(80), "\"localhost:80\"");
         assert_json(Domain::localhost().to_host(), "\"localhost\"");
         assert_json(IPv4Address::LOCALHOST.to_host(), "\"127.0.0.1\"");
-        assert_json(Domain::localhost().to_host().to_authority(80), "\"localhost:80\"");
-        assert_json(IPv6Address::LOCALHOST.to_host().to_authority(80), "\"[::1]:80\"");
+        assert_json(
+            Domain::localhost().to_host().to_authority(80),
+            "\"localhost:80\"",
+        );
+        assert_json(
+            IPv6Address::LOCALHOST.to_host().to_authority(80),
+            "\"[::1]:80\"",
+        );
     }
 
     /// Domain-bearing types are strings in every format, binary included.
@@ -112,7 +119,10 @@ mod tests {
 
         let json: &str = "\"[::1]:443\"";
         let authority: AuthorityRef = serde_json::from_str(json).unwrap();
-        assert_eq!(authority, IPv6Address::LOCALHOST.to_host_ref().to_authority_ref(443));
+        assert_eq!(
+            authority,
+            IPv6Address::LOCALHOST.to_host_ref().to_authority_ref(443)
+        );
         assert_eq!(serde_json::to_string(&authority).unwrap(), json);
     }
 
@@ -155,10 +165,18 @@ mod tests {
     /// The `expecting` message names the type, so decoder errors stay legible.
     #[test]
     fn expecting_message() {
-        let error: String = serde_json::from_str::<Domain>("42").unwrap_err().to_string();
+        let error: String = serde_json::from_str::<Domain>("42")
+            .unwrap_err()
+            .to_string();
         assert!(error.contains("a domain string"), "error={}", error);
 
-        let error: String = serde_json::from_str::<AuthorityRef>("42").unwrap_err().to_string();
-        assert!(error.contains("a borrowed authority string"), "error={}", error);
+        let error: String = serde_json::from_str::<AuthorityRef>("42")
+            .unwrap_err()
+            .to_string();
+        assert!(
+            error.contains("a borrowed authority string"),
+            "error={}",
+            error
+        );
     }
 }

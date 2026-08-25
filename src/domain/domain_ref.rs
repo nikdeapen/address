@@ -14,7 +14,9 @@ impl<'a> DomainRef<'a> {
     pub const LOCALHOST: Self = Self { name: "localhost" };
 
     /// The `example.com` domain.
-    pub const EXAMPLE: Self = Self { name: "example.com" };
+    pub const EXAMPLE: Self = Self {
+        name: "example.com",
+    };
 }
 
 impl<'a> DomainRef<'a> {

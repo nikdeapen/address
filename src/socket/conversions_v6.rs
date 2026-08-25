@@ -21,7 +21,10 @@ impl SocketAddressV6 {
 
 #[cfg(test)]
 mod tests {
-    use crate::{Authority, AuthorityRef, Host, HostRef, IPAddress, IPv6Address, SocketAddress, SocketAddressV6};
+    use crate::{
+        Authority, AuthorityRef, Host, HostRef, IPAddress, IPv6Address, SocketAddress,
+        SocketAddressV6,
+    };
 
     #[test]
     fn v6_to_socket() {
@@ -35,11 +38,13 @@ mod tests {
     fn v6_to_authority() {
         let socket: SocketAddressV6 = IPv6Address::LOCALHOST.to_socket(80);
         let result: Authority = socket.to_authority();
-        let expected: Authority = Authority::new(Host::Address(IPAddress::V6(IPv6Address::LOCALHOST)), 80);
+        let expected: Authority =
+            Authority::new(Host::Address(IPAddress::V6(IPv6Address::LOCALHOST)), 80);
         assert_eq!(result, expected);
 
         let result: AuthorityRef = socket.to_authority_ref();
-        let expected: AuthorityRef = AuthorityRef::new(HostRef::Address(IPAddress::V6(IPv6Address::LOCALHOST)), 80);
+        let expected: AuthorityRef =
+            AuthorityRef::new(HostRef::Address(IPAddress::V6(IPv6Address::LOCALHOST)), 80);
         assert_eq!(result, expected);
     }
 }

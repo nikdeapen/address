@@ -27,7 +27,8 @@ mod tests {
     #[test]
     fn try_from_str() {
         let result: Result<EndpointRef, ParseError> = EndpointRef::try_from("localhost:80");
-        let expected: Result<EndpointRef, ParseError> = Ok(EndpointRef::new(DomainRef::LOCALHOST, 80));
+        let expected: Result<EndpointRef, ParseError> =
+            Ok(EndpointRef::new(DomainRef::LOCALHOST, 80));
         assert_eq!(result, expected);
 
         let result: Result<EndpointRef, ParseError> = EndpointRef::try_from("LocalHost:80");

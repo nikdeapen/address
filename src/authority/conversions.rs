@@ -1,4 +1,7 @@
-use crate::{Authority, AuthorityRef, Endpoint, EndpointRef, Host, SocketAddress, SocketAddressV4, SocketAddressV6};
+use crate::{
+    Authority, AuthorityRef, Endpoint, EndpointRef, Host, SocketAddress, SocketAddressV4,
+    SocketAddressV6,
+};
 
 impl Authority {
     //! Conversions
@@ -65,8 +68,8 @@ impl From<SocketAddressV6> for Authority {
 #[cfg(test)]
 mod tests {
     use crate::{
-        Authority, AuthorityRef, Domain, DomainRef, Endpoint, EndpointRef, Host, HostRef, IPv4Address, IPv6Address,
-        SocketAddress, SocketAddressV4, SocketAddressV6,
+        Authority, AuthorityRef, Domain, DomainRef, Endpoint, EndpointRef, Host, HostRef,
+        IPv4Address, IPv6Address, SocketAddress, SocketAddressV4, SocketAddressV6,
     };
 
     #[test]

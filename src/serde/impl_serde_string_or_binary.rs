@@ -36,8 +36,16 @@ macro_rules! impl_serde_string_or_binary {
 impl_serde_string_or_binary!(IPv4Address, "an IPv4 address string", [u8; 4]);
 impl_serde_string_or_binary!(IPv6Address, "an IPv6 address string", [u8; 16]);
 impl_serde_string_or_binary!(SocketAddress, "a socket address string", (IPAddress, u16));
-impl_serde_string_or_binary!(SocketAddressV4, "an IPv4 socket address string", (IPv4Address, u16));
-impl_serde_string_or_binary!(SocketAddressV6, "an IPv6 socket address string", (IPv6Address, u16));
+impl_serde_string_or_binary!(
+    SocketAddressV4,
+    "an IPv4 socket address string",
+    (IPv4Address, u16)
+);
+impl_serde_string_or_binary!(
+    SocketAddressV6,
+    "an IPv6 socket address string",
+    (IPv6Address, u16)
+);
 
 #[cfg(test)]
 mod tests {
@@ -52,8 +60,14 @@ mod tests {
         assert_json(IPv6Address::LOCALHOST, "\"::1\"");
         assert_json(IPv4Address::LOCALHOST.to_socket(80), "\"127.0.0.1:80\"");
         assert_json(IPv6Address::LOCALHOST.to_socket(80), "\"[::1]:80\"");
-        assert_json(IPv4Address::LOCALHOST.to_ip().to_socket(80), "\"127.0.0.1:80\"");
-        assert_json(IPv6Address::LOCALHOST.to_ip().to_socket(443), "\"[::1]:443\"");
+        assert_json(
+            IPv4Address::LOCALHOST.to_ip().to_socket(80),
+            "\"127.0.0.1:80\"",
+        );
+        assert_json(
+            IPv6Address::LOCALHOST.to_ip().to_socket(443),
+            "\"[::1]:443\"",
+        );
     }
 
     #[test]
@@ -105,11 +119,17 @@ mod tests {
 
         let socket: SocketAddressV4 = IPv4Address::LOCALHOST.to_socket(80);
         let std: SocketAddrV4 = SocketAddrV4::new(Ipv4Addr::LOCALHOST, 80);
-        assert_eq!(assert_postcard(socket), postcard::to_allocvec(&std).unwrap());
+        assert_eq!(
+            assert_postcard(socket),
+            postcard::to_allocvec(&std).unwrap()
+        );
 
         let socket: SocketAddressV6 = IPv6Address::LOCALHOST.to_socket(80);
         let std: SocketAddrV6 = SocketAddrV6::new(Ipv6Addr::LOCALHOST, 80, 0, 0);
-        assert_eq!(assert_postcard(socket), postcard::to_allocvec(&std).unwrap());
+        assert_eq!(
+            assert_postcard(socket),
+            postcard::to_allocvec(&std).unwrap()
+        );
     }
 
     /// `SocketAddress` deliberately diverges: it encodes the IP as a byte string, not the standard library's enum.
@@ -117,6 +137,10 @@ mod tests {
     fn socket_address_diverges_from_std() {
         let socket: SocketAddress = IPv4Address::LOCALHOST.to_ip().to_socket(80);
         let bytes: Vec<u8> = assert_postcard(socket);
-        assert_eq!(bytes.len(), 6, "4 address bytes with a length prefix, plus the port");
+        assert_eq!(
+            bytes.len(),
+            6,
+            "4 address bytes with a length prefix, plus the port"
+        );
     }
 }

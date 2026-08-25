@@ -42,14 +42,26 @@ mod tests {
             ("[]:80", Err(InvalidIPv6Address)),
             ("[xx]:80", Err(InvalidIPv6Address)),
             ("[::1%eth0]:80", Err(InvalidIPv6Address)),
-            ("127.0.0.1:80", Ok(IPv4Address::LOCALHOST.to_ip().to_socket(80))),
-            ("0.0.0.0:0", Ok(IPv4Address::UNSPECIFIED.to_ip().to_socket(0))),
+            (
+                "127.0.0.1:80",
+                Ok(IPv4Address::LOCALHOST.to_ip().to_socket(80)),
+            ),
+            (
+                "0.0.0.0:0",
+                Ok(IPv4Address::UNSPECIFIED.to_ip().to_socket(0)),
+            ),
             (
                 "255.255.255.255:65535",
                 Ok(IPv4Address::BROADCAST.to_ip().to_socket(65535)),
             ),
-            ("[::1]:80", Ok(IPv6Address::LOCALHOST.to_socket(80).to_socket())),
-            ("[::1%1]:80", Ok(IPv6Address::LOCALHOST.to_socket(80).to_socket())),
+            (
+                "[::1]:80",
+                Ok(IPv6Address::LOCALHOST.to_socket(80).to_socket()),
+            ),
+            (
+                "[::1%1]:80",
+                Ok(IPv6Address::LOCALHOST.to_socket(80).to_socket()),
+            ),
             ("[::1%]:80", Err(InvalidIPv6Address)),
             ("[::1%4294967296]:80", Err(InvalidIPv6Address)),
             ("[127.0.0.1]:80", Err(InvalidIPv6Address)),
@@ -63,7 +75,8 @@ mod tests {
             let result: Result<SocketAddress, ParseError> = SocketAddress::try_from(*input);
             assert_eq!(result, *expected, "input={}", input);
 
-            let result: Result<SocketAddress, ParseError> = SocketAddress::parse_text(input.as_bytes());
+            let result: Result<SocketAddress, ParseError> =
+                SocketAddress::parse_text(input.as_bytes());
             assert_eq!(result, *expected, "input={}", input);
         }
     }
