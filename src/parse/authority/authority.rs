@@ -17,7 +17,7 @@ impl Authority {
             Ok(ip?.to_host().to_authority(port))
         } else {
             let host: Host = Host::parse_text(host)?;
-            if let Host::Address(ip) = &host
+            if let Host::IP(ip) = &host
                 && ip.is_v6()
             {
                 return Err(InvalidAuthority);
@@ -25,31 +25,11 @@ impl Authority {
             Ok(host.to_authority(port))
         }
     }
-}
 
-impl_parse!(
-    Authority,
-    "A host & a decimal port; an IPv6 host must be bracketed: `localhost:80` or `[::1]:80`.",
-    "Domain names are normalized to lowercase.",
-    "A numeric IPv6 zone is accepted & ignored: `[fe80::1%1]:80` parses as `[fe80::1]:80`."
-);
-
-impl_parse_string!(
-    Authority,
-    "A host & a decimal port; an IPv6 host must be bracketed: `localhost:80` or `[::1]:80`.",
-    "Domain names are normalized to lowercase.",
-    "A numeric IPv6 zone is accepted & ignored: `[fe80::1%1]:80` parses as `[fe80::1]:80`."
-);
-
-impl TryFrom<Vec<u8>> for Authority {
-    type Error = InvalidAddressError<Vec<u8>>;
-
-    /// A host & a decimal port; an IPv6 host must be bracketed: `localhost:80` or `[::1]:80`.
-    /// Domain names are normalized to lowercase.
-    /// A numeric IPv6 zone is accepted & ignored: `[fe80::1%1]:80` parses as `[fe80::1]:80`.
-    /// The error contains the unmodified `text`, which `TryFrom<String>` soundly recovers as a
-    /// string.
-    fn try_from(text: Vec<u8>) -> Result<Self, Self::Error> {
+    /// Creates an authority from the `text`, normalizing domain names to lowercase.
+    ///
+    /// The error holds the unmodified `text`, which `TryFrom<String>` soundly recovers as a string.
+    pub(crate) fn parse_vec(text: Vec<u8>) -> Result<Self, InvalidAddressError<Vec<u8>>> {
         match parse_port(text.as_slice()) {
             Ok((host, port)) => {
                 if let Some(ip) = IPv6Address::parse_bracketed(host) {
@@ -72,6 +52,20 @@ impl TryFrom<Vec<u8>> for Authority {
         }
     }
 }
+
+impl_parse!(
+    Authority,
+    "A host & a decimal port; an IPv6 host must be bracketed: `localhost:80` or `[::1]:80`.",
+    "Domain names are normalized to lowercase.",
+    "A numeric IPv6 zone is accepted & ignored: `[fe80::1%1]:80` parses as `[fe80::1]:80`."
+);
+
+impl_parse_string!(
+    Authority,
+    "A host & a decimal port; an IPv6 host must be bracketed: `localhost:80` or `[::1]:80`.",
+    "Domain names are normalized to lowercase.",
+    "A numeric IPv6 zone is accepted & ignored: `[fe80::1%1]:80` parses as `[fe80::1]:80`."
+);
 
 #[cfg(test)]
 mod tests {
@@ -191,53 +185,6 @@ mod tests {
         }
     }
 
-    #[test]
-    fn try_from_vec() {
-        let test_cases: &[(&str, Result<Authority, ParseError>)] = &[
-            (
-                "localhost:80",
-                Ok(Domain::localhost().to_host().to_authority(80)),
-            ),
-            (
-                "LocalHost:80",
-                Ok(Domain::localhost().to_host().to_authority(80)),
-            ),
-            (
-                "[::1]:80",
-                Ok(IPv6Address::LOCALHOST.to_host().to_authority(80)),
-            ),
-            (
-                "[::1%1]:80",
-                Ok(IPv6Address::LOCALHOST.to_host().to_authority(80)),
-            ),
-            ("[::1%eth0]:80", Err(InvalidIPv6Address)),
-            ("::1:80", Err(InvalidAuthority)),
-            ("Local!Host:80", Err(InvalidHost)),
-            ("localhost:", Err(InvalidPort)),
-            (
-                "127.0.0.1:80",
-                Ok(IPv4Address::LOCALHOST.to_host().to_authority(80)),
-            ),
-        ];
-
-        for (input, expected) in test_cases {
-            let result: Result<Authority, InvalidAddressError<Vec<u8>>> =
-                Authority::try_from(Vec::from(*input));
-            match result {
-                Ok(value) => assert_eq!(Ok(value), *expected, "input={}", input),
-                Err(error) => {
-                    assert_eq!(Err(error.error()), *expected, "input={}", input);
-                    assert_eq!(
-                        error.into_value().as_slice(),
-                        input.as_bytes(),
-                        "recovered input={}",
-                        input
-                    );
-                }
-            }
-        }
-    }
-
     /// Mixed-case domain names are lowercased on every owned parse path.
     #[test]
     fn normalizes_case() {
@@ -264,14 +211,6 @@ mod tests {
                 authority.to_string(),
                 *expected,
                 "try_from(String) input={}",
-                input
-            );
-
-            let authority: Authority = Authority::try_from(Vec::from(*input)).unwrap();
-            assert_eq!(
-                authority.to_string(),
-                *expected,
-                "try_from(Vec<u8>) input={}",
                 input
             );
         }

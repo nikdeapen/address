@@ -5,10 +5,10 @@ use crate::{Domain, HostRef, IPAddress};
 #[derive(Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
 pub enum Host {
     /// A [Domain].
-    Name(Domain),
+    Domain(Domain),
 
     /// An [IPAddress].
-    Address(IPAddress),
+    IP(IPAddress),
 }
 
 impl<'a> PartialEq<HostRef<'a>> for Host {
@@ -23,13 +23,13 @@ impl Host {
     /// Checks if the host is a domain.
     #[must_use]
     pub const fn is_domain(&self) -> bool {
-        matches!(self, Self::Name(_))
+        matches!(self, Self::Domain(_))
     }
 
     /// Checks if the host is an IP address.
     #[must_use]
     pub const fn is_ip(&self) -> bool {
-        matches!(self, Self::Address(_))
+        matches!(self, Self::IP(_))
     }
 }
 
@@ -40,7 +40,7 @@ mod tests {
     #[test]
     fn equality() {
         let host: Host = Domain::localhost().into();
-        assert_eq!(host, HostRef::Name(DomainRef::LOCALHOST));
+        assert_eq!(host, HostRef::Domain(DomainRef::LOCALHOST));
         assert_ne!(host, IPv4Address::LOCALHOST.to_host_ref());
     }
 

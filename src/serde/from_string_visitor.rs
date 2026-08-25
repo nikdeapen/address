@@ -3,8 +3,8 @@ use std::fmt::{Display, Formatter};
 use std::marker::PhantomData;
 use std::str::FromStr;
 
-/// A serde visitor that parses a string with `FromStr`, reusing the buffers of owned strings and
-/// byte vectors with the consuming `TryFrom` conversions.
+/// A serde visitor that parses a string with `FromStr`, reusing the buffer of an owned string
+/// with the consuming `TryFrom<String>` conversion.
 pub(crate) struct FromStringVisitor<T> {
     expecting: &'static str,
     phantom: PhantomData<fn() -> T>,
@@ -24,10 +24,9 @@ impl<T> FromStringVisitor<T> {
 
 impl<'de, T> Visitor<'de> for FromStringVisitor<T>
 where
-    T: FromStr + TryFrom<String> + TryFrom<Vec<u8>>,
+    T: FromStr + TryFrom<String>,
     <T as FromStr>::Err: Display,
     <T as TryFrom<String>>::Error: Display,
-    <T as TryFrom<Vec<u8>>>::Error: Display,
 {
     type Value = T;
 
@@ -63,7 +62,10 @@ where
     where
         E: Error,
     {
-        T::try_from(v).map_err(E::custom)
+        match String::from_utf8(v) {
+            Ok(text) => self.visit_string(text),
+            Err(error) => Err(E::invalid_value(Unexpected::Bytes(error.as_bytes()), &self)),
+        }
     }
 }
 

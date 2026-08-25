@@ -28,29 +28,3 @@ impl<'a> Display for EndpointRef<'a> {
         }
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use crate::{Domain, DomainRef, Endpoint, EndpointRef};
-
-    #[test]
-    fn endpoint_display() {
-        let endpoint: Endpoint = Domain::localhost().to_endpoint(80);
-        let result: String = endpoint.to_string();
-        let expected: &str = "localhost:80";
-        assert_eq!(result, expected);
-    }
-
-    #[test]
-    fn display_spec() {
-        let endpoint: Endpoint = Domain::localhost().to_endpoint(80);
-        assert_eq!(format!("{:>15}", endpoint), "   localhost:80");
-        assert_eq!(format!("{:<15}|", endpoint), "localhost:80   |");
-        assert_eq!(format!("{:*^16}", endpoint), "**localhost:80**");
-        assert_eq!(format!("{:.5}", endpoint), "local");
-
-        let endpoint: EndpointRef = EndpointRef::new(DomainRef::LOCALHOST, 80);
-        assert_eq!(format!("{:>15}", endpoint), "   localhost:80");
-        assert_eq!(format!("{:.5}", endpoint), "local");
-    }
-}

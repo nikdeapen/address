@@ -11,14 +11,12 @@ impl Authority {
         AuthorityRef::new(self.host(), self.port())
     }
 
-    /// Converts the authority to an optional endpoint.
-    #[must_use]
-    pub fn to_endpoint(self) -> Option<Endpoint> {
+    /// Converts the authority to an endpoint.
+    pub fn to_endpoint(self) -> Result<Endpoint, Self> {
         let (host, port): (Host, u16) = self.into();
-        if let Host::Name(domain) = host {
-            Some(Endpoint::new(domain, port))
-        } else {
-            None
+        match host.to_domain() {
+            Ok(domain) => Ok(Endpoint::new(domain, port)),
+            Err(host) => Err(Self::new(host, port)),
         }
     }
 
@@ -74,22 +72,23 @@ mod tests {
 
     #[test]
     fn authority_to_ref() {
-        let authority: Authority = Authority::new(Host::Name(Domain::localhost()), 80);
+        let authority: Authority = Authority::new(Host::Domain(Domain::localhost()), 80);
         let result: AuthorityRef = authority.to_ref();
-        let expected: AuthorityRef = AuthorityRef::new(HostRef::Name(DomainRef::LOCALHOST), 80);
+        let expected: AuthorityRef = AuthorityRef::new(HostRef::Domain(DomainRef::LOCALHOST), 80);
         assert_eq!(result, expected);
     }
 
     #[test]
     fn authority_to_endpoint() {
-        let authority: Authority = Authority::new(Host::Name(Domain::localhost()), 80);
-        let result: Option<Endpoint> = authority.to_endpoint();
-        let expected: Option<Endpoint> = Some(Endpoint::new(Domain::localhost(), 80));
+        let authority: Authority = Authority::new(Host::Domain(Domain::localhost()), 80);
+        let result: Result<Endpoint, Authority> = authority.to_endpoint();
+        let expected: Result<Endpoint, Authority> = Ok(Endpoint::new(Domain::localhost(), 80));
         assert_eq!(result, expected);
 
         let authority: Authority = Authority::new(IPv4Address::LOCALHOST.to_host(), 80);
-        let result: Option<Endpoint> = authority.to_endpoint();
-        let expected: Option<Endpoint> = None;
+        let result: Result<Endpoint, Authority> = authority.to_endpoint();
+        let expected: Result<Endpoint, Authority> =
+            Err(Authority::new(IPv4Address::LOCALHOST.to_host(), 80));
         assert_eq!(result, expected);
     }
 
@@ -100,7 +99,7 @@ mod tests {
         let expected: Option<SocketAddress> = Some(IPv4Address::LOCALHOST.to_ip().to_socket(80));
         assert_eq!(result, expected);
 
-        let authority: Authority = Authority::new(Host::Name(Domain::localhost()), 80);
+        let authority: Authority = Authority::new(Host::Domain(Domain::localhost()), 80);
         let result: Option<SocketAddress> = authority.to_socket();
         let expected: Option<SocketAddress> = None;
         assert_eq!(result, expected);
@@ -108,9 +107,9 @@ mod tests {
 
     #[test]
     fn authority_from() {
-        let expected: Authority = Authority::new(Host::Name(Domain::localhost()), 80);
+        let expected: Authority = Authority::new(Host::Domain(Domain::localhost()), 80);
 
-        let result: Authority = AuthorityRef::new(HostRef::Name(DomainRef::LOCALHOST), 80).into();
+        let result: Authority = AuthorityRef::new(HostRef::Domain(DomainRef::LOCALHOST), 80).into();
         assert_eq!(result, expected);
 
         let result: Authority = Endpoint::new(Domain::localhost(), 80).into();

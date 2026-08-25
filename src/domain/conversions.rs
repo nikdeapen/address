@@ -15,7 +15,7 @@ impl Domain {
 
     /// Converts the domain to a host.
     pub const fn to_host(self) -> Host {
-        Host::Name(self)
+        Host::Domain(self)
     }
 }
 
@@ -49,7 +49,7 @@ mod tests {
     fn domain_to_host() {
         let domain: Domain = Domain::localhost();
         let result: Host = domain.to_host();
-        let expected: Host = Host::Name(Domain::localhost());
+        let expected: Host = Host::Domain(Domain::localhost());
         assert_eq!(result, expected);
     }
 

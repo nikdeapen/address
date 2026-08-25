@@ -41,11 +41,11 @@ mod tests {
     fn ref_to_authority() {
         let endpoint: EndpointRef = EndpointRef::new(DomainRef::LOCALHOST, 80);
         let result: Authority = endpoint.to_authority();
-        let expected: Authority = Authority::new(Host::Name(Domain::localhost()), 80);
+        let expected: Authority = Authority::new(Host::Domain(Domain::localhost()), 80);
         assert_eq!(result, expected);
 
         let result: AuthorityRef = endpoint.to_authority_ref();
-        let expected: AuthorityRef = AuthorityRef::new(HostRef::Name(DomainRef::LOCALHOST), 80);
+        let expected: AuthorityRef = AuthorityRef::new(HostRef::Domain(DomainRef::LOCALHOST), 80);
         assert_eq!(result, expected);
     }
 

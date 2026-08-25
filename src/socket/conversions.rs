@@ -86,12 +86,12 @@ mod tests {
         let socket: SocketAddress = SocketAddress::new(IPAddress::V4(IPv4Address::LOCALHOST), 80);
         let result: Authority = socket.to_authority();
         let expected: Authority =
-            Authority::new(Host::Address(IPAddress::V4(IPv4Address::LOCALHOST)), 80);
+            Authority::new(Host::IP(IPAddress::V4(IPv4Address::LOCALHOST)), 80);
         assert_eq!(result, expected);
 
         let result: AuthorityRef = socket.to_authority_ref();
         let expected: AuthorityRef =
-            AuthorityRef::new(HostRef::Address(IPAddress::V4(IPv4Address::LOCALHOST)), 80);
+            AuthorityRef::new(HostRef::IP(IPAddress::V4(IPv4Address::LOCALHOST)), 80);
         assert_eq!(result, expected);
     }
 

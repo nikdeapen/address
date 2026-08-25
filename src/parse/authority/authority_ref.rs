@@ -15,7 +15,7 @@ impl<'a> AuthorityRef<'a> {
             Ok(ip?.to_host_ref().to_authority_ref(port))
         } else {
             let host: HostRef = HostRef::parse_text(host)?;
-            if let HostRef::Address(ip) = host
+            if let HostRef::IP(ip) = host
                 && ip.is_v6()
             {
                 return Err(InvalidAuthority);
@@ -42,7 +42,7 @@ mod tests {
     fn try_from_str() {
         let result: Result<AuthorityRef, ParseError> = AuthorityRef::try_from("localhost:80");
         let expected: Result<AuthorityRef, ParseError> =
-            Ok(AuthorityRef::new(HostRef::Name(DomainRef::LOCALHOST), 80));
+            Ok(AuthorityRef::new(HostRef::Domain(DomainRef::LOCALHOST), 80));
         assert_eq!(result, expected);
 
         let result: Result<AuthorityRef, ParseError> = AuthorityRef::try_from("LocalHost:80");
@@ -59,7 +59,7 @@ mod tests {
         let test_cases: &[(&[u8], Result<AuthorityRef, ParseError>)] = &[
             (
                 "localhost:80".as_bytes(),
-                Ok(AuthorityRef::new(HostRef::Name(DomainRef::LOCALHOST), 80)),
+                Ok(AuthorityRef::new(HostRef::Domain(DomainRef::LOCALHOST), 80)),
             ),
             (
                 "[::1%1]:80".as_bytes(),

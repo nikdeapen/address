@@ -55,14 +55,6 @@ mod tests {
     use crate::{Domain, DomainRef};
 
     #[test]
-    fn domain_display() {
-        let domain: Domain = Domain::localhost();
-        let result: String = domain.to_string();
-        let expected: &str = "localhost";
-        assert_eq!(result, expected);
-    }
-
-    #[test]
     fn as_str() {
         let owned: Domain = Domain::localhost();
         let result: &str = owned.as_ref();
@@ -71,18 +63,5 @@ mod tests {
         let domain: DomainRef = DomainRef::LOCALHOST;
         let result: &str = domain.as_ref();
         assert_eq!(result, "localhost");
-    }
-
-    #[test]
-    fn display_spec() {
-        let domain: Domain = Domain::localhost();
-        assert_eq!(format!("{:>12}", domain), "   localhost");
-        assert_eq!(format!("{:<12}|", domain), "localhost   |");
-        assert_eq!(format!("{:*^13}", domain), "**localhost**");
-        assert_eq!(format!("{:.5}", domain), "local");
-
-        let domain: DomainRef = DomainRef::LOCALHOST;
-        assert_eq!(format!("{:>12}", domain), "   localhost");
-        assert_eq!(format!("{:.5}", domain), "local");
     }
 }

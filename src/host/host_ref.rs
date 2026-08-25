@@ -1,16 +1,14 @@
 use crate::{DomainRef, Host, IPAddress};
 
 /// A [Host] reference.
-///
-/// Only the domain name is borrowed; an [IPAddress] is `Copy`, so the `Address` variant is owned.
 #[must_use]
 #[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
 pub enum HostRef<'a> {
     /// A [DomainRef].
-    Name(DomainRef<'a>),
+    Domain(DomainRef<'a>),
 
     /// An [IPAddress].
-    Address(IPAddress),
+    IP(IPAddress),
 }
 
 impl<'a> PartialEq<Host> for HostRef<'a> {
@@ -25,13 +23,13 @@ impl<'a> HostRef<'a> {
     /// Checks if the host is a domain.
     #[must_use]
     pub const fn is_domain(self) -> bool {
-        matches!(self, Self::Name(_))
+        matches!(self, Self::Domain(_))
     }
 
     /// Checks if the host is an IP address.
     #[must_use]
     pub const fn is_ip(self) -> bool {
-        matches!(self, Self::Address(_))
+        matches!(self, Self::IP(_))
     }
 }
 
@@ -42,7 +40,7 @@ mod tests {
     #[test]
     fn equality() {
         let owned: Host = Domain::localhost().into();
-        let host: HostRef = HostRef::Name(DomainRef::LOCALHOST);
+        let host: HostRef = HostRef::Domain(DomainRef::LOCALHOST);
         assert_eq!(host, owned);
         assert_ne!(IPv4Address::LOCALHOST.to_host_ref(), owned);
     }

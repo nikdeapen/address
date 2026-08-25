@@ -72,12 +72,12 @@ mod tests {
 
     #[test]
     fn construction() {
-        let authority: AuthorityRef = AuthorityRef::new(HostRef::Name(DomainRef::LOCALHOST), 80);
-        assert_eq!(authority.host, HostRef::Name(DomainRef::LOCALHOST));
+        let authority: AuthorityRef = AuthorityRef::new(HostRef::Domain(DomainRef::LOCALHOST), 80);
+        assert_eq!(authority.host, HostRef::Domain(DomainRef::LOCALHOST));
         assert_eq!(authority.port, 80);
 
         let authority: AuthorityRef = (DomainRef::LOCALHOST, 80).into();
-        assert_eq!(authority.host, HostRef::Name(DomainRef::LOCALHOST));
+        assert_eq!(authority.host, HostRef::Domain(DomainRef::LOCALHOST));
         assert_eq!(authority.port, 80);
     }
 
@@ -85,29 +85,29 @@ mod tests {
     fn deconstruction() {
         let authority: AuthorityRef = (DomainRef::LOCALHOST, 80).into();
         let (host, port): (HostRef, u16) = authority.into();
-        assert_eq!(host, HostRef::Name(DomainRef::LOCALHOST));
+        assert_eq!(host, HostRef::Domain(DomainRef::LOCALHOST));
         assert_eq!(port, 80);
     }
 
     #[test]
     fn equality() {
-        let eighty: Authority = Authority::new(Host::Name(Domain::localhost()), 80);
+        let eighty: Authority = Authority::new(Host::Domain(Domain::localhost()), 80);
         assert_eq!(eighty.to_ref(), eighty);
 
-        let eighty_one: Authority = Authority::new(Host::Name(Domain::localhost()), 81);
+        let eighty_one: Authority = Authority::new(Host::Domain(Domain::localhost()), 81);
         assert_ne!(eighty.to_ref(), eighty_one);
     }
 
     #[test]
     fn properties() {
-        let authority: AuthorityRef = AuthorityRef::new(HostRef::Name(DomainRef::LOCALHOST), 80);
-        assert_eq!(authority.host(), HostRef::Name(DomainRef::LOCALHOST));
+        let authority: AuthorityRef = AuthorityRef::new(HostRef::Domain(DomainRef::LOCALHOST), 80);
+        assert_eq!(authority.host(), HostRef::Domain(DomainRef::LOCALHOST));
         assert_eq!(authority.port(), 80);
     }
 
     #[test]
     fn matching() {
-        let authority: AuthorityRef = AuthorityRef::new(HostRef::Name(DomainRef::LOCALHOST), 80);
+        let authority: AuthorityRef = AuthorityRef::new(HostRef::Domain(DomainRef::LOCALHOST), 80);
         assert!(authority.is_endpoint());
         assert!(!authority.is_socket());
 
