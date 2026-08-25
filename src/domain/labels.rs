@@ -138,7 +138,13 @@ mod tests {
             for taken in 0..=total {
                 let remaining: usize = total - taken;
                 let (low, high): (usize, Option<usize>) = labels.size_hint();
-                assert!(low <= remaining, "name={} taken={} low={}", name, taken, low);
+                assert!(
+                    low <= remaining,
+                    "name={} taken={} low={}",
+                    name,
+                    taken,
+                    low
+                );
                 assert!(
                     high.is_some_and(|high| remaining <= high),
                     "name={} taken={} high={:?}",

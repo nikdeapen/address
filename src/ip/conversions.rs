@@ -6,13 +6,21 @@ impl IPAddress {
     /// Converts the address to an optional IPv4 address.
     #[must_use]
     pub const fn to_v4(self) -> Option<IPv4Address> {
-        if let Self::V4(ip) = self { Some(ip) } else { None }
+        if let Self::V4(ip) = self {
+            Some(ip)
+        } else {
+            None
+        }
     }
 
     /// Converts the address to an optional IPv6 address.
     #[must_use]
     pub const fn to_v6(self) -> Option<IPv6Address> {
-        if let Self::V6(ip) = self { Some(ip) } else { None }
+        if let Self::V6(ip) = self {
+            Some(ip)
+        } else {
+            None
+        }
     }
 
     /// Converts the address to a socket address with the `port`.

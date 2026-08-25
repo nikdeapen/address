@@ -49,15 +49,16 @@ impl From<SocketAddressV6> for SocketAddress {
 #[cfg(test)]
 mod tests {
     use crate::{
-        Authority, AuthorityRef, Host, HostRef, IPAddress, IPv4Address, IPv6Address, SocketAddress, SocketAddressV4,
-        SocketAddressV6,
+        Authority, AuthorityRef, Host, HostRef, IPAddress, IPv4Address, IPv6Address, SocketAddress,
+        SocketAddressV4, SocketAddressV6,
     };
 
     #[test]
     fn socket_to_v4() {
         let socket: SocketAddress = IPv4Address::LOCALHOST.to_ip().to_socket(80);
         let result: Option<SocketAddressV4> = socket.to_v4();
-        let expected: Option<SocketAddressV4> = Some(SocketAddressV4::new(IPv4Address::LOCALHOST, 80));
+        let expected: Option<SocketAddressV4> =
+            Some(SocketAddressV4::new(IPv4Address::LOCALHOST, 80));
         assert_eq!(result, expected);
 
         let socket: SocketAddress = IPv6Address::LOCALHOST.to_ip().to_socket(80);
@@ -75,7 +76,8 @@ mod tests {
 
         let socket: SocketAddress = IPv6Address::LOCALHOST.to_ip().to_socket(80);
         let result: Option<SocketAddressV6> = socket.to_v6();
-        let expected: Option<SocketAddressV6> = Some(SocketAddressV6::new(IPv6Address::LOCALHOST, 80));
+        let expected: Option<SocketAddressV6> =
+            Some(SocketAddressV6::new(IPv6Address::LOCALHOST, 80));
         assert_eq!(result, expected);
     }
 
@@ -83,11 +85,13 @@ mod tests {
     fn socket_to_authority() {
         let socket: SocketAddress = SocketAddress::new(IPAddress::V4(IPv4Address::LOCALHOST), 80);
         let result: Authority = socket.to_authority();
-        let expected: Authority = Authority::new(Host::Address(IPAddress::V4(IPv4Address::LOCALHOST)), 80);
+        let expected: Authority =
+            Authority::new(Host::Address(IPAddress::V4(IPv4Address::LOCALHOST)), 80);
         assert_eq!(result, expected);
 
         let result: AuthorityRef = socket.to_authority_ref();
-        let expected: AuthorityRef = AuthorityRef::new(HostRef::Address(IPAddress::V4(IPv4Address::LOCALHOST)), 80);
+        let expected: AuthorityRef =
+            AuthorityRef::new(HostRef::Address(IPAddress::V4(IPv4Address::LOCALHOST)), 80);
         assert_eq!(result, expected);
     }
 

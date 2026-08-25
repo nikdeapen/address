@@ -39,7 +39,8 @@ mod tests {
     #[test]
     fn try_from_str() {
         let result: Result<AuthorityRef, ParseError> = AuthorityRef::try_from("localhost:80");
-        let expected: Result<AuthorityRef, ParseError> = Ok(AuthorityRef::new(HostRef::Name(DomainRef::LOCALHOST), 80));
+        let expected: Result<AuthorityRef, ParseError> =
+            Ok(AuthorityRef::new(HostRef::Name(DomainRef::LOCALHOST), 80));
         assert_eq!(result, expected);
 
         let result: Result<AuthorityRef, ParseError> = AuthorityRef::try_from("LocalHost:80");

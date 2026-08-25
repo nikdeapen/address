@@ -1,7 +1,8 @@
 use crate::ParseError::{InvalidAuthority, InvalidHost};
 use crate::parse_port;
 use crate::{
-    Authority, Domain, Host, IPAddress, IPv6Address, InvalidAddressError, ParseError, impl_parse, impl_parse_string,
+    Authority, Domain, Host, IPAddress, IPv6Address, InvalidAddressError, ParseError, impl_parse,
+    impl_parse_string,
 };
 
 impl Authority {
@@ -84,19 +85,34 @@ mod tests {
             ("localhost:", Err(InvalidPort)),
             ("localhost:xx", Err(InvalidPort)),
             (":80", Err(InvalidHost)),
-            ("127.0.0.1:80", Ok(IPv4Address::LOCALHOST.to_host().to_authority(80))),
+            (
+                "127.0.0.1:80",
+                Ok(IPv4Address::LOCALHOST.to_host().to_authority(80)),
+            ),
             ("::1:80", Err(InvalidAuthority)),
-            ("[::1]:80", Ok(IPv6Address::LOCALHOST.to_host().to_authority(80))),
+            (
+                "[::1]:80",
+                Ok(IPv6Address::LOCALHOST.to_host().to_authority(80)),
+            ),
             (
                 "[::FFFF]:80",
                 Ok(IPv6Address::from([0, 0, 0, 0, 0, 0, 0, 0xFFFF])
                     .to_host()
                     .to_authority(80)),
             ),
-            ("[::1%1]:80", Ok(IPv6Address::LOCALHOST.to_host().to_authority(80))),
+            (
+                "[::1%1]:80",
+                Ok(IPv6Address::LOCALHOST.to_host().to_authority(80)),
+            ),
             ("[::1%eth0]:80", Err(InvalidIPv6Address)),
-            ("localhost:80", Ok(Domain::localhost().to_host().to_authority(80))),
-            ("LocalHost:80", Ok(Domain::localhost().to_host().to_authority(80))),
+            (
+                "localhost:80",
+                Ok(Domain::localhost().to_host().to_authority(80)),
+            ),
+            (
+                "LocalHost:80",
+                Ok(Domain::localhost().to_host().to_authority(80)),
+            ),
             ("Local_Host:80", Err(InvalidHost)),
         ];
 
@@ -109,18 +125,22 @@ mod tests {
     #[test]
     fn try_from_str() {
         let result: Result<Authority, ParseError> = Authority::try_from("localhost:80");
-        let expected: Result<Authority, ParseError> = Ok(Domain::localhost().to_host().to_authority(80));
+        let expected: Result<Authority, ParseError> =
+            Ok(Domain::localhost().to_host().to_authority(80));
         assert_eq!(result, expected);
 
         let result: Result<Authority, ParseError> = Authority::try_from("LocalHost:80");
-        let expected: Result<Authority, ParseError> = Ok(Domain::localhost().to_host().to_authority(80));
+        let expected: Result<Authority, ParseError> =
+            Ok(Domain::localhost().to_host().to_authority(80));
         assert_eq!(result, expected);
     }
 
     #[test]
     fn parse_text() {
-        let result: Result<Authority, ParseError> = Authority::parse_text("LocalHost:80".as_bytes());
-        let expected: Result<Authority, ParseError> = Ok(Domain::localhost().to_host().to_authority(80));
+        let result: Result<Authority, ParseError> =
+            Authority::parse_text("LocalHost:80".as_bytes());
+        let expected: Result<Authority, ParseError> =
+            Ok(Domain::localhost().to_host().to_authority(80));
         assert_eq!(result, expected);
 
         let result: Result<Authority, ParseError> = Authority::parse_text(b"\xFF:80".as_slice());
@@ -131,19 +151,35 @@ mod tests {
     #[test]
     fn try_from_string() {
         let test_cases: &[(&str, Result<Authority, ParseError>)] = &[
-            ("localhost:80", Ok(Domain::localhost().to_host().to_authority(80))),
-            ("LocalHost:80", Ok(Domain::localhost().to_host().to_authority(80))),
-            ("[::1]:80", Ok(IPv6Address::LOCALHOST.to_host().to_authority(80))),
-            ("[::1%1]:80", Ok(IPv6Address::LOCALHOST.to_host().to_authority(80))),
+            (
+                "localhost:80",
+                Ok(Domain::localhost().to_host().to_authority(80)),
+            ),
+            (
+                "LocalHost:80",
+                Ok(Domain::localhost().to_host().to_authority(80)),
+            ),
+            (
+                "[::1]:80",
+                Ok(IPv6Address::LOCALHOST.to_host().to_authority(80)),
+            ),
+            (
+                "[::1%1]:80",
+                Ok(IPv6Address::LOCALHOST.to_host().to_authority(80)),
+            ),
             ("[::1%eth0]:80", Err(InvalidIPv6Address)),
             ("::1:80", Err(InvalidAuthority)),
             ("Local!Host:80", Err(InvalidHost)),
             ("localhost:", Err(InvalidPort)),
-            ("127.0.0.1:80", Ok(IPv4Address::LOCALHOST.to_host().to_authority(80))),
+            (
+                "127.0.0.1:80",
+                Ok(IPv4Address::LOCALHOST.to_host().to_authority(80)),
+            ),
         ];
 
         for (input, expected) in test_cases {
-            let result: Result<Authority, InvalidAddressError<String>> = Authority::try_from(input.to_string());
+            let result: Result<Authority, InvalidAddressError<String>> =
+                Authority::try_from(input.to_string());
             match result {
                 Ok(value) => assert_eq!(Ok(value), *expected, "input={}", input),
                 Err(error) => {
@@ -157,19 +193,35 @@ mod tests {
     #[test]
     fn try_from_vec() {
         let test_cases: &[(&str, Result<Authority, ParseError>)] = &[
-            ("localhost:80", Ok(Domain::localhost().to_host().to_authority(80))),
-            ("LocalHost:80", Ok(Domain::localhost().to_host().to_authority(80))),
-            ("[::1]:80", Ok(IPv6Address::LOCALHOST.to_host().to_authority(80))),
-            ("[::1%1]:80", Ok(IPv6Address::LOCALHOST.to_host().to_authority(80))),
+            (
+                "localhost:80",
+                Ok(Domain::localhost().to_host().to_authority(80)),
+            ),
+            (
+                "LocalHost:80",
+                Ok(Domain::localhost().to_host().to_authority(80)),
+            ),
+            (
+                "[::1]:80",
+                Ok(IPv6Address::LOCALHOST.to_host().to_authority(80)),
+            ),
+            (
+                "[::1%1]:80",
+                Ok(IPv6Address::LOCALHOST.to_host().to_authority(80)),
+            ),
             ("[::1%eth0]:80", Err(InvalidIPv6Address)),
             ("::1:80", Err(InvalidAuthority)),
             ("Local!Host:80", Err(InvalidHost)),
             ("localhost:", Err(InvalidPort)),
-            ("127.0.0.1:80", Ok(IPv4Address::LOCALHOST.to_host().to_authority(80))),
+            (
+                "127.0.0.1:80",
+                Ok(IPv4Address::LOCALHOST.to_host().to_authority(80)),
+            ),
         ];
 
         for (input, expected) in test_cases {
-            let result: Result<Authority, InvalidAddressError<Vec<u8>>> = Authority::try_from(Vec::from(*input));
+            let result: Result<Authority, InvalidAddressError<Vec<u8>>> =
+                Authority::try_from(Vec::from(*input));
             match result {
                 Ok(value) => assert_eq!(Ok(value), *expected, "input={}", input),
                 Err(error) => {
@@ -199,13 +251,28 @@ mod tests {
             assert_eq!(authority.to_string(), *expected, "from_str input={}", input);
 
             let authority: Authority = Authority::parse_text(input.as_bytes()).unwrap();
-            assert_eq!(authority.to_string(), *expected, "parse_text input={}", input);
+            assert_eq!(
+                authority.to_string(),
+                *expected,
+                "parse_text input={}",
+                input
+            );
 
             let authority: Authority = Authority::try_from(input.to_string()).unwrap();
-            assert_eq!(authority.to_string(), *expected, "try_from(String) input={}", input);
+            assert_eq!(
+                authority.to_string(),
+                *expected,
+                "try_from(String) input={}",
+                input
+            );
 
             let authority: Authority = Authority::try_from(Vec::from(*input)).unwrap();
-            assert_eq!(authority.to_string(), *expected, "try_from(Vec<u8>) input={}", input);
+            assert_eq!(
+                authority.to_string(),
+                *expected,
+                "try_from(Vec<u8>) input={}",
+                input
+            );
         }
     }
 

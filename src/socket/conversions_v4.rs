@@ -21,7 +21,10 @@ impl SocketAddressV4 {
 
 #[cfg(test)]
 mod tests {
-    use crate::{Authority, AuthorityRef, Host, HostRef, IPAddress, IPv4Address, SocketAddress, SocketAddressV4};
+    use crate::{
+        Authority, AuthorityRef, Host, HostRef, IPAddress, IPv4Address, SocketAddress,
+        SocketAddressV4,
+    };
 
     #[test]
     fn v4_to_socket() {
@@ -35,11 +38,13 @@ mod tests {
     fn v4_to_authority() {
         let socket: SocketAddressV4 = IPv4Address::LOCALHOST.to_socket(80);
         let result: Authority = socket.to_authority();
-        let expected: Authority = Authority::new(Host::Address(IPAddress::V4(IPv4Address::LOCALHOST)), 80);
+        let expected: Authority =
+            Authority::new(Host::Address(IPAddress::V4(IPv4Address::LOCALHOST)), 80);
         assert_eq!(result, expected);
 
         let result: AuthorityRef = socket.to_authority_ref();
-        let expected: AuthorityRef = AuthorityRef::new(HostRef::Address(IPAddress::V4(IPv4Address::LOCALHOST)), 80);
+        let expected: AuthorityRef =
+            AuthorityRef::new(HostRef::Address(IPAddress::V4(IPv4Address::LOCALHOST)), 80);
         assert_eq!(result, expected);
     }
 }

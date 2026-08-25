@@ -77,7 +77,12 @@ impl IPv4Address {
     /// Gets the bytes. (a, b, c, d)
     #[must_use]
     pub const fn bytes(self) -> (u8, u8, u8, u8) {
-        (self.address[0], self.address[1], self.address[2], self.address[3])
+        (
+            self.address[0],
+            self.address[1],
+            self.address[2],
+            self.address[3],
+        )
     }
 }
 

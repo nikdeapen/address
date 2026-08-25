@@ -42,7 +42,10 @@ mod tests {
     #[test]
     fn parse_unicode() {
         let test_cases: &[(&str, Result<Domain, ParseError>)] = &[
-            ("Bücher.example", Ok(Domain::try_from("xn--bcher-kva.example").unwrap())),
+            (
+                "Bücher.example",
+                Ok(Domain::try_from("xn--bcher-kva.example").unwrap()),
+            ),
             ("localhost", Ok(Domain::localhost())),
             ("", Err(InvalidDomain)),
         ];
@@ -56,9 +59,15 @@ mod tests {
     #[test]
     fn to_unicode() {
         let test_cases: &[(Domain, Result<&str, ParseError>)] = &[
-            (Domain::try_from("xn--bcher-kva.example").unwrap(), Ok("bücher.example")),
+            (
+                Domain::try_from("xn--bcher-kva.example").unwrap(),
+                Ok("bücher.example"),
+            ),
             (Domain::example(), Ok("example.com")),
-            (Domain::try_from("xn--a.example").unwrap(), Err(InvalidDomain)),
+            (
+                Domain::try_from("xn--a.example").unwrap(),
+                Err(InvalidDomain),
+            ),
         ];
 
         for (domain, expected) in test_cases {

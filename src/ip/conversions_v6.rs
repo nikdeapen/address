@@ -10,8 +10,12 @@ impl IPv6Address {
     #[must_use]
     pub const fn to_v4(self) -> Option<IPv4Address> {
         match self.address() {
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, a, b, c, d] => Some(IPv4Address::new([a, b, c, d])),
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xFF, 0xFF, a, b, c, d] => Some(IPv4Address::new([a, b, c, d])),
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, a, b, c, d] => {
+                Some(IPv4Address::new([a, b, c, d]))
+            }
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xFF, 0xFF, a, b, c, d] => {
+                Some(IPv4Address::new([a, b, c, d]))
+            }
             _ => None,
         }
     }
@@ -22,7 +26,9 @@ impl IPv6Address {
     #[must_use]
     pub const fn to_v4_mapped(self) -> Option<IPv4Address> {
         match self.address() {
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xFF, 0xFF, a, b, c, d] => Some(IPv4Address::new([a, b, c, d])),
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xFF, 0xFF, a, b, c, d] => {
+                Some(IPv4Address::new([a, b, c, d]))
+            }
             _ => None,
         }
     }

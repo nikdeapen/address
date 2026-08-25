@@ -113,7 +113,10 @@ mod tests {
         assert_eq!(ip.address(), &[127, 0, 0, 1]);
 
         let ip: IPAddress = IPv6Address::LOCALHOST.into();
-        assert_eq!(ip.address(), &[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]);
+        assert_eq!(
+            ip.address(),
+            &[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
+        );
     }
 
     #[test]

@@ -12,7 +12,10 @@ impl SocketAddressV4 {
     }
 }
 
-impl_parse!(SocketAddressV4, "An IPv4 address & a decimal port: `127.0.0.1:80`.");
+impl_parse!(
+    SocketAddressV4,
+    "An IPv4 address & a decimal port: `127.0.0.1:80`."
+);
 
 #[cfg(test)]
 mod tests {
@@ -29,7 +32,10 @@ mod tests {
             (":80", Err(InvalidIPv4Address)),
             ("xx:80", Err(InvalidIPv4Address)),
             ("127.0.0.1:80", Ok(IPv4Address::LOCALHOST.to_socket(80))),
-            ("127.0.0.1:65535", Ok(IPv4Address::LOCALHOST.to_socket(65535))),
+            (
+                "127.0.0.1:65535",
+                Ok(IPv4Address::LOCALHOST.to_socket(65535)),
+            ),
             ("127.0.0.1:65536", Err(InvalidPort)),
             ("[127.0.0.1]:80", Err(InvalidIPv4Address)),
             ("::1:80", Err(InvalidIPv4Address)),
@@ -42,7 +48,8 @@ mod tests {
             let result: Result<SocketAddressV4, ParseError> = SocketAddressV4::try_from(*input);
             assert_eq!(result, *expected, "input={}", input);
 
-            let result: Result<SocketAddressV4, ParseError> = SocketAddressV4::parse_text(input.as_bytes());
+            let result: Result<SocketAddressV4, ParseError> =
+                SocketAddressV4::parse_text(input.as_bytes());
             assert_eq!(result, *expected, "input={}", input);
         }
     }

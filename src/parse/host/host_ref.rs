@@ -42,8 +42,14 @@ mod tests {
     #[test]
     fn parse_text() {
         let test_cases: &[(&[u8], Result<HostRef, ParseError>)] = &[
-            ("localhost".as_bytes(), Ok(HostRef::Name(DomainRef::LOCALHOST))),
-            ("127.0.0.1".as_bytes(), Ok(IPv4Address::LOCALHOST.to_host_ref())),
+            (
+                "localhost".as_bytes(),
+                Ok(HostRef::Name(DomainRef::LOCALHOST)),
+            ),
+            (
+                "127.0.0.1".as_bytes(),
+                Ok(IPv4Address::LOCALHOST.to_host_ref()),
+            ),
             ("LocalHost".as_bytes(), Err(InvalidHost)),
             (b"\xFF".as_slice(), Err(InvalidHost)),
             ("ü".as_bytes(), Err(InvalidHost)),

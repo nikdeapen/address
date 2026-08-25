@@ -29,7 +29,11 @@ impl Host {
     /// Converts the host to an optional IP address.
     #[must_use]
     pub const fn to_ip(&self) -> Option<IPAddress> {
-        if let Self::Address(ip) = self { Some(*ip) } else { None }
+        if let Self::Address(ip) = self {
+            Some(*ip)
+        } else {
+            None
+        }
     }
 }
 
@@ -83,7 +87,8 @@ mod tests {
 
         let host: Host = IPv4Address::LOCALHOST.to_host();
         let result: Authority = host.to_authority(80);
-        let expected: Authority = Authority::new(Host::Address(IPAddress::V4(IPv4Address::LOCALHOST)), 80);
+        let expected: Authority =
+            Authority::new(Host::Address(IPAddress::V4(IPv4Address::LOCALHOST)), 80);
         assert_eq!(result, expected);
     }
 

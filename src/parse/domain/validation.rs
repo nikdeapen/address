@@ -173,7 +173,10 @@ mod tests {
 
     #[test]
     fn label_length_boundaries() {
-        let test_cases: &[(usize, bool)] = &[(Domain::MAX_LABEL_LEN, true), (Domain::MAX_LABEL_LEN + 1, false)];
+        let test_cases: &[(usize, bool)] = &[
+            (Domain::MAX_LABEL_LEN, true),
+            (Domain::MAX_LABEL_LEN + 1, false),
+        ];
 
         for (len, expected) in test_cases {
             let label: String = "a".repeat(*len);
@@ -207,8 +210,10 @@ mod tests {
 
     #[test]
     fn name_length_boundaries() {
-        let test_cases: &[(usize, usize, bool)] =
-            &[(61, Domain::MAX_NAME_LEN, true), (62, Domain::MAX_NAME_LEN + 1, false)];
+        let test_cases: &[(usize, usize, bool)] = &[
+            (61, Domain::MAX_NAME_LEN, true),
+            (62, Domain::MAX_NAME_LEN + 1, false),
+        ];
 
         for (tail_len, expected_len, expected) in test_cases {
             let label: String = "a".repeat(Domain::MAX_LABEL_LEN);

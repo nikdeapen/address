@@ -54,7 +54,10 @@ impl InvalidAddressError<Vec<u8>> {
         debug_assert_eq!(self.value.len(), len);
         debug_assert!(std::str::from_utf8(self.value.as_slice()).is_ok());
 
-        InvalidAddressError::new(unsafe { String::from_utf8_unchecked(self.value) }, self.error)
+        InvalidAddressError::new(
+            unsafe { String::from_utf8_unchecked(self.value) },
+            self.error,
+        )
     }
 }
 
