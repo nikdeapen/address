@@ -33,7 +33,7 @@ mod tests {
     #[test]
     fn try_from_str() {
         let result: Result<HostRef, ParseError> = HostRef::try_from("localhost");
-        let expected: Result<HostRef, ParseError> = Ok(HostRef::Name(DomainRef::LOCALHOST));
+        let expected: Result<HostRef, ParseError> = Ok(HostRef::Domain(DomainRef::LOCALHOST));
         assert_eq!(result, expected);
 
         let result: Result<HostRef, ParseError> = HostRef::try_from("LocalHost");
@@ -46,7 +46,7 @@ mod tests {
         let test_cases: &[(&[u8], Result<HostRef, ParseError>)] = &[
             (
                 "localhost".as_bytes(),
-                Ok(HostRef::Name(DomainRef::LOCALHOST)),
+                Ok(HostRef::Domain(DomainRef::LOCALHOST)),
             ),
             (
                 "127.0.0.1".as_bytes(),

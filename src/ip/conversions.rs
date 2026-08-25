@@ -30,12 +30,12 @@ impl IPAddress {
 
     /// Converts the address to a host.
     pub const fn to_host(self) -> Host {
-        Host::Address(self)
+        Host::IP(self)
     }
 
     /// Converts the address to a host reference.
     pub const fn to_host_ref(self) -> HostRef<'static> {
-        HostRef::Address(self)
+        HostRef::IP(self)
     }
 }
 
@@ -94,11 +94,11 @@ mod tests {
         let ip: IPAddress = IPAddress::V4(IPv4Address::LOCALHOST);
 
         let result: Host = ip.to_host();
-        let expected: Host = Host::Address(IPAddress::V4(IPv4Address::LOCALHOST));
+        let expected: Host = Host::IP(IPAddress::V4(IPv4Address::LOCALHOST));
         assert_eq!(result, expected);
 
         let result: HostRef = ip.to_host_ref();
-        let expected: HostRef = HostRef::Address(IPAddress::V4(IPv4Address::LOCALHOST));
+        let expected: HostRef = HostRef::IP(IPAddress::V4(IPv4Address::LOCALHOST));
         assert_eq!(result, expected);
     }
 

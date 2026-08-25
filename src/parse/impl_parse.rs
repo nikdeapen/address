@@ -33,7 +33,7 @@ macro_rules! impl_parse_string {
             $(#[doc = $doc])*
             fn try_from(value: String) -> Result<Self, Self::Error> {
                 let len: usize = value.len();
-                Self::try_from(value.into_bytes())
+                Self::parse_vec(value.into_bytes())
                     .map_err(|error| unsafe { error.into_string_unchecked(len) })
             }
         }

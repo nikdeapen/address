@@ -46,12 +46,12 @@ impl IPv6Address {
 
     /// Converts the address to a host.
     pub const fn to_host(self) -> Host {
-        Host::Address(self.to_ip())
+        Host::IP(self.to_ip())
     }
 
     /// Converts the address to a host reference.
     pub const fn to_host_ref(self) -> HostRef<'static> {
-        HostRef::Address(self.to_ip())
+        HostRef::IP(self.to_ip())
     }
 }
 
@@ -111,11 +111,11 @@ mod tests {
         let ip: IPv6Address = IPv6Address::LOCALHOST;
 
         let result: Host = ip.to_host();
-        let expected: Host = Host::Address(IPAddress::V6(IPv6Address::LOCALHOST));
+        let expected: Host = Host::IP(IPAddress::V6(IPv6Address::LOCALHOST));
         assert_eq!(result, expected);
 
         let result: HostRef = ip.to_host_ref();
-        let expected: HostRef = HostRef::Address(IPAddress::V6(IPv6Address::LOCALHOST));
+        let expected: HostRef = HostRef::IP(IPAddress::V6(IPv6Address::LOCALHOST));
         assert_eq!(result, expected);
     }
 }

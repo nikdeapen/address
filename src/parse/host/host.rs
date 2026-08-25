@@ -20,13 +20,15 @@ impl Host {
 
     /// Creates a host from the `text`, normalizing domain names to lowercase.
     ///
-    /// Returns the unmodified `text` if it is not a valid host.
-    pub(crate) fn parse_vec(text: Vec<u8>) -> Result<Self, Vec<u8>> {
+    /// The error holds the unmodified `text`, which `TryFrom<String>` soundly recovers as a string.
+    pub(crate) fn parse_vec(text: Vec<u8>) -> Result<Self, InvalidAddressError<Vec<u8>>> {
         if let Ok(ip) = IPAddress::parse_text(text.as_slice()) {
             Ok(ip.to_host())
         } else {
             let len: usize = text.len();
-            Domain::parse_vec_prefix(text, len).map(Domain::to_host)
+            Domain::parse_vec_prefix(text, len)
+                .map(Domain::to_host)
+                .map_err(|text| InvalidAddressError::new(text, InvalidHost))
         }
     }
 }
@@ -42,18 +44,6 @@ impl_parse_string!(
     "A domain name or an unbracketed IP address: `localhost`, `127.0.0.1`, or `::1`.",
     "Domain names are normalized to lowercase."
 );
-
-impl TryFrom<Vec<u8>> for Host {
-    type Error = InvalidAddressError<Vec<u8>>;
-
-    /// A domain name or an unbracketed IP address: `localhost`, `127.0.0.1`, or `::1`.
-    /// Domain names are normalized to lowercase.
-    /// The error contains the unmodified `text`, which `TryFrom<String>` soundly recovers as a
-    /// string.
-    fn try_from(text: Vec<u8>) -> Result<Self, Self::Error> {
-        Self::parse_vec(text).map_err(|text| InvalidAddressError::new(text, InvalidHost))
-    }
-}
 
 #[cfg(test)]
 mod tests {
@@ -127,33 +117,6 @@ mod tests {
         }
     }
 
-    #[test]
-    fn try_from_vec() {
-        let test_cases: &[(&str, Result<Host, ParseError>)] = &[
-            ("localhost", Ok(Domain::localhost().to_host())),
-            ("LocalHost", Ok(Domain::localhost().to_host())),
-            ("127.0.0.1", Ok(IPv4Address::LOCALHOST.to_host())),
-            ("Local!Host", Err(InvalidHost)),
-        ];
-
-        for (input, expected) in test_cases {
-            let result: Result<Host, InvalidAddressError<Vec<u8>>> =
-                Host::try_from(Vec::from(*input));
-            match result {
-                Ok(value) => assert_eq!(Ok(value), *expected, "input={}", input),
-                Err(error) => {
-                    assert_eq!(Err(error.error()), *expected, "input={}", input);
-                    assert_eq!(
-                        error.into_value().as_slice(),
-                        input.as_bytes(),
-                        "recovered input={}",
-                        input
-                    );
-                }
-            }
-        }
-    }
-
     /// Mixed-case domain names are lowercased on every owned parse path.
     #[test]
     fn normalizes_case() {
@@ -183,14 +146,6 @@ mod tests {
                 host.to_string(),
                 *expected,
                 "try_from(String) input={}",
-                input
-            );
-
-            let host: Host = Host::try_from(Vec::from(*input)).unwrap();
-            assert_eq!(
-                host.to_string(),
-                *expected,
-                "try_from(Vec<u8>) input={}",
                 input
             );
         }

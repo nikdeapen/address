@@ -11,7 +11,7 @@ impl Domain {
     /// The accepted bytes are ASCII, so a non-`Invalid` class proves the label is valid UTF-8. The
     /// parse impls rely on that to convert classified bytes without re-validating; widening the
     /// byte set here would make those conversions unsound.
-    pub(crate) fn classify_label(label: &[u8]) -> NameClass {
+    fn classify_label(label: &[u8]) -> NameClass {
         if (label.is_empty() || label.len() > Self::MAX_LABEL_LEN)
             || (label[0] == b'-' || label[label.len() - 1] == b'-')
         {
@@ -30,7 +30,7 @@ impl Domain {
     }
 
     /// Checks if the domain `label` is valid, optionally ignoring case.
-    pub(crate) fn is_valid_label_op_ignore_case(label: &[u8], ignore_case: bool) -> bool {
+    fn is_valid_label_op_ignore_case(label: &[u8], ignore_case: bool) -> bool {
         match Self::classify_label(label) {
             NameClass::Lowercase => true,
             NameClass::MixedCase => ignore_case,
@@ -77,9 +77,20 @@ impl Domain {
     /// The maximum length of a domain name.
     pub const MAX_NAME_LEN: usize = 253;
 
+    /// Gets the final label of the domain `name`.
+    fn final_label(name: &[u8]) -> &[u8] {
+        match name.iter().rposition(|c| *c == b'.') {
+            Some(dot) => &name[dot + 1..],
+            None => name,
+        }
+    }
+
     /// Classifies the domain `name`.
     pub(crate) fn classify_name(name: &[u8]) -> NameClass {
-        if name.is_empty() || name.len() > Self::MAX_NAME_LEN {
+        if name.is_empty()
+            || name.len() > Self::MAX_NAME_LEN
+            || Self::final_label(name).iter().all(|c| c.is_ascii_digit())
+        {
             NameClass::Invalid
         } else {
             let mut class: NameClass = NameClass::Lowercase;
@@ -95,7 +106,7 @@ impl Domain {
     }
 
     /// Checks if the domain `name` is valid, optionally ignoring case.
-    pub(crate) fn is_valid_name_op_ignore_case(name: &[u8], ignore_case: bool) -> bool {
+    fn is_valid_name_op_ignore_case(name: &[u8], ignore_case: bool) -> bool {
         match Self::classify_name(name) {
             NameClass::Lowercase => true,
             NameClass::MixedCase => ignore_case,
@@ -111,18 +122,17 @@ impl Domain {
     /// digit, under the size limits of
     /// [RFC 1035](https://www.rfc-editor.org/rfc/rfc1035#section-2.3.4). The 253 is the
     /// presentation form of the 255-octet wire limit. Labels cannot be empty, so leading, trailing,
-    /// and consecutive dots are invalid. Names are ASCII, so they are always valid UTF-8, and
-    /// Unicode must first be converted to its [RFC 5890](https://www.rfc-editor.org/rfc/rfc5890)
-    /// A-label form.
+    /// and consecutive dots are invalid. The final label cannot be all-numeric
+    /// ([RFC 1123](https://www.rfc-editor.org/rfc/rfc1123#section-2.1) &
+    /// [RFC 3696](https://www.rfc-editor.org/rfc/rfc3696#section-2)), so `9999.com` is a name but
+    /// `999.1.1.1` is not. Names are ASCII, so they are always valid UTF-8, and Unicode must first
+    /// be converted to its [RFC 5890](https://www.rfc-editor.org/rfc/rfc5890) A-label form.
     ///
-    /// It diverges from those documents in four ways. Case is canonicalized rather than matched
+    /// It diverges from those documents in three ways. Case is canonicalized rather than matched
     /// case-insensitively ([RFC 4343](https://www.rfc-editor.org/rfc/rfc4343)): this function
     /// requires lowercase and [`Self::is_valid_name_ignore_case`] accepts either. The trailing root
-    /// dot of a fully-qualified name is rejected. An all-numeric final label is accepted, which
-    /// [RFC 1123](https://www.rfc-editor.org/rfc/rfc1123#section-2.1) &
-    /// [RFC 3696](https://www.rfc-editor.org/rfc/rfc3696#section-2) forbid, so `999.1.1.1` is a
-    /// domain rather than a malformed address. Underscores are rejected, so the service labels of
-    /// [RFC 2782](https://www.rfc-editor.org/rfc/rfc2782) cannot be represented, even though
+    /// dot of a fully-qualified name is rejected. Underscores are rejected, so the service labels
+    /// of [RFC 2782](https://www.rfc-editor.org/rfc/rfc2782) cannot be represented, even though
     /// [RFC 2181](https://www.rfc-editor.org/rfc/rfc2181#section-11) permits any octet in a label.
     #[must_use]
     pub fn is_valid_name(name: &[u8]) -> bool {
@@ -193,7 +203,7 @@ mod tests {
     fn is_valid_name() {
         let test_cases: &[(&str, bool, bool)] = &[
             ("", false, false),
-            ("09", true, true),
+            ("09", false, false),
             ("az", true, true),
             ("AZ", false, true),
             (".a", false, false),
@@ -209,6 +219,26 @@ mod tests {
 
             let result: bool = Domain::is_valid_name_ignore_case_str(name);
             assert_eq!(result, *expected_ignore_case, "name={}", name);
+        }
+    }
+
+    /// A non-final label may be all digits; the final one may not, so IPv4 text is not a domain.
+    #[test]
+    fn final_label_not_all_numeric() {
+        let test_cases: &[(&str, bool)] = &[
+            ("9999.com", true),
+            ("123.example.com", true),
+            ("example.1-2", true),
+            ("1.1", false),
+            ("999.1.1.1", false),
+            ("127.0.0.1", false),
+            ("123", false),
+            ("example.123", false),
+        ];
+
+        for (name, expected) in test_cases {
+            let result: bool = Domain::is_valid_name_str(name);
+            assert_eq!(result, *expected, "name={}", name);
         }
     }
 

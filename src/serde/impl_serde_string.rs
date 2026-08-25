@@ -1,7 +1,6 @@
-/// Implements `Serialize` and `Deserialize` for an owned type that serializes as its `Display`
-/// string.
-macro_rules! impl_serde_string {
-    ($ty:ident, $expecting:literal) => {
+/// Implements `Serialize` for an owned type that serializes as its `Display` string.
+macro_rules! impl_serialize_display {
+    ($ty:ident) => {
         impl ::serde::Serialize for crate::$ty {
             fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
             where
@@ -10,7 +9,26 @@ macro_rules! impl_serde_string {
                 serializer.collect_str(self)
             }
         }
+    };
+}
 
+/// Implements `Serialize` for a reference type that serializes as its `Display` string.
+macro_rules! impl_serialize_display_ref {
+    ($ty:ident) => {
+        impl<'a> ::serde::Serialize for crate::$ty<'a> {
+            fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+            where
+                S: ::serde::Serializer,
+            {
+                serializer.collect_str(self)
+            }
+        }
+    };
+}
+
+/// Implements `Deserialize` for an owned type that parses from a string.
+macro_rules! impl_deserialize_string {
+    ($ty:ident, $expecting:literal) => {
         impl<'de> ::serde::Deserialize<'de> for crate::$ty {
             fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
             where
@@ -22,19 +40,9 @@ macro_rules! impl_serde_string {
     };
 }
 
-/// Implements `Serialize` and `Deserialize` for a reference type that serializes as its `Display`
-/// string.
-macro_rules! impl_serde_string_ref {
+/// Implements `Deserialize` for a reference type that borrows from the input string.
+macro_rules! impl_deserialize_string_ref {
     ($ty:ident, $owned:ident, $expecting:literal) => {
-        impl<'a> ::serde::Serialize for crate::$ty<'a> {
-            fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-            where
-                S: ::serde::Serializer,
-            {
-                serializer.collect_str(self)
-            }
-        }
-
         impl<'de: 'a, 'a> ::serde::Deserialize<'de> for crate::$ty<'a> {
             #[doc = concat!(
                 "The string is borrowed from the input, so domain names must be lowercase and ",
@@ -54,17 +62,66 @@ macro_rules! impl_serde_string_ref {
     };
 }
 
-impl_serde_string!(Authority, "an authority string");
-impl_serde_string_ref!(AuthorityRef, Authority, "a borrowed authority string");
+impl ::serde::Serialize for crate::Domain {
+    /// Writes the name directly; `collect_str` formats first, which binary formats must buffer.
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: ::serde::Serializer,
+    {
+        serializer.serialize_str(self.name())
+    }
+}
 
-impl_serde_string!(Domain, "a domain string");
-impl_serde_string_ref!(DomainRef, Domain, "a borrowed domain string");
+impl<'a> ::serde::Serialize for crate::DomainRef<'a> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: ::serde::Serializer,
+    {
+        serializer.serialize_str(self.name())
+    }
+}
 
-impl_serde_string!(Endpoint, "an endpoint string");
-impl_serde_string_ref!(EndpointRef, Endpoint, "a borrowed endpoint string");
+impl ::serde::Serialize for crate::Host {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: ::serde::Serializer,
+    {
+        match self {
+            Self::Domain(domain) => serializer.serialize_str(domain.name()),
+            Self::IP(ip) => serializer.collect_str(ip),
+        }
+    }
+}
 
-impl_serde_string!(Host, "a host string");
-impl_serde_string_ref!(HostRef, Host, "a borrowed host string");
+impl<'a> ::serde::Serialize for crate::HostRef<'a> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: ::serde::Serializer,
+    {
+        match self {
+            Self::Domain(domain) => serializer.serialize_str(domain.name()),
+            Self::IP(ip) => serializer.collect_str(ip),
+        }
+    }
+}
+
+impl_serialize_display!(Authority);
+impl_serialize_display_ref!(AuthorityRef);
+
+impl_serialize_display!(Endpoint);
+impl_serialize_display_ref!(EndpointRef);
+
+impl_deserialize_string!(Authority, "an authority string");
+impl_deserialize_string_ref!(AuthorityRef, Authority, "a borrowed authority string");
+
+impl_deserialize_string!(Domain, "a domain string");
+impl_deserialize_string_ref!(DomainRef, Domain, "a borrowed domain string");
+
+impl_deserialize_string!(Endpoint, "an endpoint string");
+impl_deserialize_string_ref!(EndpointRef, Endpoint, "a borrowed endpoint string");
+
+impl_deserialize_string!(Host, "a host string");
+impl_deserialize_string_ref!(HostRef, Host, "a borrowed host string");
 
 #[cfg(test)]
 mod tests {

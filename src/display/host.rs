@@ -22,38 +22,8 @@ impl<'a> Debug for HostRef<'a> {
 impl<'a> Display for HostRef<'a> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::Name(domain) => Display::fmt(domain, f),
-            Self::Address(ip) => Display::fmt(ip, f),
+            Self::Domain(domain) => Display::fmt(domain, f),
+            Self::IP(ip) => Display::fmt(ip, f),
         }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use crate::{Domain, Host, IPv4Address, IPv6Address};
-
-    #[test]
-    fn host_display() {
-        let test_cases: &[(Host, &str)] = &[
-            (Domain::localhost().to_host(), "localhost"),
-            (IPv4Address::LOCALHOST.to_host(), "127.0.0.1"),
-            (IPv6Address::LOCALHOST.to_host(), "::1"),
-        ];
-
-        for (host, expected) in test_cases {
-            let result: String = host.to_string();
-            assert_eq!(result, *expected, "host={:?}", host);
-        }
-    }
-
-    #[test]
-    fn display_spec() {
-        let host: Host = Domain::localhost().to_host();
-        assert_eq!(format!("{:>12}", host), "   localhost");
-        assert_eq!(format!("{:.5}", host), "local");
-
-        let host: Host = IPv4Address::LOCALHOST.to_host();
-        assert_eq!(format!("{:>12}", host), "   127.0.0.1");
-        assert_eq!(format!("{:.3}", host), "127");
     }
 }

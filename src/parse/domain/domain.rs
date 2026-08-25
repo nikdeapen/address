@@ -20,6 +20,15 @@ impl Domain {
         }
     }
 
+    /// Creates a domain from the `text`, normalizing the name to lowercase.
+    ///
+    /// The error holds the unmodified `text`, which `TryFrom<String>` soundly recovers as a string.
+    pub(crate) fn parse_vec(text: Vec<u8>) -> Result<Self, InvalidAddressError<Vec<u8>>> {
+        let len: usize = text.len();
+        Self::parse_vec_prefix(text, len)
+            .map_err(|text| InvalidAddressError::new(text, InvalidDomain))
+    }
+
     /// Creates a domain from the first `len` bytes of `text`, normalizing the name to lowercase.
     ///
     /// Returns the unmodified `text` if the prefix is not a valid domain name.
@@ -50,20 +59,6 @@ impl_parse_string!(
     "Dot-separated labels of ASCII letters, digits, & dashes. (see [`Domain::is_valid_name`])",
     "The name is normalized to lowercase."
 );
-
-impl TryFrom<Vec<u8>> for Domain {
-    type Error = InvalidAddressError<Vec<u8>>;
-
-    /// Dot-separated labels of ASCII letters, digits, & dashes. (see [`Domain::is_valid_name`])
-    /// The name is normalized to lowercase.
-    /// The error contains the unmodified `text`, which `TryFrom<String>` soundly recovers as a
-    /// string.
-    fn try_from(text: Vec<u8>) -> Result<Self, Self::Error> {
-        let len: usize = text.len();
-        Self::parse_vec_prefix(text, len)
-            .map_err(|text| InvalidAddressError::new(text, InvalidDomain))
-    }
-}
 
 #[cfg(test)]
 mod tests {
@@ -135,32 +130,6 @@ mod tests {
         }
     }
 
-    #[test]
-    fn try_from_vec() {
-        let test_cases: &[(&str, Result<Domain, ParseError>)] = &[
-            ("localhost", Ok(Domain::localhost())),
-            ("LocalHost", Ok(Domain::localhost())),
-            ("Local!Host", Err(InvalidDomain)),
-        ];
-
-        for (input, expected) in test_cases {
-            let result: Result<Domain, InvalidAddressError<Vec<u8>>> =
-                Domain::try_from(Vec::from(*input));
-            match result {
-                Ok(value) => assert_eq!(Ok(value), *expected, "input={}", input),
-                Err(error) => {
-                    assert_eq!(Err(error.error()), *expected, "input={}", input);
-                    assert_eq!(
-                        error.into_value().as_slice(),
-                        input.as_bytes(),
-                        "recovered input={}",
-                        input
-                    );
-                }
-            }
-        }
-    }
-
     /// Mixed-case input is lowercased on every owned parse path, dots and dashes intact.
     #[test]
     fn normalizes_case() {
@@ -183,9 +152,6 @@ mod tests {
 
             let domain: Domain = Domain::try_from(input.to_string()).unwrap();
             assert_eq!(domain, *expected, "try_from(String) input={}", input);
-
-            let domain: Domain = Domain::try_from(Vec::from(*input)).unwrap();
-            assert_eq!(domain, *expected, "try_from(Vec<u8>) input={}", input);
         }
     }
 

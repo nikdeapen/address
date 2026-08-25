@@ -20,12 +20,12 @@ impl<'a> DomainRef<'a> {
 
     /// Converts the domain reference to a host.
     pub fn to_host(self) -> Host {
-        Host::Name(self.to_domain())
+        Host::Domain(self.to_domain())
     }
 
     /// Converts the domain reference to a host reference.
     pub const fn to_host_ref(self) -> HostRef<'a> {
-        HostRef::Name(self)
+        HostRef::Domain(self)
     }
 }
 
@@ -63,11 +63,11 @@ mod tests {
     fn ref_to_host() {
         let domain: DomainRef = DomainRef::LOCALHOST;
         let result: Host = domain.to_host();
-        let expected: Host = Host::Name(Domain::localhost());
+        let expected: Host = Host::Domain(Domain::localhost());
         assert_eq!(result, expected);
 
         let result: HostRef = domain.to_host_ref();
-        let expected: HostRef = HostRef::Name(DomainRef::LOCALHOST);
+        let expected: HostRef = HostRef::Domain(DomainRef::LOCALHOST);
         assert_eq!(result, expected);
     }
 

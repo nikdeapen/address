@@ -12,6 +12,21 @@ impl Endpoint {
         let domain: Domain = Domain::parse_text(name)?;
         Ok(domain.to_endpoint(port))
     }
+
+    /// Creates an endpoint from the `text`, normalizing the domain name to lowercase.
+    ///
+    /// The error holds the unmodified `text`, which `TryFrom<String>` soundly recovers as a string.
+    pub(crate) fn parse_vec(text: Vec<u8>) -> Result<Self, InvalidAddressError<Vec<u8>>> {
+        match parse_port(text.as_slice()) {
+            Ok((name, port)) => {
+                let name_len: usize = name.len();
+                Domain::parse_vec_prefix(text, name_len)
+                    .map(|domain| domain.to_endpoint(port))
+                    .map_err(|text| InvalidAddressError::new(text, InvalidDomain))
+            }
+            Err(error) => Err(InvalidAddressError::new(text, error)),
+        }
+    }
 }
 
 impl_parse!(
@@ -25,26 +40,6 @@ impl_parse_string!(
     "A domain name & a decimal port: `localhost:80`.",
     "Domain names are normalized to lowercase."
 );
-
-impl TryFrom<Vec<u8>> for Endpoint {
-    type Error = InvalidAddressError<Vec<u8>>;
-
-    /// A domain name & a decimal port: `localhost:80`.
-    /// Domain names are normalized to lowercase.
-    /// The error contains the unmodified `text`, which `TryFrom<String>` soundly recovers as a
-    /// string.
-    fn try_from(text: Vec<u8>) -> Result<Self, Self::Error> {
-        match parse_port(text.as_slice()) {
-            Ok((name, port)) => {
-                let name_len: usize = name.len();
-                Domain::parse_vec_prefix(text, name_len)
-                    .map(|domain| domain.to_endpoint(port))
-                    .map_err(|text| InvalidAddressError::new(text, InvalidDomain))
-            }
-            Err(error) => Err(InvalidAddressError::new(text, error)),
-        }
-    }
-}
 
 #[cfg(test)]
 mod tests {
@@ -131,40 +126,6 @@ mod tests {
         }
     }
 
-    #[test]
-    fn try_from_vec() {
-        let test_cases: &[(&str, Result<Endpoint, ParseError>)] = &[
-            (
-                "localhost:80",
-                Ok(DomainRef::LOCALHOST.to_domain().to_endpoint(80)),
-            ),
-            (
-                "LocalHost:80",
-                Ok(DomainRef::LOCALHOST.to_domain().to_endpoint(80)),
-            ),
-            ("Local!Host:80", Err(InvalidDomain)),
-            ("localhost:", Err(InvalidPort)),
-            ("localhost:99999", Err(InvalidPort)),
-        ];
-
-        for (input, expected) in test_cases {
-            let result: Result<Endpoint, InvalidAddressError<Vec<u8>>> =
-                Endpoint::try_from(Vec::from(*input));
-            match result {
-                Ok(value) => assert_eq!(Ok(value), *expected, "input={}", input),
-                Err(error) => {
-                    assert_eq!(Err(error.error()), *expected, "input={}", input);
-                    assert_eq!(
-                        error.into_value().as_slice(),
-                        input.as_bytes(),
-                        "recovered input={}",
-                        input
-                    );
-                }
-            }
-        }
-    }
-
     /// Mixed-case domain names are lowercased on every owned parse path.
     #[test]
     fn normalizes_case() {
@@ -190,14 +151,6 @@ mod tests {
                 endpoint.to_string(),
                 *expected,
                 "try_from(String) input={}",
-                input
-            );
-
-            let endpoint: Endpoint = Endpoint::try_from(Vec::from(*input)).unwrap();
-            assert_eq!(
-                endpoint.to_string(),
-                *expected,
-                "try_from(Vec<u8>) input={}",
                 input
             );
         }
