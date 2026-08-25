@@ -4,13 +4,15 @@ use std::net::{SocketAddr, SocketAddrV4, SocketAddrV6};
 impl SocketAddress {
     //! Standard Library Conversions
 
-    /// Converts the address to a standard library address with a zero `flow_info` and `scope_id` for IPv6 addresses.
+    /// Converts the address to a standard library address with a zero `flow_info` and `scope_id`
+    /// for IPv6 addresses.
     #[must_use]
     pub const fn to_std(self) -> SocketAddr {
         self.to_std_with(0, 0)
     }
 
-    /// Converts the address to a standard library address with the `flow_info` and `scope_id` for IPv6 addresses.
+    /// Converts the address to a standard library address with the `flow_info` and `scope_id` for
+    /// IPv6 addresses.
     #[must_use]
     pub const fn to_std_with(self, flow_info: u32, scope_id: u32) -> SocketAddr {
         match self.ip() {

@@ -6,7 +6,8 @@ impl<'a> AuthorityRef<'a> {
     //! Parse
 
     /// A host & a decimal port; an IPv6 host must be bracketed: `localhost:80` or `[::1]:80`.
-    /// Domain names must already be in lowercase. Use [`Authority`](crate::Authority) to parse mixed-case input.
+    /// Domain names must already be in lowercase. Use [`Authority`](crate::Authority) to parse
+    /// mixed-case input.
     /// A numeric IPv6 zone is accepted & ignored: `[fe80::1%1]:80` parses as `[fe80::1]:80`.
     pub fn parse_text(text: &'a [u8]) -> Result<Self, ParseError> {
         let (host, port): (&[u8], u16) = parse_port(text)?;
@@ -27,7 +28,8 @@ impl<'a> AuthorityRef<'a> {
 impl_parse_ref!(
     AuthorityRef,
     "A host & a decimal port; an IPv6 host must be bracketed: `localhost:80` or `[::1]:80`.",
-    "Domain names must already be in lowercase. Use [`Authority`](crate::Authority) to parse mixed-case input.",
+    "Domain names must already be in lowercase.",
+    "Use [`Authority`](crate::Authority) to parse mixed-case input.",
     "A numeric IPv6 zone is accepted & ignored: `[fe80::1%1]:80` parses as `[fe80::1]:80`."
 );
 

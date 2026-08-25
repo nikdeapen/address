@@ -6,7 +6,8 @@ use std::str::FromStr;
 ///
 /// Returns `(text_without_last_colon, port)`.
 ///
-/// The port must be decimal digits only, with no sign. Leading zeros are allowed to match the standard library.
+/// The port must be decimal digits only, with no sign. Leading zeros are allowed to match the
+/// standard library.
 /// The digit check runs first, so the port is known to be ASCII before it is read as a string.
 ///
 /// # Examples
@@ -74,8 +75,8 @@ mod tests {
         }
     }
 
-    /// Non-UTF-8 bytes reach `parse_port` through the `&[u8]` parse impls; the digit check must reject them
-    /// before the port is read as a string.
+    /// Non-UTF-8 bytes reach `parse_port` through the `&[u8]` parse impls; the digit check must
+    /// reject them before the port is read as a string.
     #[test]
     fn non_utf8_ports() {
         let test_cases: &[&[u8]] = &[b":\xFF", b":8\xFF", b"localhost:\xFF", b":\xC3\xA9"];

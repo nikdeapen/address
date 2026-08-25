@@ -5,7 +5,8 @@ impl<'a> DomainRef<'a> {
     //! Parse
 
     /// Dot-separated labels of ASCII letters, digits, & dashes. (see [`Domain::is_valid_name`])
-    /// The name must already be in lowercase. Use [`Domain`](crate::Domain) to parse mixed-case input.
+    /// The name must already be in lowercase. Use [`Domain`](crate::Domain) to parse mixed-case
+    /// input.
     pub fn parse_text(text: &'a [u8]) -> Result<Self, ParseError> {
         if Domain::is_valid_name(text) {
             let name: &str = unsafe { std::str::from_utf8_unchecked(text) };
@@ -19,7 +20,8 @@ impl<'a> DomainRef<'a> {
 impl_parse_ref!(
     DomainRef,
     "Dot-separated labels of ASCII letters, digits, & dashes. (see [`Domain::is_valid_name`])",
-    "The name must already be in lowercase. Use [`Domain`](crate::Domain) to parse mixed-case input."
+    "The name must already be in lowercase.",
+    "Use [`Domain`](crate::Domain) to parse mixed-case input."
 );
 
 #[cfg(test)]

@@ -48,7 +48,8 @@ impl TryFrom<Vec<u8>> for Host {
 
     /// A domain name or an unbracketed IP address: `localhost`, `127.0.0.1`, or `::1`.
     /// Domain names are normalized to lowercase.
-    /// The error contains the unmodified `text`, which `TryFrom<String>` soundly recovers as a string.
+    /// The error contains the unmodified `text`, which `TryFrom<String>` soundly recovers as a
+    /// string.
     fn try_from(text: Vec<u8>) -> Result<Self, Self::Error> {
         Self::parse_vec(text).map_err(|text| InvalidAddressError::new(text, InvalidHost))
     }

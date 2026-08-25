@@ -40,28 +40,32 @@ impl<'a> PartialEq<Domain> for DomainRef<'a> {
 }
 
 impl<'a> PartialEq<&str> for DomainRef<'a> {
-    /// Compares the name exactly; domain names are lowercase, so mixed-case strings are never equal.
+    /// Compares the name exactly; domain names are lowercase, so mixed-case strings are never
+    /// equal.
     fn eq(&self, other: &&str) -> bool {
         self.name == *other
     }
 }
 
 impl<'a> PartialEq<DomainRef<'a>> for &str {
-    /// Compares the name exactly; domain names are lowercase, so mixed-case strings are never equal.
+    /// Compares the name exactly; domain names are lowercase, so mixed-case strings are never
+    /// equal.
     fn eq(&self, other: &DomainRef<'a>) -> bool {
         *self == other.name
     }
 }
 
 impl<'a> PartialEq<String> for DomainRef<'a> {
-    /// Compares the name exactly; domain names are lowercase, so mixed-case strings are never equal.
+    /// Compares the name exactly; domain names are lowercase, so mixed-case strings are never
+    /// equal.
     fn eq(&self, other: &String) -> bool {
         self.name == other.as_str()
     }
 }
 
 impl<'a> PartialEq<DomainRef<'a>> for String {
-    /// Compares the name exactly; domain names are lowercase, so mixed-case strings are never equal.
+    /// Compares the name exactly; domain names are lowercase, so mixed-case strings are never
+    /// equal.
     fn eq(&self, other: &DomainRef<'a>) -> bool {
         self.as_str() == other.name
     }

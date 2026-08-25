@@ -6,7 +6,8 @@ impl Domain {
 
     /// Parses the Unicode domain `text`.
     ///
-    /// Unicode labels are converted to their ASCII A-label form, so the domain will only contain ASCII.
+    /// Unicode labels are converted to their ASCII A-label form, so the domain will only contain
+    /// ASCII.
     /// (example: `Bücher.example` becomes `xn--bcher-kva.example`)
     pub fn parse_unicode(text: &str) -> Result<Self, ParseError> {
         let name: String = idna::domain_to_ascii(text).map_err(|_| InvalidDomain)?;
