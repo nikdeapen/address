@@ -2,7 +2,9 @@
   <dictionary name="project">
     <words>
       <w>Deapen</w>
+      <w>docsrs</w>
       <w>idna</w>
+      <w>msrv</w>
       <w>rustdocflags</w>
       <w>rustfmt</w>
       <w>serde</w>
