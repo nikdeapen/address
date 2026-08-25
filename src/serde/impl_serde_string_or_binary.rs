@@ -1,7 +1,8 @@
 use crate::{IPAddress, IPv4Address, IPv6Address};
 
-/// Implements `Serialize` and `Deserialize` for an owned type that serializes as its `Display` string in
-/// human-readable formats and as the `$bin` type in other formats, converting through their `From` impls.
+/// Implements `Serialize` and `Deserialize` for an owned type that serializes as its `Display`
+/// string in human-readable formats and as the `$bin` type in other formats, converting through
+/// their `From` impls.
 macro_rules! impl_serde_string_or_binary {
     ($ty:ident, $expecting:literal, $bin:ty) => {
         impl ::serde::Serialize for crate::$ty {
@@ -132,7 +133,8 @@ mod tests {
         );
     }
 
-    /// `SocketAddress` deliberately diverges: it encodes the IP as a byte string, not the standard library's enum.
+    /// `SocketAddress` deliberately diverges: it encodes the IP as a byte string, not the standard
+    /// library's enum.
     #[test]
     fn socket_address_diverges_from_std() {
         let socket: SocketAddress = IPv4Address::LOCALHOST.to_ip().to_socket(80);

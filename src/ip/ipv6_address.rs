@@ -69,7 +69,7 @@ impl From<u128> for IPv6Address {
 
 impl From<IPv6Address> for [u8; 16] {
     fn from(ip: IPv6Address) -> Self {
-        ip.address
+        ip.address()
     }
 }
 
@@ -82,7 +82,7 @@ impl From<IPv6Address> for [u16; 8] {
 impl From<IPv6Address> for u128 {
     /// The `ip` is converted to big-endian. (`::1` -> `0x1`)
     fn from(ip: IPv6Address) -> Self {
-        Self::from_be_bytes(ip.address)
+        Self::from_be_bytes(ip.address())
     }
 }
 

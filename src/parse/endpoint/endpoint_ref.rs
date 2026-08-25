@@ -5,7 +5,8 @@ impl<'a> EndpointRef<'a> {
     //! Parse
 
     /// A domain name & a decimal port: `localhost:80`.
-    /// Domain names must already be in lowercase. Use [`Endpoint`](crate::Endpoint) to parse mixed-case input.
+    /// Domain names must already be in lowercase. Use [`Endpoint`](crate::Endpoint) to parse
+    /// mixed-case input.
     pub fn parse_text(text: &'a [u8]) -> Result<Self, ParseError> {
         let (domain, port): (&[u8], u16) = parse_port(text)?;
         let domain: DomainRef = DomainRef::parse_text(domain)?;
@@ -16,7 +17,8 @@ impl<'a> EndpointRef<'a> {
 impl_parse_ref!(
     EndpointRef,
     "A domain name & a decimal port: `localhost:80`.",
-    "Domain names must already be in lowercase. Use [`Endpoint`](crate::Endpoint) to parse mixed-case input."
+    "Domain names must already be in lowercase.",
+    "Use [`Endpoint`](crate::Endpoint) to parse mixed-case input."
 );
 
 #[cfg(test)]

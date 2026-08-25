@@ -47,7 +47,8 @@ impl TryFrom<Vec<u8>> for Authority {
     /// A host & a decimal port; an IPv6 host must be bracketed: `localhost:80` or `[::1]:80`.
     /// Domain names are normalized to lowercase.
     /// A numeric IPv6 zone is accepted & ignored: `[fe80::1%1]:80` parses as `[fe80::1]:80`.
-    /// The error contains the unmodified `text`, which `TryFrom<String>` soundly recovers as a string.
+    /// The error contains the unmodified `text`, which `TryFrom<String>` soundly recovers as a
+    /// string.
     fn try_from(text: Vec<u8>) -> Result<Self, Self::Error> {
         match parse_port(text.as_slice()) {
             Ok((host, port)) => {

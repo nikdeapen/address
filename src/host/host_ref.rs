@@ -1,6 +1,8 @@
 use crate::{DomainRef, Host, IPAddress};
 
-/// Either a [DomainRef] or an [IPAddress].
+/// A [Host] reference.
+///
+/// Only the domain name is borrowed; an [IPAddress] is `Copy`, so the `Address` variant is owned.
 #[must_use]
 #[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
 pub enum HostRef<'a> {

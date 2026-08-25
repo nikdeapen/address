@@ -3,8 +3,8 @@ use std::fmt::{Display, Formatter};
 use std::marker::PhantomData;
 use std::str::FromStr;
 
-/// A serde visitor that parses a string with `FromStr`, reusing the buffers of owned strings and byte vectors
-/// with the consuming `TryFrom` conversions.
+/// A serde visitor that parses a string with `FromStr`, reusing the buffers of owned strings and
+/// byte vectors with the consuming `TryFrom` conversions.
 pub(crate) struct FromStringVisitor<T> {
     expecting: &'static str,
     phantom: PhantomData<fn() -> T>,
@@ -75,8 +75,8 @@ mod tests {
     use serde::de::Visitor;
     use serde::de::value::{BytesDeserializer, Error as ValueError};
 
-    /// Formats that present a string as an owned byte buffer take the `visit_byte_buf` path, which is the
-    /// buffer-reusing half this visitor exists for.
+    /// Formats that present a string as an owned byte buffer take the `visit_byte_buf` path, which
+    /// is the buffer-reusing half this visitor exists for.
     #[test]
     fn visit_byte_buf() {
         let visitor: FromStringVisitor<Domain> = FromStringVisitor::new("a domain string");
@@ -93,7 +93,8 @@ mod tests {
         );
     }
 
-    /// Formats that hand the visitor borrowed bytes take the `visit_bytes` path, which must reject non-UTF-8.
+    /// Formats that hand the visitor borrowed bytes take the `visit_bytes` path, which must reject
+    /// non-UTF-8.
     #[test]
     fn visit_bytes() {
         let visitor: FromStringVisitor<Domain> = FromStringVisitor::new("a domain string");

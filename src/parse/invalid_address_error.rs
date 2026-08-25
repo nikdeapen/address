@@ -46,7 +46,8 @@ impl<T> InvalidAddressError<T> {
 impl InvalidAddressError<Vec<u8>> {
     //! String Deconstruction
 
-    /// Converts the byte vector error into a string error, debug-asserting the value kept its original `len`.
+    /// Converts the byte vector error into a string error, debug-asserting the value kept its
+    /// original `len`.
     ///
     /// # Safety
     /// The value must be valid UTF-8.

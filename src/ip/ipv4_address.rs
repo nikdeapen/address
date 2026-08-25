@@ -48,7 +48,7 @@ impl From<u32> for IPv4Address {
 
 impl From<IPv4Address> for [u8; 4] {
     fn from(ip: IPv4Address) -> Self {
-        ip.address
+        ip.address()
     }
 }
 
@@ -61,7 +61,7 @@ impl From<IPv4Address> for (u8, u8, u8, u8) {
 impl From<IPv4Address> for u32 {
     /// The `ip` is converted to big-endian. (`127.0.0.1` -> `0x7F000001`)
     fn from(ip: IPv4Address) -> Self {
-        Self::from_be_bytes(ip.address)
+        Self::from_be_bytes(ip.address())
     }
 }
 

@@ -1,4 +1,5 @@
-/// Implements `Serialize` and `Deserialize` for an owned type that serializes as its `Display` string.
+/// Implements `Serialize` and `Deserialize` for an owned type that serializes as its `Display`
+/// string.
 macro_rules! impl_serde_string {
     ($ty:ident, $expecting:literal) => {
         impl ::serde::Serialize for crate::$ty {
@@ -21,7 +22,8 @@ macro_rules! impl_serde_string {
     };
 }
 
-/// Implements `Serialize` and `Deserialize` for a reference type that serializes as its `Display` string.
+/// Implements `Serialize` and `Deserialize` for a reference type that serializes as its `Display`
+/// string.
 macro_rules! impl_serde_string_ref {
     ($ty:ident, $owned:ident, $expecting:literal) => {
         impl<'a> ::serde::Serialize for crate::$ty<'a> {
@@ -35,8 +37,8 @@ macro_rules! impl_serde_string_ref {
 
         impl<'de: 'a, 'a> ::serde::Deserialize<'de> for crate::$ty<'a> {
             #[doc = concat!(
-                "The string is borrowed from the input, so domain names must be lowercase and must not contain ",
-                "escape sequences. Use [`",
+                "The string is borrowed from the input, so domain names must be lowercase and ",
+                "must not contain escape sequences. Use [`",
                 stringify!($owned),
                 "`](crate::",
                 stringify!($owned),
@@ -126,7 +128,8 @@ mod tests {
         assert_eq!(serde_json::to_string(&authority).unwrap(), json);
     }
 
-    /// The owned types normalize mixed case; the reference types cannot, because they borrow the input.
+    /// The owned types normalize mixed case; the reference types cannot, because they borrow the
+    /// input.
     #[test]
     fn mixed_case() {
         let domain: Domain = serde_json::from_str("\"LocalHost\"").unwrap();
@@ -139,7 +142,8 @@ mod tests {
         assert!(serde_json::from_str::<AuthorityRef>("\"LocalHost:80\"").is_err());
     }
 
-    /// `h` is `h`: the owned types accept escaped input, the reference types cannot borrow through it.
+    /// `h` is `h`: the owned types accept escaped input, the reference types cannot borrow through
+    /// it.
     #[test]
     fn escaped_input() {
         let json: &str = "\"local\\u0068ost\"";

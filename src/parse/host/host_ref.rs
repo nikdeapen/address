@@ -5,7 +5,8 @@ impl<'a> HostRef<'a> {
     //! Parse
 
     /// A domain name or an unbracketed IP address: `localhost`, `127.0.0.1`, or `::1`.
-    /// Domain names must already be in lowercase. Use [`Host`](crate::Host) to parse mixed-case input.
+    /// Domain names must already be in lowercase. Use [`Host`](crate::Host) to parse mixed-case
+    /// input.
     pub fn parse_text(text: &'a [u8]) -> Result<Self, ParseError> {
         if let Ok(ip) = IPAddress::parse_text(text) {
             Ok(ip.to_host_ref())
@@ -20,7 +21,8 @@ impl<'a> HostRef<'a> {
 impl_parse_ref!(
     HostRef,
     "A domain name or an unbracketed IP address: `localhost`, `127.0.0.1`, or `::1`.",
-    "Domain names must already be in lowercase. Use [`Host`](crate::Host) to parse mixed-case input."
+    "Domain names must already be in lowercase.",
+    "Use [`Host`](crate::Host) to parse mixed-case input."
 );
 
 #[cfg(test)]

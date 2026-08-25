@@ -56,7 +56,8 @@ impl TryFrom<Vec<u8>> for Domain {
 
     /// Dot-separated labels of ASCII letters, digits, & dashes. (see [`Domain::is_valid_name`])
     /// The name is normalized to lowercase.
-    /// The error contains the unmodified `text`, which `TryFrom<String>` soundly recovers as a string.
+    /// The error contains the unmodified `text`, which `TryFrom<String>` soundly recovers as a
+    /// string.
     fn try_from(text: Vec<u8>) -> Result<Self, Self::Error> {
         let len: usize = text.len();
         Self::parse_vec_prefix(text, len)

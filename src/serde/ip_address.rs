@@ -17,7 +17,8 @@ impl Serialize for IPAddress {
     }
 }
 
-/// A serde visitor that matches a byte string's length: 4 bytes for an IPv4 address, 16 bytes for an IPv6 address.
+/// A serde visitor that matches a byte string's length: 4 bytes for an IPv4 address, 16 bytes for
+/// an IPv6 address.
 struct IPAddressBytesVisitor;
 
 impl<'de> Visitor<'de> for IPAddressBytesVisitor {
@@ -85,7 +86,8 @@ mod tests {
         assert_json(IPv4Address::BROADCAST.to_ip(), "\"255.255.255.255\"");
     }
 
-    /// The binary form is a byte string whose length selects the version, not the standard library's enum tag.
+    /// The binary form is a byte string whose length selects the version, not the standard
+    /// library's enum tag.
     #[test]
     fn postcard() {
         let bytes: Vec<u8> = assert_postcard(IPv4Address::LOCALHOST.to_ip());

@@ -31,7 +31,8 @@ impl TryFrom<Vec<u8>> for Endpoint {
 
     /// A domain name & a decimal port: `localhost:80`.
     /// Domain names are normalized to lowercase.
-    /// The error contains the unmodified `text`, which `TryFrom<String>` soundly recovers as a string.
+    /// The error contains the unmodified `text`, which `TryFrom<String>` soundly recovers as a
+    /// string.
     fn try_from(text: Vec<u8>) -> Result<Self, Self::Error> {
         match parse_port(text.as_slice()) {
             Ok((name, port)) => {

@@ -23,7 +23,8 @@ macro_rules! impl_parse {
 
 /// Implements `TryFrom<String>` for an owned type, delegating to its byte-vector parser.
 ///
-/// The byte-vector parser must leave the value unmodified on failure, which is what makes the recovered `String` sound.
+/// The byte-vector parser must leave the value unmodified on failure, which is what makes the
+/// recovered `String` sound.
 macro_rules! impl_parse_string {
     ($ty:ident $(, $doc:expr)*) => {
         impl TryFrom<String> for crate::$ty {
@@ -32,7 +33,8 @@ macro_rules! impl_parse_string {
             $(#[doc = $doc])*
             fn try_from(value: String) -> Result<Self, Self::Error> {
                 let len: usize = value.len();
-                Self::try_from(value.into_bytes()).map_err(|error| unsafe { error.into_string_unchecked(len) })
+                Self::try_from(value.into_bytes())
+                    .map_err(|error| unsafe { error.into_string_unchecked(len) })
             }
         }
     };

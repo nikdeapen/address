@@ -6,7 +6,8 @@ use std::str::FromStr;
 impl IPv6Address {
     //! Parse
 
-    /// The maximum length of an IPv6 address string. (ffff:ffff:ffff:ffff:ffff:ffff:255.255.255.255)
+    /// The maximum length of an IPv6 address string.
+    /// (ffff:ffff:ffff:ffff:ffff:ffff:255.255.255.255)
     const MAX_STR_LEN: usize = 45;
 
     /// Parses the IPv6 address text.
@@ -22,9 +23,9 @@ impl IPv6Address {
 
     /// Parses the bracketed IPv6 address text, ignoring an optional numeric zone.
     ///
-    /// Returns `None` if the address is not bracketed. A bracketed address with an invalid interior, the zone
-    /// included, is `Some(Err(InvalidIPv6Address))`: the brackets declare the version, so the error blames the
-    /// IPv6 address rather than the caller's own variant.
+    /// Returns `None` if the address is not bracketed. A bracketed address with an invalid
+    /// interior, the zone included, is `Some(Err(InvalidIPv6Address))`: the brackets declare the
+    /// version, so the error blames the IPv6 address rather than the caller's own variant.
     pub(crate) fn parse_bracketed(text: &[u8]) -> Option<Result<Self, ParseError>> {
         let text: &[u8] = Self::strip_brackets(text)?;
         if let Some(text) = Self::strip_zone(text) {
@@ -49,9 +50,9 @@ impl IPv6Address {
 
     /// Strips the ignored zone suffix from the `text`, the inner text of a bracketed IPv6 address.
     ///
-    /// Returns the text unchanged if there is no `%`. The zone must be a decimal `u32`, with no sign; leading
-    /// zeros are allowed, matching the scope ids accepted by the standard library socket parser. Returns `None` if
-    /// the zone is invalid.
+    /// Returns the text unchanged if there is no `%`. The zone must be a decimal `u32`, with no
+    /// sign; leading zeros are allowed, matching the scope ids accepted by the standard library
+    /// socket parser. Returns `None` if the zone is invalid.
     ///
     /// The digit check runs first, so the zone is known to be ASCII before it is read as a string.
     ///
@@ -148,7 +149,8 @@ mod tests {
         }
     }
 
-    /// The bare address takes neither brackets nor a zone; only the bracketed socket parsers accept those.
+    /// The bare address takes neither brackets nor a zone; only the bracketed socket parsers accept
+    /// those.
     #[test]
     fn rejects_brackets_and_zones() {
         let test_cases: &[&str] = &[
