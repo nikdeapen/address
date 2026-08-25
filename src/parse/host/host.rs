@@ -16,13 +16,14 @@ impl Host {
         }
     }
 
-    /// Creates a host from the first `len` bytes of `text`, normalizing domain names to lowercase.
+    /// Creates a host from the `text`, normalizing domain names to lowercase.
     ///
-    /// Returns the unmodified `text` if the prefix is not a valid host.
-    pub(crate) fn parse_vec_prefix(text: Vec<u8>, len: usize) -> Result<Self, Vec<u8>> {
-        if let Ok(ip) = IPAddress::parse_text(&text[..len]) {
+    /// Returns the unmodified `text` if it is not a valid host.
+    pub(crate) fn parse_vec(text: Vec<u8>) -> Result<Self, Vec<u8>> {
+        if let Ok(ip) = IPAddress::parse_text(text.as_slice()) {
             Ok(ip.to_host())
         } else {
+            let len: usize = text.len();
             Domain::parse_vec_prefix(text, len).map(Domain::to_host)
         }
     }
@@ -47,8 +48,7 @@ impl TryFrom<Vec<u8>> for Host {
     /// Domain names are normalized to lowercase.
     /// The error contains the unmodified `text`, which `TryFrom<String>` soundly recovers as a string.
     fn try_from(text: Vec<u8>) -> Result<Self, Self::Error> {
-        let len: usize = text.len();
-        Self::parse_vec_prefix(text, len).map_err(|text| InvalidAddressError::new(text, InvalidHost))
+        Self::parse_vec(text).map_err(|text| InvalidAddressError::new(text, InvalidHost))
     }
 }
 
