@@ -42,11 +42,7 @@ impl IPv6Address {
     /// `::1`     -> `None`
     /// `[::1`    -> `None`
     fn strip_brackets(text: &[u8]) -> Option<&[u8]> {
-        if !text.is_empty() && text[0] == b'[' && text[text.len() - 1] == b']' {
-            Some(&text[1..text.len() - 1])
-        } else {
-            None
-        }
+        text.strip_prefix(b"[")?.strip_suffix(b"]")
     }
 
     /// Strips the ignored zone suffix from the `text`, the inner text of a bracketed IPv6 address.
