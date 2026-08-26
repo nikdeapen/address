@@ -10,7 +10,6 @@ updates:
     directory: /
     schedule:
       interval: monthly
-    # One grouped PR: the lock file is dev-only, so a PR per transitive crate is pure churn.
     groups:
       cargo:
         patterns:
