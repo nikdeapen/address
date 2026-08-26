@@ -61,8 +61,13 @@ jobs:
     steps:
       - name: Git Checkout
         uses: actions/checkout@v7
+      - name: Read MSRV
+        id: msrv
+        run: echo "version=$(grep '^rust-version' Cargo.toml | cut -d'"' -f2)" >> "$GITHUB_OUTPUT"
       - name: Install Rust
-        uses: dtolnay/rust-toolchain@1.88.0
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ steps.msrv.outputs.version }}
       - name: Cache
         uses: Swatinem/rust-cache@v2
         with:
