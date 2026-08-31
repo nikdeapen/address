@@ -66,92 +66,51 @@ mod tests {
     use crate::{Domain, InvalidAddressError, ParseError};
     use std::str::FromStr;
 
-    #[test]
-    fn from_str() {
-        let test_cases: &[(&str, Result<Domain, ParseError>)] = &[
-            ("localhost", Ok(Domain::localhost())),
-            ("LocalHost", Ok(Domain::localhost())),
-            ("Local!Host", Err(InvalidDomain)),
-        ];
+    type TestCase<'a> = (&'a [u8], Result<Domain, ParseError>);
 
-        for (input, expected) in test_cases {
-            let result: Result<Domain, ParseError> = Domain::from_str(input);
-            assert_eq!(result, *expected, "input={}", input);
-        }
+    /// Builds the expected domain for the canonical `name`.
+    fn domain(name: &str) -> Domain {
+        Domain::try_from(name).unwrap()
     }
 
+    /// Every entry point must agree on every case; the owned ones normalize case.
     #[test]
-    fn try_from_str() {
-        let test_cases: &[(&str, Result<Domain, ParseError>)] = &[
-            ("localhost", Ok(Domain::localhost())),
-            ("LocalHost", Ok(Domain::localhost())),
-            ("Local!Host", Err(InvalidDomain)),
-        ];
-
-        for (input, expected) in test_cases {
-            let result: Result<Domain, ParseError> = Domain::try_from(*input);
-            assert_eq!(result, *expected, "input={}", input);
-        }
-    }
-
-    #[test]
-    fn parse_text() {
-        let test_cases: &[(&[u8], Result<Domain, ParseError>)] = &[
-            ("localhost".as_bytes(), Ok(Domain::localhost())),
-            ("LocalHost".as_bytes(), Ok(Domain::localhost())),
-            (b"\xFF".as_slice(), Err(InvalidDomain)),
+    fn parse() {
+        let test_cases: &[TestCase] = &[
+            (b"", Err(InvalidDomain)),
+            (b"localhost", Ok(Domain::localhost())),
+            (b"LocalHost", Ok(Domain::localhost())),
+            (b"WWW.Example.COM", Ok(domain("www.example.com"))),
+            (b"A-B.C--D.EXAMPLE", Ok(domain("a-b.c--d.example"))),
+            (b"123.EXAMPLE", Ok(domain("123.example"))),
+            (b"Local!Host", Err(InvalidDomain)),
+            (b"Local_Host", Err(InvalidDomain)),
+            (b"127.0.0.1", Err(InvalidDomain)),
+            (b"\xFF", Err(InvalidDomain)),
             ("ü".as_bytes(), Err(InvalidDomain)),
         ];
 
         for (input, expected) in test_cases {
             let result: Result<Domain, ParseError> = Domain::parse_text(input);
-            assert_eq!(result, *expected, "input={:?}", input);
-        }
-    }
+            assert_eq!(result, *expected, "parse_text input={:?}", input);
 
-    #[test]
-    fn try_from_string() {
-        let test_cases: &[(&str, Result<Domain, ParseError>)] = &[
-            ("localhost", Ok(Domain::localhost())),
-            ("LocalHost", Ok(Domain::localhost())),
-            ("Local!Host", Err(InvalidDomain)),
-        ];
+            let Ok(text) = std::str::from_utf8(input) else {
+                continue;
+            };
 
-        for (input, expected) in test_cases {
+            let result: Result<Domain, ParseError> = Domain::from_str(text);
+            assert_eq!(result, *expected, "from_str input={}", text);
+
+            let result: Result<Domain, ParseError> = Domain::try_from(text);
+            assert_eq!(result, *expected, "try_from(&str) input={}", text);
+
             let result: Result<Domain, InvalidAddressError<String>> =
-                Domain::try_from(input.to_string());
-            match result {
-                Ok(value) => assert_eq!(Ok(value), *expected, "input={}", input),
-                Err(error) => {
-                    assert_eq!(error.value().as_str(), *input, "recovered input={}", input);
-                    assert_eq!(Err(error.error()), *expected, "input={}", input);
-                }
-            }
-        }
-    }
-
-    /// Mixed-case input is lowercased on every owned parse path, dots and dashes intact.
-    #[test]
-    fn normalizes_case() {
-        let test_cases: &[(&str, &str)] = &[
-            ("LocalHost", "localhost"),
-            ("WWW.Example.COM", "www.example.com"),
-            ("A-B.C--D.EXAMPLE", "a-b.c--d.example"),
-            ("123.EXAMPLE", "123.example"),
-        ];
-
-        for (input, expected) in test_cases {
-            let domain: Domain = input.parse().unwrap();
-            assert_eq!(domain, *expected, "from_str input={}", input);
-
-            let domain: Domain = Domain::try_from(*input).unwrap();
-            assert_eq!(domain, *expected, "try_from(&str) input={}", input);
-
-            let domain: Domain = Domain::parse_text(input.as_bytes()).unwrap();
-            assert_eq!(domain, *expected, "parse_text input={}", input);
-
-            let domain: Domain = Domain::try_from(input.to_string()).unwrap();
-            assert_eq!(domain, *expected, "try_from(String) input={}", input);
+                Domain::try_from(text.to_string());
+            let result: Result<Domain, ParseError> = result.map_err(|error| {
+                assert_eq!(error.value().as_str(), text, "recovered input={}", text);
+                error.error()
+            });
+            assert_eq!(result, *expected, "try_from(String) input={}", text);
         }
     }
 

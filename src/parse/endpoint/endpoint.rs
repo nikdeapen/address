@@ -44,115 +44,58 @@ impl_parse_string!(
 #[cfg(test)]
 mod tests {
     use crate::ParseError::{InvalidDomain, InvalidPort};
-    use crate::{DomainRef, Endpoint, InvalidAddressError, ParseError};
+    use crate::{Domain, Endpoint, InvalidAddressError, ParseError};
     use std::str::FromStr;
 
+    type TestCase<'a> = (&'a [u8], Result<Endpoint, ParseError>);
+
+    /// Builds the expected endpoint for the canonical domain `name` & `port`.
+    fn endpoint(name: &str, port: u16) -> Endpoint {
+        Domain::try_from(name).unwrap().to_endpoint(port)
+    }
+
+    /// Every entry point must agree on every case; the owned ones normalize case.
     #[test]
-    fn from_str() {
-        let test_cases: &[(&str, Result<Endpoint, ParseError>)] = &[
-            ("", Err(InvalidPort)),
-            ("localhost:", Err(InvalidPort)),
-            ("localhost:xx", Err(InvalidPort)),
-            (":80", Err(InvalidDomain)),
-            ("[localhost]:80", Err(InvalidDomain)),
-            (
-                "localhost:80",
-                Ok(DomainRef::LOCALHOST.to_domain().to_endpoint(80)),
-            ),
-            (
-                "LocalHost:80",
-                Ok(DomainRef::LOCALHOST.to_domain().to_endpoint(80)),
-            ),
-            ("Local_Host:80", Err(InvalidDomain)),
+    fn parse() {
+        let test_cases: &[TestCase] = &[
+            (b"", Err(InvalidPort)),
+            (b"localhost", Err(InvalidPort)),
+            (b"localhost:", Err(InvalidPort)),
+            (b"localhost:xx", Err(InvalidPort)),
+            (b"localhost:99999", Err(InvalidPort)),
+            (b"localhost:80", Ok(endpoint("localhost", 80))),
+            (b"LocalHost:80", Ok(endpoint("localhost", 80))),
+            (b"WWW.Example.COM:443", Ok(endpoint("www.example.com", 443))),
+            (b":80", Err(InvalidDomain)),
+            (b"[localhost]:80", Err(InvalidDomain)),
+            (b"Local_Host:80", Err(InvalidDomain)),
+            (b"Local!Host:80", Err(InvalidDomain)),
+            (b"127.0.0.1:80", Err(InvalidDomain)),
+            (b"\xFF:80", Err(InvalidDomain)),
+            ("ü:80".as_bytes(), Err(InvalidDomain)),
         ];
 
         for (input, expected) in test_cases {
-            let result: Result<Endpoint, ParseError> = Endpoint::from_str(input);
-            assert_eq!(result, *expected, "input={}", input);
-        }
-    }
+            let result: Result<Endpoint, ParseError> = Endpoint::parse_text(input);
+            assert_eq!(result, *expected, "parse_text input={:?}", input);
 
-    #[test]
-    fn try_from_str() {
-        let result: Result<Endpoint, ParseError> = Endpoint::try_from("localhost:80");
-        let expected: Result<Endpoint, ParseError> =
-            Ok(DomainRef::LOCALHOST.to_domain().to_endpoint(80));
-        assert_eq!(result, expected);
+            let Ok(text) = std::str::from_utf8(input) else {
+                continue;
+            };
 
-        let result: Result<Endpoint, ParseError> = Endpoint::try_from("LocalHost:80");
-        let expected: Result<Endpoint, ParseError> =
-            Ok(DomainRef::LOCALHOST.to_domain().to_endpoint(80));
-        assert_eq!(result, expected);
-    }
+            let result: Result<Endpoint, ParseError> = Endpoint::from_str(text);
+            assert_eq!(result, *expected, "from_str input={}", text);
 
-    #[test]
-    fn parse_text() {
-        let result: Result<Endpoint, ParseError> = Endpoint::parse_text("LocalHost:80".as_bytes());
-        let expected: Result<Endpoint, ParseError> =
-            Ok(DomainRef::LOCALHOST.to_domain().to_endpoint(80));
-        assert_eq!(result, expected);
+            let result: Result<Endpoint, ParseError> = Endpoint::try_from(text);
+            assert_eq!(result, *expected, "try_from(&str) input={}", text);
 
-        let result: Result<Endpoint, ParseError> = Endpoint::parse_text(b"\xFF:80".as_slice());
-        let expected: Result<Endpoint, ParseError> = Err(InvalidDomain);
-        assert_eq!(result, expected);
-    }
-
-    #[test]
-    fn try_from_string() {
-        let test_cases: &[(&str, Result<Endpoint, ParseError>)] = &[
-            (
-                "localhost:80",
-                Ok(DomainRef::LOCALHOST.to_domain().to_endpoint(80)),
-            ),
-            (
-                "LocalHost:80",
-                Ok(DomainRef::LOCALHOST.to_domain().to_endpoint(80)),
-            ),
-            ("Local!Host:80", Err(InvalidDomain)),
-            ("localhost:", Err(InvalidPort)),
-            ("localhost:99999", Err(InvalidPort)),
-        ];
-
-        for (input, expected) in test_cases {
             let result: Result<Endpoint, InvalidAddressError<String>> =
-                Endpoint::try_from(input.to_string());
-            match result {
-                Ok(value) => assert_eq!(Ok(value), *expected, "input={}", input),
-                Err(error) => {
-                    assert_eq!(error.value().as_str(), *input, "recovered input={}", input);
-                    assert_eq!(Err(error.error()), *expected, "input={}", input);
-                }
-            }
-        }
-    }
-
-    /// Mixed-case domain names are lowercased on every owned parse path.
-    #[test]
-    fn normalizes_case() {
-        let test_cases: &[(&str, &str)] = &[
-            ("LocalHost:80", "localhost:80"),
-            ("WWW.Example.COM:443", "www.example.com:443"),
-        ];
-
-        for (input, expected) in test_cases {
-            let endpoint: Endpoint = input.parse().unwrap();
-            assert_eq!(endpoint.to_string(), *expected, "from_str input={}", input);
-
-            let endpoint: Endpoint = Endpoint::parse_text(input.as_bytes()).unwrap();
-            assert_eq!(
-                endpoint.to_string(),
-                *expected,
-                "parse_text input={}",
-                input
-            );
-
-            let endpoint: Endpoint = Endpoint::try_from(input.to_string()).unwrap();
-            assert_eq!(
-                endpoint.to_string(),
-                *expected,
-                "try_from(String) input={}",
-                input
-            );
+                Endpoint::try_from(text.to_string());
+            let result: Result<Endpoint, ParseError> = result.map_err(|error| {
+                assert_eq!(error.value().as_str(), text, "recovered input={}", text);
+                error.error()
+            });
+            assert_eq!(result, *expected, "try_from(String) input={}", text);
         }
     }
 

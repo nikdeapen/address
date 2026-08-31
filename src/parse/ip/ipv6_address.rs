@@ -88,23 +88,40 @@ mod tests {
     use crate::{IPv6Address, ParseError};
     use std::str::FromStr;
 
+    type TestCase<'a> = (&'a [u8], Result<IPv6Address, ParseError>);
+
+    /// Every entry point must agree on every case, the length & UTF-8 guards included. The bare
+    /// address takes neither brackets nor a zone; only the bracketed socket parsers accept those.
     #[test]
     fn parse() {
-        let test_cases: &[(&str, Result<IPv6Address, ParseError>)] = &[
-            ("", Err(InvalidIPv6Address)),
-            ("::", Ok(IPv6Address::UNSPECIFIED)),
-            ("::1", Ok(IPv6Address::LOCALHOST)),
+        let over_max: Vec<u8> = vec![b'0'; IPv6Address::MAX_STR_LEN + 1];
+        let test_cases: &[TestCase] = &[
+            (b"", Err(InvalidIPv6Address)),
+            (b"::", Ok(IPv6Address::UNSPECIFIED)),
+            (b"::1", Ok(IPv6Address::LOCALHOST)),
+            (b"[::1]", Err(InvalidIPv6Address)),
+            (b"[fe80::1]", Err(InvalidIPv6Address)),
+            (b"[fe80::1%1]", Err(InvalidIPv6Address)),
+            (b"fe80::1%1", Err(InvalidIPv6Address)),
+            (b"fe80::1%0", Err(InvalidIPv6Address)),
+            (b"::\xFF", Err(InvalidIPv6Address)),
+            (b"\xFF\xFF", Err(InvalidIPv6Address)),
+            (over_max.as_slice(), Err(InvalidIPv6Address)),
         ];
 
         for (input, expected) in test_cases {
-            let result: Result<IPv6Address, ParseError> = IPv6Address::from_str(input);
-            assert_eq!(result, *expected, "input={}", input);
+            let result: Result<IPv6Address, ParseError> = IPv6Address::parse_text(input);
+            assert_eq!(result, *expected, "parse_text input={:?}", input);
 
-            let result: Result<IPv6Address, ParseError> = IPv6Address::try_from(*input);
-            assert_eq!(result, *expected, "input={}", input);
+            let Ok(text) = std::str::from_utf8(input) else {
+                continue;
+            };
 
-            let result: Result<IPv6Address, ParseError> = IPv6Address::parse_text(input.as_bytes());
-            assert_eq!(result, *expected, "input={}", input);
+            let result: Result<IPv6Address, ParseError> = IPv6Address::from_str(text);
+            assert_eq!(result, *expected, "from_str input={}", text);
+
+            let result: Result<IPv6Address, ParseError> = IPv6Address::try_from(text);
+            assert_eq!(result, *expected, "try_from(&str) input={}", text);
         }
     }
 
@@ -146,36 +163,6 @@ mod tests {
             let result: Option<&[u8]> = IPv6Address::strip_zone(input.as_bytes());
             let expected: Option<&[u8]> = expected.map(str::as_bytes);
             assert_eq!(result, expected, "input={}", input);
-        }
-    }
-
-    /// The bare address takes neither brackets nor a zone; only the bracketed socket parsers accept
-    /// those.
-    #[test]
-    fn rejects_brackets_and_zones() {
-        let test_cases: &[&str] = &[
-            "[::1]",
-            "[fe80::1]",
-            "fe80::1%1",
-            "fe80::1%0",
-            "[fe80::1%1]",
-        ];
-
-        for input in test_cases {
-            let result: Result<IPv6Address, ParseError> = IPv6Address::from_str(input);
-            assert_eq!(result, Err(InvalidIPv6Address), "input={}", input);
-        }
-    }
-
-    /// The length guard & the UTF-8 check run before the text is read as a string.
-    #[test]
-    fn parse_text_guards() {
-        let over_max: Vec<u8> = vec![b'0'; IPv6Address::MAX_STR_LEN + 1];
-        let test_cases: &[&[u8]] = &[over_max.as_slice(), b"::\xFF", b"\xFF\xFF"];
-
-        for input in test_cases {
-            let result: Result<IPv6Address, ParseError> = IPv6Address::parse_text(input);
-            assert_eq!(result, Err(InvalidIPv6Address), "input={:?}", input);
         }
     }
 

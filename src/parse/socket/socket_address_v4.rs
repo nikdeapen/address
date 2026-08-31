@@ -23,49 +23,43 @@ mod tests {
     use crate::{IPv4Address, ParseError, SocketAddressV4};
     use std::str::FromStr;
 
+    type TestCase<'a> = (&'a [u8], Result<SocketAddressV4, ParseError>);
+
+    /// Every entry point must agree on every case, non-UTF-8 bytes included.
     #[test]
     fn parse() {
-        let test_cases: &[(&str, Result<SocketAddressV4, ParseError>)] = &[
-            ("", Err(InvalidPort)),
-            ("127.0.0.1:", Err(InvalidPort)),
-            ("127.0.0.1:xx", Err(InvalidPort)),
-            (":80", Err(InvalidIPv4Address)),
-            ("xx:80", Err(InvalidIPv4Address)),
-            ("127.0.0.1:80", Ok(IPv4Address::LOCALHOST.to_socket(80))),
+        let test_cases: &[TestCase] = &[
+            (b"", Err(InvalidPort)),
+            (b"127.0.0.1:", Err(InvalidPort)),
+            (b"127.0.0.1:xx", Err(InvalidPort)),
+            (b"127.0.0.1:65536", Err(InvalidPort)),
+            (b"127.0.0.1:\xFF", Err(InvalidPort)),
+            (b"127.0.0.1:80", Ok(IPv4Address::LOCALHOST.to_socket(80))),
             (
-                "127.0.0.1:65535",
+                b"127.0.0.1:65535",
                 Ok(IPv4Address::LOCALHOST.to_socket(65535)),
             ),
-            ("127.0.0.1:65536", Err(InvalidPort)),
-            ("[127.0.0.1]:80", Err(InvalidIPv4Address)),
-            ("::1:80", Err(InvalidIPv4Address)),
-        ];
-
-        for (input, expected) in test_cases {
-            let result: Result<SocketAddressV4, ParseError> = SocketAddressV4::from_str(input);
-            assert_eq!(result, *expected, "input={}", input);
-
-            let result: Result<SocketAddressV4, ParseError> = SocketAddressV4::try_from(*input);
-            assert_eq!(result, *expected, "input={}", input);
-
-            let result: Result<SocketAddressV4, ParseError> =
-                SocketAddressV4::parse_text(input.as_bytes());
-            assert_eq!(result, *expected, "input={}", input);
-        }
-    }
-
-    /// Non-UTF-8 bytes reach the parser through the public `parse_text`.
-    #[test]
-    fn parse_text_non_utf8() {
-        let test_cases: &[(&[u8], ParseError)] = &[
-            (b"\xFF:80", InvalidIPv4Address),
-            (b"127.0.0.\xFF:80", InvalidIPv4Address),
-            (b"127.0.0.1:\xFF", InvalidPort),
+            (b":80", Err(InvalidIPv4Address)),
+            (b"xx:80", Err(InvalidIPv4Address)),
+            (b"[127.0.0.1]:80", Err(InvalidIPv4Address)),
+            (b"::1:80", Err(InvalidIPv4Address)),
+            (b"\xFF:80", Err(InvalidIPv4Address)),
+            (b"127.0.0.\xFF:80", Err(InvalidIPv4Address)),
         ];
 
         for (input, expected) in test_cases {
             let result: Result<SocketAddressV4, ParseError> = SocketAddressV4::parse_text(input);
-            assert_eq!(result, Err(*expected), "input={:?}", input);
+            assert_eq!(result, *expected, "parse_text input={:?}", input);
+
+            let Ok(text) = std::str::from_utf8(input) else {
+                continue;
+            };
+
+            let result: Result<SocketAddressV4, ParseError> = SocketAddressV4::from_str(text);
+            assert_eq!(result, *expected, "from_str input={}", text);
+
+            let result: Result<SocketAddressV4, ParseError> = SocketAddressV4::try_from(text);
+            assert_eq!(result, *expected, "try_from(&str) input={}", text);
         }
     }
 

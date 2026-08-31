@@ -30,69 +30,63 @@ mod tests {
     use crate::{IPv4Address, IPv6Address, ParseError, SocketAddress};
     use std::str::FromStr;
 
+    type TestCase<'a> = (&'a [u8], Result<SocketAddress, ParseError>);
+
+    /// Every entry point must agree on every case, non-UTF-8 bytes included.
     #[test]
     fn parse() {
-        let test_cases: &[(&str, Result<SocketAddress, ParseError>)] = &[
-            ("", Err(InvalidPort)),
-            ("[::1]:", Err(InvalidPort)),
-            ("[::1]:xx", Err(InvalidPort)),
-            (":80", Err(InvalidSocketAddress)),
-            ("xx:80", Err(InvalidSocketAddress)),
-            ("::1:80", Err(InvalidSocketAddress)),
-            ("[]:80", Err(InvalidIPv6Address)),
-            ("[xx]:80", Err(InvalidIPv6Address)),
-            ("[::1%eth0]:80", Err(InvalidIPv6Address)),
+        let test_cases: &[TestCase] = &[
+            (b"", Err(InvalidPort)),
+            (b"[::1]:", Err(InvalidPort)),
+            (b"[::1]:xx", Err(InvalidPort)),
+            (b"127.0.0.1:65536", Err(InvalidPort)),
+            (b"127.0.0.1:\xFF", Err(InvalidPort)),
             (
-                "127.0.0.1:80",
+                b"127.0.0.1:80",
                 Ok(IPv4Address::LOCALHOST.to_ip().to_socket(80)),
             ),
             (
-                "0.0.0.0:0",
+                b"0.0.0.0:0",
                 Ok(IPv4Address::UNSPECIFIED.to_ip().to_socket(0)),
             ),
             (
-                "255.255.255.255:65535",
+                b"255.255.255.255:65535",
                 Ok(IPv4Address::BROADCAST.to_ip().to_socket(65535)),
             ),
             (
-                "[::1]:80",
+                b"[::1]:80",
                 Ok(IPv6Address::LOCALHOST.to_socket(80).to_socket()),
             ),
             (
-                "[::1%1]:80",
+                b"[::1%1]:80",
                 Ok(IPv6Address::LOCALHOST.to_socket(80).to_socket()),
             ),
-            ("[::1%]:80", Err(InvalidIPv6Address)),
-            ("[::1%4294967296]:80", Err(InvalidIPv6Address)),
-            ("[127.0.0.1]:80", Err(InvalidIPv6Address)),
-            ("127.0.0.1:65536", Err(InvalidPort)),
-        ];
-
-        for (input, expected) in test_cases {
-            let result: Result<SocketAddress, ParseError> = SocketAddress::from_str(input);
-            assert_eq!(result, *expected, "input={}", input);
-
-            let result: Result<SocketAddress, ParseError> = SocketAddress::try_from(*input);
-            assert_eq!(result, *expected, "input={}", input);
-
-            let result: Result<SocketAddress, ParseError> =
-                SocketAddress::parse_text(input.as_bytes());
-            assert_eq!(result, *expected, "input={}", input);
-        }
-    }
-
-    /// Non-UTF-8 bytes reach the parser through the public `parse_text`.
-    #[test]
-    fn parse_text_non_utf8() {
-        let test_cases: &[(&[u8], ParseError)] = &[
-            (b"\xFF:80", InvalidSocketAddress),
-            (b"[\xFF]:80", InvalidIPv6Address),
-            (b"127.0.0.1:\xFF", InvalidPort),
+            (b"[]:80", Err(InvalidIPv6Address)),
+            (b"[xx]:80", Err(InvalidIPv6Address)),
+            (b"[::1%]:80", Err(InvalidIPv6Address)),
+            (b"[::1%eth0]:80", Err(InvalidIPv6Address)),
+            (b"[::1%4294967296]:80", Err(InvalidIPv6Address)),
+            (b"[127.0.0.1]:80", Err(InvalidIPv6Address)),
+            (b"[\xFF]:80", Err(InvalidIPv6Address)),
+            (b":80", Err(InvalidSocketAddress)),
+            (b"xx:80", Err(InvalidSocketAddress)),
+            (b"::1:80", Err(InvalidSocketAddress)),
+            (b"\xFF:80", Err(InvalidSocketAddress)),
         ];
 
         for (input, expected) in test_cases {
             let result: Result<SocketAddress, ParseError> = SocketAddress::parse_text(input);
-            assert_eq!(result, Err(*expected), "input={:?}", input);
+            assert_eq!(result, *expected, "parse_text input={:?}", input);
+
+            let Ok(text) = std::str::from_utf8(input) else {
+                continue;
+            };
+
+            let result: Result<SocketAddress, ParseError> = SocketAddress::from_str(text);
+            assert_eq!(result, *expected, "from_str input={}", text);
+
+            let result: Result<SocketAddress, ParseError> = SocketAddress::try_from(text);
+            assert_eq!(result, *expected, "try_from(&str) input={}", text);
         }
     }
 

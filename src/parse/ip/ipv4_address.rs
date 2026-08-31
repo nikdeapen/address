@@ -32,42 +32,41 @@ mod tests {
     use crate::{IPv4Address, ParseError};
     use std::str::FromStr;
 
+    type TestCase<'a> = (&'a [u8], Result<IPv4Address, ParseError>);
+
+    /// Every entry point must agree on every case, the length & UTF-8 guards included.
     #[test]
     fn parse() {
-        let test_cases: &[(&str, Result<IPv4Address, ParseError>)] = &[
-            ("", Err(InvalidIPv4Address)),
-            ("127.0.0.01", Err(InvalidIPv4Address)),
-            ("127.000.000.001", Err(InvalidIPv4Address)),
-            ("1.2.3", Err(InvalidIPv4Address)),
-            ("1.2.3.4.5", Err(InvalidIPv4Address)),
-            ("256.1.1.1", Err(InvalidIPv4Address)),
-            ("1.2.3.4", Ok(IPv4Address::from([1, 2, 3, 4]))),
-            ("0.0.0.0", Ok(IPv4Address::UNSPECIFIED)),
-            ("127.0.0.1", Ok(IPv4Address::LOCALHOST)),
-            ("255.255.255.255", Ok(IPv4Address::BROADCAST)),
+        let over_max: Vec<u8> = vec![b'1'; IPv4Address::MAX_STR_LEN + 1];
+        let test_cases: &[TestCase] = &[
+            (b"", Err(InvalidIPv4Address)),
+            (b"1.2.3.4", Ok(IPv4Address::from([1, 2, 3, 4]))),
+            (b"0.0.0.0", Ok(IPv4Address::UNSPECIFIED)),
+            (b"127.0.0.1", Ok(IPv4Address::LOCALHOST)),
+            (b"255.255.255.255", Ok(IPv4Address::BROADCAST)),
+            (b"127.0.0.01", Err(InvalidIPv4Address)),
+            (b"127.000.000.001", Err(InvalidIPv4Address)),
+            (b"1.2.3", Err(InvalidIPv4Address)),
+            (b"1.2.3.4.5", Err(InvalidIPv4Address)),
+            (b"256.1.1.1", Err(InvalidIPv4Address)),
+            (b"127.0.0.\xFF", Err(InvalidIPv4Address)),
+            (b"\xFF\xFF\xFF\xFF", Err(InvalidIPv4Address)),
+            (over_max.as_slice(), Err(InvalidIPv4Address)),
         ];
 
         for (input, expected) in test_cases {
-            let result: Result<IPv4Address, ParseError> = IPv4Address::from_str(input);
-            assert_eq!(result, *expected, "input={}", input);
-
-            let result: Result<IPv4Address, ParseError> = IPv4Address::try_from(*input);
-            assert_eq!(result, *expected, "input={}", input);
-
-            let result: Result<IPv4Address, ParseError> = IPv4Address::parse_text(input.as_bytes());
-            assert_eq!(result, *expected, "input={}", input);
-        }
-    }
-
-    /// The length guard & the UTF-8 check run before the text is read as a string.
-    #[test]
-    fn parse_text_guards() {
-        let over_max: Vec<u8> = vec![b'1'; IPv4Address::MAX_STR_LEN + 1];
-        let test_cases: &[&[u8]] = &[over_max.as_slice(), b"127.0.0.\xFF", b"\xFF\xFF\xFF\xFF"];
-
-        for input in test_cases {
             let result: Result<IPv4Address, ParseError> = IPv4Address::parse_text(input);
-            assert_eq!(result, Err(InvalidIPv4Address), "input={:?}", input);
+            assert_eq!(result, *expected, "parse_text input={:?}", input);
+
+            let Ok(text) = std::str::from_utf8(input) else {
+                continue;
+            };
+
+            let result: Result<IPv4Address, ParseError> = IPv4Address::from_str(text);
+            assert_eq!(result, *expected, "from_str input={}", text);
+
+            let result: Result<IPv4Address, ParseError> = IPv4Address::try_from(text);
+            assert_eq!(result, *expected, "try_from(&str) input={}", text);
         }
     }
 

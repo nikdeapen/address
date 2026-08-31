@@ -27,32 +27,42 @@ mod tests {
     use crate::{IPAddress, IPv4Address, IPv6Address, ParseError};
     use std::str::FromStr;
 
+    type TestCase<'a> = (&'a [u8], Result<IPAddress, ParseError>);
+
+    /// Every entry point must agree on every case.
     #[test]
     fn parse() {
-        let test_cases: &[(&str, Result<IPAddress, ParseError>)] = &[
-            ("", Err(InvalidIPAddress)),
-            ("127.0.0.1", Ok(IPv4Address::LOCALHOST.to_ip())),
-            ("::1", Ok(IPv6Address::LOCALHOST.to_ip())),
+        let test_cases: &[TestCase] = &[
+            (b"", Err(InvalidIPAddress)),
+            (b"127.0.0.1", Ok(IPv4Address::LOCALHOST.to_ip())),
+            (b"::1", Ok(IPv6Address::LOCALHOST.to_ip())),
             (
-                "::ffff:1.2.3.4",
+                b"::ffff:1.2.3.4",
                 Ok(IPv6Address::from([0, 0, 0, 0, 0, 0xFFFF, 0x0102, 0x0304]).to_ip()),
             ),
-            ("[::1]", Err(InvalidIPAddress)),
-            ("fe80::1%1", Err(InvalidIPAddress)),
+            (b"[::1]", Err(InvalidIPAddress)),
+            (b"fe80::1%1", Err(InvalidIPAddress)),
+            (b"localhost", Err(InvalidIPAddress)),
+            (b"\xFF", Err(InvalidIPAddress)),
         ];
 
         for (input, expected) in test_cases {
-            let result: Result<IPAddress, ParseError> = IPAddress::from_str(input);
-            assert_eq!(result, *expected, "input={}", input);
+            let result: Result<IPAddress, ParseError> = IPAddress::parse_text(input);
+            assert_eq!(result, *expected, "parse_text input={:?}", input);
 
-            let result: Result<IPAddress, ParseError> = IPAddress::try_from(*input);
-            assert_eq!(result, *expected, "input={}", input);
+            let Ok(text) = std::str::from_utf8(input) else {
+                continue;
+            };
 
-            let result: Result<IPAddress, ParseError> = IPAddress::parse_text(input.as_bytes());
-            assert_eq!(result, *expected, "input={}", input);
+            let result: Result<IPAddress, ParseError> = IPAddress::from_str(text);
+            assert_eq!(result, *expected, "from_str input={}", text);
+
+            let result: Result<IPAddress, ParseError> = IPAddress::try_from(text);
+            assert_eq!(result, *expected, "try_from(&str) input={}", text);
         }
     }
 
+    /// Each canonical string must parse and display back to the exact same string.
     #[test]
     fn round_trip() {
         let canonical: &[&str] = &[
