@@ -1,8 +1,7 @@
-use crate::ParseError::{InvalidAuthority, InvalidHost};
+use crate::ParseError::InvalidHost;
 use crate::parse_port;
 use crate::{
-    Authority, Domain, Host, IPAddress, IPv6Address, InvalidAddressError, ParseError, impl_parse,
-    impl_parse_string,
+    Authority, Domain, HostForm, InvalidAddressError, ParseError, impl_parse, impl_parse_string,
 };
 
 impl Authority {
@@ -13,16 +12,12 @@ impl Authority {
     /// A numeric IPv6 zone is accepted & ignored: `[fe80::1%1]:80` parses as `[fe80::1]:80`.
     pub fn parse_text(text: &[u8]) -> Result<Self, ParseError> {
         let (host, port): (&[u8], u16) = parse_port(text)?;
-        if let Some(ip) = IPv6Address::parse_bracketed(host) {
-            Ok(ip?.to_host().to_authority(port))
-        } else {
-            let host: Host = Host::parse_text(host)?;
-            if let Host::IP(ip) = &host
-                && ip.is_v6()
-            {
-                return Err(InvalidAuthority);
+        match HostForm::classify(host)? {
+            HostForm::IP(ip) => Ok(ip.to_host().to_authority(port)),
+            HostForm::Domain => {
+                let domain: Domain = Domain::parse_text(host).map_err(|_| InvalidHost)?;
+                Ok(domain.to_host().to_authority(port))
             }
-            Ok(host.to_authority(port))
         }
     }
 
@@ -30,25 +25,16 @@ impl Authority {
     ///
     /// The error holds the unmodified `text`, which `TryFrom<String>` soundly recovers as a string.
     pub(crate) fn parse_vec(text: Vec<u8>) -> Result<Self, InvalidAddressError<Vec<u8>>> {
-        match parse_port(text.as_slice()) {
-            Ok((host, port)) => {
-                if let Some(ip) = IPv6Address::parse_bracketed(host) {
-                    ip.map(|ip| ip.to_host().to_authority(port))
-                        .map_err(|error| InvalidAddressError::new(text, error))
-                } else if let Ok(ip) = IPAddress::parse_text(host) {
-                    if ip.is_v6() {
-                        Err(InvalidAddressError::new(text, InvalidAuthority))
-                    } else {
-                        Ok(ip.to_host().to_authority(port))
-                    }
-                } else {
-                    let name_len: usize = host.len();
-                    Domain::parse_vec_prefix(text, name_len)
-                        .map(|domain| domain.to_host().to_authority(port))
-                        .map_err(|text| InvalidAddressError::new(text, InvalidHost))
-                }
-            }
+        let (host_len, port): (usize, u16) = match parse_port(text.as_slice()) {
+            Ok((host, port)) => (host.len(), port),
+            Err(error) => return Err(InvalidAddressError::new(text, error)),
+        };
+        match HostForm::classify(&text[..host_len]) {
             Err(error) => Err(InvalidAddressError::new(text, error)),
+            Ok(HostForm::IP(ip)) => Ok(ip.to_host().to_authority(port)),
+            Ok(HostForm::Domain) => Domain::parse_vec_prefix(text, host_len)
+                .map(|domain| domain.to_host().to_authority(port))
+                .map_err(|text| InvalidAddressError::new(text, InvalidHost)),
         }
     }
 }
