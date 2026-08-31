@@ -14,11 +14,6 @@
 
 - Consolidate each type's parse cases into one table looped through every entry point.
 
-## Documentation
-
-- Document the serde wire contract & the standard library divergences in rustdoc, not the README;
-  `src/serde/` is private, so the docs must go on the public impls.
-
 ## Performance
 
 - Revisit the `parse` byte -> str conversions with `[u8]::as_ascii()` when nightly `ascii_char`

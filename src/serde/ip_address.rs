@@ -5,6 +5,10 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::fmt::Formatter;
 
 impl Serialize for IPAddress {
+    /// Serializes as the `Display` string in human-readable formats and as a 4- or 16-byte string
+    /// in others.
+    ///
+    /// The length selects the version, not the standard library's enum tag.
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
