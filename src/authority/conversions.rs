@@ -20,10 +20,13 @@ impl Authority {
         }
     }
 
-    /// Converts the authority to an optional socket address.
-    #[must_use]
-    pub fn to_socket(&self) -> Option<SocketAddress> {
-        self.to_ref().to_socket()
+    /// Converts the authority to a socket address.
+    pub fn to_socket(self) -> Result<SocketAddress, Self> {
+        let (host, port): (Host, u16) = self.into();
+        match host.to_ip() {
+            Ok(ip) => Ok(ip.to_socket(port)),
+            Err(host) => Err(Self::new(host, port)),
+        }
     }
 }
 
@@ -95,13 +98,15 @@ mod tests {
     #[test]
     fn authority_to_socket() {
         let authority: Authority = Authority::new(IPv4Address::LOCALHOST.to_host(), 80);
-        let result: Option<SocketAddress> = authority.to_socket();
-        let expected: Option<SocketAddress> = Some(IPv4Address::LOCALHOST.to_ip().to_socket(80));
+        let result: Result<SocketAddress, Authority> = authority.to_socket();
+        let expected: Result<SocketAddress, Authority> =
+            Ok(IPv4Address::LOCALHOST.to_ip().to_socket(80));
         assert_eq!(result, expected);
 
         let authority: Authority = Authority::new(Host::Domain(Domain::localhost()), 80);
-        let result: Option<SocketAddress> = authority.to_socket();
-        let expected: Option<SocketAddress> = None;
+        let result: Result<SocketAddress, Authority> = authority.to_socket();
+        let expected: Result<SocketAddress, Authority> =
+            Err(Authority::new(Host::Domain(Domain::localhost()), 80));
         assert_eq!(result, expected);
     }
 

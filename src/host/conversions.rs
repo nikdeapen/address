@@ -24,13 +24,11 @@ impl Host {
         }
     }
 
-    /// Converts the host to an optional IP address.
-    #[must_use]
-    pub const fn to_ip(&self) -> Option<IPAddress> {
-        if let Self::IP(ip) = self {
-            Some(*ip)
-        } else {
-            None
+    /// Converts the host to an IP address.
+    pub fn to_ip(self) -> Result<IPAddress, Self> {
+        match self {
+            Self::IP(ip) => Ok(ip),
+            host => Err(host),
         }
     }
 }
@@ -106,13 +104,13 @@ mod tests {
     #[test]
     fn host_to_ip() {
         let host: Host = IPv4Address::LOCALHOST.to_host();
-        let result: Option<IPAddress> = host.to_ip();
-        let expected: Option<IPAddress> = Some(IPv4Address::LOCALHOST.to_ip());
+        let result: Result<IPAddress, Host> = host.to_ip();
+        let expected: Result<IPAddress, Host> = Ok(IPv4Address::LOCALHOST.to_ip());
         assert_eq!(result, expected);
 
         let host: Host = Domain::localhost().to_host();
-        let result: Option<IPAddress> = host.to_ip();
-        let expected: Option<IPAddress> = None;
+        let result: Result<IPAddress, Host> = host.to_ip();
+        let expected: Result<IPAddress, Host> = Err(Domain::localhost().to_host());
         assert_eq!(result, expected);
     }
 

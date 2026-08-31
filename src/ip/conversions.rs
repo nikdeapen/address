@@ -3,23 +3,21 @@ use crate::{Host, HostRef, IPAddress, IPv4Address, IPv6Address, SocketAddress};
 impl IPAddress {
     //! Conversions
 
-    /// Converts the address to an optional IPv4 address.
-    #[must_use]
-    pub const fn to_v4(self) -> Option<IPv4Address> {
+    /// Converts the address to an IPv4 address.
+    pub const fn to_v4(self) -> Result<IPv4Address, Self> {
         if let Self::V4(ip) = self {
-            Some(ip)
+            Ok(ip)
         } else {
-            None
+            Err(self)
         }
     }
 
-    /// Converts the address to an optional IPv6 address.
-    #[must_use]
-    pub const fn to_v6(self) -> Option<IPv6Address> {
+    /// Converts the address to an IPv6 address.
+    pub const fn to_v6(self) -> Result<IPv6Address, Self> {
         if let Self::V6(ip) = self {
-            Some(ip)
+            Ok(ip)
         } else {
-            None
+            Err(self)
         }
     }
 
@@ -58,26 +56,26 @@ mod tests {
     #[test]
     fn ip_to_v4() {
         let ip: IPAddress = IPv4Address::LOCALHOST.to_ip();
-        let result: Option<IPv4Address> = ip.to_v4();
-        let expected: Option<IPv4Address> = Some(IPv4Address::LOCALHOST);
+        let result: Result<IPv4Address, IPAddress> = ip.to_v4();
+        let expected: Result<IPv4Address, IPAddress> = Ok(IPv4Address::LOCALHOST);
         assert_eq!(result, expected);
 
         let ip: IPAddress = IPv6Address::LOCALHOST.to_ip();
-        let result: Option<IPv4Address> = ip.to_v4();
-        let expected: Option<IPv4Address> = None;
+        let result: Result<IPv4Address, IPAddress> = ip.to_v4();
+        let expected: Result<IPv4Address, IPAddress> = Err(IPv6Address::LOCALHOST.to_ip());
         assert_eq!(result, expected);
     }
 
     #[test]
     fn ip_to_v6() {
         let ip: IPAddress = IPv4Address::LOCALHOST.to_ip();
-        let result: Option<IPv6Address> = ip.to_v6();
-        let expected: Option<IPv6Address> = None;
+        let result: Result<IPv6Address, IPAddress> = ip.to_v6();
+        let expected: Result<IPv6Address, IPAddress> = Err(IPv4Address::LOCALHOST.to_ip());
         assert_eq!(result, expected);
 
         let ip: IPAddress = IPv6Address::LOCALHOST.to_ip();
-        let result: Option<IPv6Address> = ip.to_v6();
-        let expected: Option<IPv6Address> = Some(IPv6Address::LOCALHOST);
+        let result: Result<IPv6Address, IPAddress> = ip.to_v6();
+        let expected: Result<IPv6Address, IPAddress> = Ok(IPv6Address::LOCALHOST);
         assert_eq!(result, expected);
     }
 

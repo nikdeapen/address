@@ -6,31 +6,27 @@ impl IPv6Address {
     /// Converts an IPv4 compatible (::a.b.c.d) or IPv4 mapped (::ffff:a.b.c.d) address to an IPv4
     /// address.
     ///
-    /// Plain IPv6 addresses match the compatible pattern (`::1` -> `Some(0.0.0.1)`); use
+    /// Plain IPv6 addresses match the compatible pattern (`::1` -> `Ok(0.0.0.1)`); use
     /// [`Self::to_v4_mapped`] to avoid these false positives.
-    #[must_use]
-    pub const fn to_v4(self) -> Option<IPv4Address> {
+    pub const fn to_v4(self) -> Result<IPv4Address, Self> {
         match self.address() {
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, a, b, c, d] => {
-                Some(IPv4Address::new([a, b, c, d]))
-            }
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, a, b, c, d] => Ok(IPv4Address::new([a, b, c, d])),
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xFF, 0xFF, a, b, c, d] => {
-                Some(IPv4Address::new([a, b, c, d]))
+                Ok(IPv4Address::new([a, b, c, d]))
             }
-            _ => None,
+            _ => Err(self),
         }
     }
 
     /// Converts an IPv4 mapped (::ffff:a.b.c.d) address to an IPv4 address.
     ///
-    /// Unlike [`Self::to_v4`], IPv4 compatible addresses (::a.b.c.d) return `None`.
-    #[must_use]
-    pub const fn to_v4_mapped(self) -> Option<IPv4Address> {
+    /// Unlike [`Self::to_v4`], IPv4 compatible addresses (::a.b.c.d) are an error.
+    pub const fn to_v4_mapped(self) -> Result<IPv4Address, Self> {
         match self.address() {
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xFF, 0xFF, a, b, c, d] => {
-                Some(IPv4Address::new([a, b, c, d]))
+                Ok(IPv4Address::new([a, b, c, d]))
             }
-            _ => None,
+            _ => Err(self),
         }
     }
 
@@ -61,32 +57,38 @@ mod tests {
 
     #[test]
     fn v6_to_v4() {
-        let test_cases: &[(IPv6Address, Option<IPv4Address>)] = &[
+        let test_cases: &[(IPv6Address, Result<IPv4Address, IPv6Address>)] = &[
             (
                 IPv6Address::from([0, 0, 0, 0, 0, 0, 0x7F00, 1]),
-                Some(IPv4Address::LOCALHOST),
+                Ok(IPv4Address::LOCALHOST),
             ),
             (
                 IPv6Address::from([0, 0, 0, 0, 0, 0xFFFF, 0x7F00, 1]),
-                Some(IPv4Address::LOCALHOST),
+                Ok(IPv4Address::LOCALHOST),
             ),
-            (IPv6Address::from([1, 0, 0, 0, 0, 0, 0, 0]), None),
-            (IPv6Address::from([0, 0, 0, 0, 0, 1, 0, 0]), None),
+            (
+                IPv6Address::from([1, 0, 0, 0, 0, 0, 0, 0]),
+                Err(IPv6Address::from([1, 0, 0, 0, 0, 0, 0, 0])),
+            ),
+            (
+                IPv6Address::from([0, 0, 0, 0, 0, 1, 0, 0]),
+                Err(IPv6Address::from([0, 0, 0, 0, 0, 1, 0, 0])),
+            ),
         ];
 
         for (ip, expected) in test_cases {
-            let result: Option<IPv4Address> = ip.to_v4();
+            let result: Result<IPv4Address, IPv6Address> = ip.to_v4();
             assert_eq!(result, *expected, "ip={}", ip);
         }
 
         let ip: IPv6Address = IPv6Address::from([0, 0, 0, 0, 0, 0xFFFF, 0x7F00, 1]);
-        let result: Option<IPv4Address> = ip.to_v4_mapped();
-        let expected: Option<IPv4Address> = Some(IPv4Address::LOCALHOST);
+        let result: Result<IPv4Address, IPv6Address> = ip.to_v4_mapped();
+        let expected: Result<IPv4Address, IPv6Address> = Ok(IPv4Address::LOCALHOST);
         assert_eq!(result, expected);
 
         let ip: IPv6Address = IPv6Address::from([0, 0, 0, 0, 0, 0, 0x7F00, 1]);
-        let result: Option<IPv4Address> = ip.to_v4_mapped();
-        let expected: Option<IPv4Address> = None;
+        let result: Result<IPv4Address, IPv6Address> = ip.to_v4_mapped();
+        let expected: Result<IPv4Address, IPv6Address> = Err(ip);
         assert_eq!(result, expected);
     }
 
