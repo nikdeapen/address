@@ -103,7 +103,7 @@ mod tests {
         }
     }
 
-    /// The README claims the version-specific types match the standard library wire format.
+    /// The version-specific types are byte-identical to their standard library counterparts.
     #[test]
     fn matches_std_wire_format() {
         let ip: IPv4Address = IPv4Address::LOCALHOST;

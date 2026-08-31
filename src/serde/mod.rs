@@ -1,7 +1,4 @@
 //! Serde support for the address types.
-//!
-//! This module is private, so its docs are not published. The wire contract these impls must uphold
-//! is stated in the README, under `Serde Wire Contract`, which is the crate's front page.
 
 pub(crate) use from_str_visitor::*;
 pub(crate) use from_string_visitor::*;

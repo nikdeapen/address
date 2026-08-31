@@ -21,7 +21,7 @@ impl<'a> DomainRef<'a> {
 
 /// An iterator over the labels of a domain name.
 #[must_use]
-#[derive(Copy, Clone, Debug)]
+#[derive(Clone, Debug)]
 pub struct Labels<'a> {
     name: Option<&'a str>,
 }

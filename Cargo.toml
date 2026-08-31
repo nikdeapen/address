@@ -33,5 +33,6 @@ missing_debug_implementations = "warn"
 missing_docs = "warn"
 
 [lints.clippy]
+copy_iterator = "warn"
 module_inception = "allow"
 must_use_candidate = "warn"
