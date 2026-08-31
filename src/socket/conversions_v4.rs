@@ -19,10 +19,18 @@ impl SocketAddressV4 {
     }
 }
 
+impl TryFrom<SocketAddress> for SocketAddressV4 {
+    type Error = SocketAddress;
+
+    fn try_from(socket: SocketAddress) -> Result<Self, Self::Error> {
+        socket.to_v4()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::{
-        Authority, AuthorityRef, Host, HostRef, IPAddress, IPv4Address, SocketAddress,
+        Authority, AuthorityRef, Host, HostRef, IPAddress, IPv4Address, IPv6Address, SocketAddress,
         SocketAddressV4,
     };
 
@@ -32,6 +40,16 @@ mod tests {
         let result: SocketAddress = socket.to_socket();
         let expected: SocketAddress = SocketAddress::new(IPAddress::V4(IPv4Address::LOCALHOST), 80);
         assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn v4_try_from() {
+        let socket: SocketAddress = IPv4Address::LOCALHOST.to_ip().to_socket(80);
+        let expected: SocketAddressV4 = IPv4Address::LOCALHOST.to_socket(80);
+        assert_eq!(SocketAddressV4::try_from(socket), Ok(expected));
+
+        let socket: SocketAddress = IPv6Address::LOCALHOST.to_ip().to_socket(80);
+        assert_eq!(SocketAddressV4::try_from(socket), Err(socket));
     }
 
     #[test]

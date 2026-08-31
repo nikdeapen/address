@@ -19,10 +19,18 @@ impl SocketAddressV6 {
     }
 }
 
+impl TryFrom<SocketAddress> for SocketAddressV6 {
+    type Error = SocketAddress;
+
+    fn try_from(socket: SocketAddress) -> Result<Self, Self::Error> {
+        socket.to_v6()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::{
-        Authority, AuthorityRef, Host, HostRef, IPAddress, IPv6Address, SocketAddress,
+        Authority, AuthorityRef, Host, HostRef, IPAddress, IPv4Address, IPv6Address, SocketAddress,
         SocketAddressV6,
     };
 
@@ -32,6 +40,16 @@ mod tests {
         let result: SocketAddress = socket.to_socket();
         let expected: SocketAddress = SocketAddress::new(IPAddress::V6(IPv6Address::LOCALHOST), 80);
         assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn v6_try_from() {
+        let socket: SocketAddress = IPv6Address::LOCALHOST.to_ip().to_socket(80);
+        let expected: SocketAddressV6 = IPv6Address::LOCALHOST.to_socket(80);
+        assert_eq!(SocketAddressV6::try_from(socket), Ok(expected));
+
+        let socket: SocketAddress = IPv4Address::LOCALHOST.to_ip().to_socket(80);
+        assert_eq!(SocketAddressV6::try_from(socket), Err(socket));
     }
 
     #[test]

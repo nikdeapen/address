@@ -8,7 +8,6 @@
 
 - Add `idna` support to the `Host`, `Endpoint`, and `Authority` types.
 - Add DNS support via implementing `std::net::ToSocketAddrs` as well as async support.
-- Add `TryFrom` impls mirroring the fallible conversions; only the infallible ones have `From`.
 
 ## Performance
 

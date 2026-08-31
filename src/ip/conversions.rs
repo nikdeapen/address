@@ -49,9 +49,27 @@ impl From<IPv6Address> for IPAddress {
     }
 }
 
+impl TryFrom<Host> for IPAddress {
+    type Error = Host;
+
+    fn try_from(host: Host) -> Result<Self, Self::Error> {
+        host.to_ip()
+    }
+}
+
+impl<'a> TryFrom<HostRef<'a>> for IPAddress {
+    type Error = HostRef<'a>;
+
+    fn try_from(host: HostRef<'a>) -> Result<Self, Self::Error> {
+        host.to_ip()
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use crate::{Host, HostRef, IPAddress, IPv4Address, IPv6Address, SocketAddress};
+    use crate::{
+        Domain, DomainRef, Host, HostRef, IPAddress, IPv4Address, IPv6Address, SocketAddress,
+    };
 
     #[test]
     fn ip_to_v4() {
@@ -109,5 +127,21 @@ mod tests {
         let result: IPAddress = IPv6Address::LOCALHOST.into();
         let expected: IPAddress = IPAddress::V6(IPv6Address::LOCALHOST);
         assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn ip_try_from() {
+        let host: Host = IPv4Address::LOCALHOST.to_host();
+        let expected: IPAddress = IPv4Address::LOCALHOST.to_ip();
+        assert_eq!(IPAddress::try_from(host), Ok(expected));
+
+        let host: Host = Domain::localhost().to_host();
+        assert_eq!(IPAddress::try_from(host.clone()), Err(host));
+
+        let host: HostRef = IPv4Address::LOCALHOST.to_host_ref();
+        assert_eq!(IPAddress::try_from(host), Ok(expected));
+
+        let host: HostRef = DomainRef::LOCALHOST.to_host_ref();
+        assert_eq!(IPAddress::try_from(host), Err(host));
     }
 }

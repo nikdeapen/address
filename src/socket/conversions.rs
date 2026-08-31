@@ -44,11 +44,27 @@ impl From<SocketAddressV6> for SocketAddress {
     }
 }
 
+impl TryFrom<Authority> for SocketAddress {
+    type Error = Authority;
+
+    fn try_from(authority: Authority) -> Result<Self, Self::Error> {
+        authority.to_socket()
+    }
+}
+
+impl<'a> TryFrom<AuthorityRef<'a>> for SocketAddress {
+    type Error = AuthorityRef<'a>;
+
+    fn try_from(authority: AuthorityRef<'a>) -> Result<Self, Self::Error> {
+        authority.to_socket()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::{
-        Authority, AuthorityRef, Host, HostRef, IPAddress, IPv4Address, IPv6Address, SocketAddress,
-        SocketAddressV4, SocketAddressV6,
+        Authority, AuthorityRef, Domain, DomainRef, Host, HostRef, IPAddress, IPv4Address,
+        IPv6Address, SocketAddress, SocketAddressV4, SocketAddressV6,
     };
 
     #[test]
@@ -91,6 +107,26 @@ mod tests {
         let expected: AuthorityRef =
             AuthorityRef::new(HostRef::IP(IPAddress::V4(IPv4Address::LOCALHOST)), 80);
         assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn socket_try_from() {
+        let expected: SocketAddress = IPv4Address::LOCALHOST.to_ip().to_socket(80);
+
+        let authority: Authority = IPv4Address::LOCALHOST.to_host().to_authority(80);
+        assert_eq!(SocketAddress::try_from(authority), Ok(expected));
+
+        let authority: Authority = Domain::localhost().to_host().to_authority(80);
+        assert_eq!(
+            SocketAddress::try_from(authority.clone()),
+            Err(authority.clone())
+        );
+
+        let authority: AuthorityRef = IPv4Address::LOCALHOST.to_host_ref().to_authority_ref(80);
+        assert_eq!(SocketAddress::try_from(authority), Ok(expected));
+
+        let authority: AuthorityRef = DomainRef::LOCALHOST.to_host_ref().to_authority_ref(80);
+        assert_eq!(SocketAddress::try_from(authority), Err(authority));
     }
 
     #[test]

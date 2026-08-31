@@ -51,6 +51,14 @@ impl IPv6Address {
     }
 }
 
+impl TryFrom<IPAddress> for IPv6Address {
+    type Error = IPAddress;
+
+    fn try_from(ip: IPAddress) -> Result<Self, Self::Error> {
+        ip.to_v6()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::{Host, HostRef, IPAddress, IPv4Address, IPv6Address, SocketAddressV6};
@@ -106,6 +114,15 @@ mod tests {
         let result: SocketAddressV6 = ip.to_socket(80);
         let expected: SocketAddressV6 = SocketAddressV6::new(IPv6Address::LOCALHOST, 80);
         assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn v6_try_from() {
+        let ip: IPAddress = IPv6Address::LOCALHOST.to_ip();
+        assert_eq!(IPv6Address::try_from(ip), Ok(IPv6Address::LOCALHOST));
+
+        let ip: IPAddress = IPv4Address::LOCALHOST.to_ip();
+        assert_eq!(IPv6Address::try_from(ip), Err(ip));
     }
 
     #[test]
