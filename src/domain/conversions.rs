@@ -1,4 +1,4 @@
-use crate::{Domain, DomainRef, Endpoint, Host};
+use crate::{Domain, DomainRef, Endpoint, Host, HostRef};
 
 impl Domain {
     //! Conversions
@@ -25,9 +25,25 @@ impl<'a> From<DomainRef<'a>> for Domain {
     }
 }
 
+impl TryFrom<Host> for Domain {
+    type Error = Host;
+
+    fn try_from(host: Host) -> Result<Self, Self::Error> {
+        host.to_domain()
+    }
+}
+
+impl<'a> TryFrom<HostRef<'a>> for Domain {
+    type Error = HostRef<'a>;
+
+    fn try_from(host: HostRef<'a>) -> Result<Self, Self::Error> {
+        host.to_domain()
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use crate::{Domain, DomainRef, Endpoint, Host};
+    use crate::{Domain, DomainRef, Endpoint, Host, HostRef, IPv4Address};
 
     #[test]
     fn domain_to_ref() {
@@ -58,5 +74,20 @@ mod tests {
         let result: Domain = DomainRef::LOCALHOST.into();
         let expected: &str = "localhost";
         assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn domain_try_from() {
+        let host: Host = Domain::localhost().to_host();
+        assert_eq!(Domain::try_from(host), Ok(Domain::localhost()));
+
+        let host: Host = IPv4Address::LOCALHOST.to_host();
+        assert_eq!(Domain::try_from(host.clone()), Err(host));
+
+        let host: HostRef = DomainRef::LOCALHOST.to_host_ref();
+        assert_eq!(Domain::try_from(host), Ok(Domain::localhost()));
+
+        let host: HostRef = IPv4Address::LOCALHOST.to_host_ref();
+        assert_eq!(Domain::try_from(host), Err(host));
     }
 }

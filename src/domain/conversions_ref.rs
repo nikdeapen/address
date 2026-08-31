@@ -35,9 +35,17 @@ impl<'a> From<&'a Domain> for DomainRef<'a> {
     }
 }
 
+impl<'a> TryFrom<HostRef<'a>> for DomainRef<'a> {
+    type Error = HostRef<'a>;
+
+    fn try_from(host: HostRef<'a>) -> Result<Self, Self::Error> {
+        host.to_domain_ref()
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use crate::{Domain, DomainRef, Endpoint, EndpointRef, Host, HostRef};
+    use crate::{Domain, DomainRef, Endpoint, EndpointRef, Host, HostRef, IPv4Address};
 
     #[test]
     fn ref_to_domain() {
@@ -77,5 +85,14 @@ mod tests {
         let result: DomainRef = (&owned).into();
         let expected: DomainRef = DomainRef::LOCALHOST;
         assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn ref_try_from() {
+        let host: HostRef = DomainRef::LOCALHOST.to_host_ref();
+        assert_eq!(DomainRef::try_from(host), Ok(DomainRef::LOCALHOST));
+
+        let host: HostRef = IPv4Address::LOCALHOST.to_host_ref();
+        assert_eq!(DomainRef::try_from(host), Err(host));
     }
 }

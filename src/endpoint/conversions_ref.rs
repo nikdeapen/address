@@ -25,9 +25,20 @@ impl<'a> From<&'a Endpoint> for EndpointRef<'a> {
     }
 }
 
+impl<'a> TryFrom<AuthorityRef<'a>> for EndpointRef<'a> {
+    type Error = AuthorityRef<'a>;
+
+    fn try_from(authority: AuthorityRef<'a>) -> Result<Self, Self::Error> {
+        authority.to_endpoint_ref()
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use crate::{Authority, AuthorityRef, Domain, DomainRef, Endpoint, EndpointRef, Host, HostRef};
+    use crate::{
+        Authority, AuthorityRef, Domain, DomainRef, Endpoint, EndpointRef, Host, HostRef,
+        IPv4Address,
+    };
 
     #[test]
     fn ref_to_endpoint() {
@@ -47,6 +58,16 @@ mod tests {
         let result: AuthorityRef = endpoint.to_authority_ref();
         let expected: AuthorityRef = AuthorityRef::new(HostRef::Domain(DomainRef::LOCALHOST), 80);
         assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn ref_try_from() {
+        let authority: AuthorityRef = DomainRef::LOCALHOST.to_host_ref().to_authority_ref(80);
+        let expected: EndpointRef = EndpointRef::new(DomainRef::LOCALHOST, 80);
+        assert_eq!(EndpointRef::try_from(authority), Ok(expected));
+
+        let authority: AuthorityRef = IPv4Address::LOCALHOST.to_host_ref().to_authority_ref(80);
+        assert_eq!(EndpointRef::try_from(authority), Err(authority));
     }
 
     #[test]
