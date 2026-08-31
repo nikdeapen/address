@@ -16,8 +16,8 @@
 
 ## Documentation
 
-- Document the serde wire contract & the standard library divergences in rustdoc, not the README;
-  `src/serde/` is private, so the docs must go on the public impls.
+- Document why the IP & socket types exist apart from `std`; it is crate-level, so the only rustdoc
+  home is the front page, which is the README.
 
 ## Performance
 
