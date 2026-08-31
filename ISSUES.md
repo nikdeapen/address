@@ -9,17 +9,10 @@
 - Add `idna` support to the `Host`, `Endpoint`, and `Authority` types.
 - Add DNS support via implementing `std::net::ToSocketAddrs` as well as async support.
 - Add `TryFrom` impls mirroring the fallible conversions; only the infallible ones have `From`.
-- Add `#[must_use]` to `ParseError` & `InvalidAddressError`; the only public types without it.
-
-## Parsing
-
-- Extract the host classification duplicated between `Authority::parse_text` & `parse_vec`.
 
 ## Testing
 
-- Get rid of pedantic tests like testing display formatting.
-- Consolidate each type's parse cases into one table looped through every entry point; they now
-  differ per path.
+- Consolidate each type's parse cases into one table looped through every entry point.
 
 ## Documentation
 

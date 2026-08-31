@@ -1,6 +1,6 @@
-use crate::ParseError::InvalidAuthority;
+use crate::ParseError::InvalidHost;
 use crate::parse_port;
-use crate::{AuthorityRef, HostRef, IPv6Address, ParseError, impl_parse_ref};
+use crate::{AuthorityRef, DomainRef, HostForm, ParseError, impl_parse_ref};
 
 impl<'a> AuthorityRef<'a> {
     //! Parse
@@ -10,17 +10,13 @@ impl<'a> AuthorityRef<'a> {
     /// mixed-case input.
     /// A numeric IPv6 zone is accepted & ignored: `[fe80::1%1]:80` parses as `[fe80::1]:80`.
     pub fn parse_text(text: &'a [u8]) -> Result<Self, ParseError> {
-        let (host, port): (&[u8], u16) = parse_port(text)?;
-        if let Some(ip) = IPv6Address::parse_bracketed(host) {
-            Ok(ip?.to_host_ref().to_authority_ref(port))
-        } else {
-            let host: HostRef = HostRef::parse_text(host)?;
-            if let HostRef::IP(ip) = host
-                && ip.is_v6()
-            {
-                return Err(InvalidAuthority);
+        let (host, port): (&'a [u8], u16) = parse_port(text)?;
+        match HostForm::classify(host)? {
+            HostForm::IP(ip) => Ok(ip.to_host_ref().to_authority_ref(port)),
+            HostForm::Domain => {
+                let domain: DomainRef = DomainRef::parse_text(host).map_err(|_| InvalidHost)?;
+                Ok(domain.to_host_ref().to_authority_ref(port))
             }
-            Ok(host.to_authority_ref(port))
         }
     }
 }
