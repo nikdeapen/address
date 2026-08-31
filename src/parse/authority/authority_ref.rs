@@ -31,52 +31,56 @@ impl_parse_ref!(
 
 #[cfg(test)]
 mod tests {
-    use crate::ParseError::{InvalidAuthority, InvalidHost, InvalidIPv6Address};
-    use crate::{AuthorityRef, DomainRef, HostRef, IPv4Address, IPv6Address, ParseError};
+    use crate::ParseError::{InvalidAuthority, InvalidHost, InvalidIPv6Address, InvalidPort};
+    use crate::{AuthorityRef, DomainRef, IPv4Address, IPv6Address, ParseError};
 
+    type TestCase<'a> = (&'a [u8], Result<AuthorityRef<'a>, ParseError>);
+
+    /// Every entry point must agree on every case; mixed case is rejected, not normalized.
     #[test]
-    fn try_from_str() {
-        let result: Result<AuthorityRef, ParseError> = AuthorityRef::try_from("localhost:80");
-        let expected: Result<AuthorityRef, ParseError> =
-            Ok(AuthorityRef::new(HostRef::Domain(DomainRef::LOCALHOST), 80));
-        assert_eq!(result, expected);
-
-        let result: Result<AuthorityRef, ParseError> = AuthorityRef::try_from("LocalHost:80");
-        let expected: Result<AuthorityRef, ParseError> = Err(InvalidHost);
-        assert_eq!(result, expected);
-
-        let result: Result<AuthorityRef, ParseError> = AuthorityRef::try_from("::1:80");
-        let expected: Result<AuthorityRef, ParseError> = Err(InvalidAuthority);
-        assert_eq!(result, expected);
-    }
-
-    #[test]
-    fn parse_text() {
-        let test_cases: &[(&[u8], Result<AuthorityRef, ParseError>)] = &[
+    fn parse() {
+        let test_cases: &[TestCase] = &[
+            (b"", Err(InvalidPort)),
+            (b"localhost", Err(InvalidPort)),
+            (b"localhost:", Err(InvalidPort)),
             (
-                "localhost:80".as_bytes(),
-                Ok(AuthorityRef::new(HostRef::Domain(DomainRef::LOCALHOST), 80)),
+                b"localhost:80",
+                Ok(DomainRef::LOCALHOST.to_host_ref().to_authority_ref(80)),
             ),
             (
-                "[::1%1]:80".as_bytes(),
-                Ok(AuthorityRef::new(IPv6Address::LOCALHOST.to_host_ref(), 80)),
+                b"127.0.0.1:80",
+                Ok(IPv4Address::LOCALHOST.to_host_ref().to_authority_ref(80)),
             ),
-            ("[::1%eth0]:80".as_bytes(), Err(InvalidIPv6Address)),
-            ("::1:80".as_bytes(), Err(InvalidAuthority)),
-            ("::80".as_bytes(), Err(InvalidHost)),
-            ("fe80::1:80".as_bytes(), Err(InvalidAuthority)),
             (
-                "127.0.0.1:80".as_bytes(),
-                Ok(AuthorityRef::new(IPv4Address::LOCALHOST.to_host_ref(), 80)),
+                b"[::1]:80",
+                Ok(IPv6Address::LOCALHOST.to_host_ref().to_authority_ref(80)),
             ),
-            ("LocalHost:80".as_bytes(), Err(InvalidHost)),
-            (b"\xFF:80".as_slice(), Err(InvalidHost)),
+            (
+                b"[::1%1]:80",
+                Ok(IPv6Address::LOCALHOST.to_host_ref().to_authority_ref(80)),
+            ),
+            (b"[::1%eth0]:80", Err(InvalidIPv6Address)),
+            (b"[]:80", Err(InvalidIPv6Address)),
+            (b"::1:80", Err(InvalidAuthority)),
+            (b"fe80::1:80", Err(InvalidAuthority)),
+            (b"::80", Err(InvalidHost)),
+            (b":80", Err(InvalidHost)),
+            (b"LocalHost:80", Err(InvalidHost)),
+            (b"Local!Host:80", Err(InvalidHost)),
+            (b"\xFF:80", Err(InvalidHost)),
             ("ü:80".as_bytes(), Err(InvalidHost)),
         ];
 
         for (input, expected) in test_cases {
             let result: Result<AuthorityRef, ParseError> = AuthorityRef::parse_text(input);
-            assert_eq!(result, *expected, "input={:?}", input);
+            assert_eq!(result, *expected, "parse_text input={:?}", input);
+
+            let Ok(text) = std::str::from_utf8(input) else {
+                continue;
+            };
+
+            let result: Result<AuthorityRef, ParseError> = AuthorityRef::try_from(text);
+            assert_eq!(result, *expected, "try_from(&str) input={}", text);
         }
     }
 

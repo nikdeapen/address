@@ -23,36 +23,44 @@ impl_parse_ref!(
 
 #[cfg(test)]
 mod tests {
-    use crate::ParseError::InvalidDomain;
+    use crate::ParseError::{InvalidDomain, InvalidPort};
     use crate::{DomainRef, EndpointRef, ParseError};
 
-    #[test]
-    fn try_from_str() {
-        let result: Result<EndpointRef, ParseError> = EndpointRef::try_from("localhost:80");
-        let expected: Result<EndpointRef, ParseError> =
-            Ok(EndpointRef::new(DomainRef::LOCALHOST, 80));
-        assert_eq!(result, expected);
+    type TestCase<'a> = (&'a [u8], Result<EndpointRef<'a>, ParseError>);
 
-        let result: Result<EndpointRef, ParseError> = EndpointRef::try_from("LocalHost:80");
-        let expected: Result<EndpointRef, ParseError> = Err(InvalidDomain);
-        assert_eq!(result, expected);
-    }
-
+    /// Every entry point must agree on every case; mixed case is rejected, not normalized.
     #[test]
-    fn parse_text() {
-        let test_cases: &[(&[u8], Result<EndpointRef, ParseError>)] = &[
+    fn parse() {
+        let test_cases: &[TestCase] = &[
+            (b"", Err(InvalidPort)),
+            (b"localhost", Err(InvalidPort)),
+            (b"localhost:", Err(InvalidPort)),
+            (b"localhost:xx", Err(InvalidPort)),
             (
-                "localhost:80".as_bytes(),
+                b"localhost:80",
                 Ok(EndpointRef::new(DomainRef::LOCALHOST, 80)),
             ),
-            ("LocalHost:80".as_bytes(), Err(InvalidDomain)),
-            (b"\xFF:80".as_slice(), Err(InvalidDomain)),
+            (
+                b"example.com:443",
+                Ok(EndpointRef::new(DomainRef::EXAMPLE, 443)),
+            ),
+            (b":80", Err(InvalidDomain)),
+            (b"LocalHost:80", Err(InvalidDomain)),
+            (b"127.0.0.1:80", Err(InvalidDomain)),
+            (b"\xFF:80", Err(InvalidDomain)),
             ("ü:80".as_bytes(), Err(InvalidDomain)),
         ];
 
         for (input, expected) in test_cases {
             let result: Result<EndpointRef, ParseError> = EndpointRef::parse_text(input);
-            assert_eq!(result, *expected, "input={:?}", input);
+            assert_eq!(result, *expected, "parse_text input={:?}", input);
+
+            let Ok(text) = std::str::from_utf8(input) else {
+                continue;
+            };
+
+            let result: Result<EndpointRef, ParseError> = EndpointRef::try_from(text);
+            assert_eq!(result, *expected, "try_from(&str) input={}", text);
         }
     }
 

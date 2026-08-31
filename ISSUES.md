@@ -10,10 +10,6 @@
 - Add DNS support via implementing `std::net::ToSocketAddrs` as well as async support.
 - Add `TryFrom` impls mirroring the fallible conversions; only the infallible ones have `From`.
 
-## Testing
-
-- Consolidate each type's parse cases into one table looped through every entry point.
-
 ## Performance
 
 - Revisit the `parse` byte -> str conversions with `[u8]::as_ascii()` when nightly `ascii_char`

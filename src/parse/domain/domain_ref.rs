@@ -29,29 +29,32 @@ mod tests {
     use crate::ParseError::InvalidDomain;
     use crate::{DomainRef, ParseError};
 
-    #[test]
-    fn try_from_str() {
-        let result: Result<DomainRef, ParseError> = DomainRef::try_from("localhost");
-        let expected: Result<DomainRef, ParseError> = Ok(DomainRef::LOCALHOST);
-        assert_eq!(result, expected);
+    type TestCase<'a> = (&'a [u8], Result<DomainRef<'a>, ParseError>);
 
-        let result: Result<DomainRef, ParseError> = DomainRef::try_from("LocalHost");
-        let expected: Result<DomainRef, ParseError> = Err(InvalidDomain);
-        assert_eq!(result, expected);
-    }
-
+    /// Every entry point must agree on every case; mixed case is rejected, not normalized.
     #[test]
-    fn parse_text() {
-        let test_cases: &[(&[u8], Result<DomainRef, ParseError>)] = &[
-            ("localhost".as_bytes(), Ok(DomainRef::LOCALHOST)),
-            ("LocalHost".as_bytes(), Err(InvalidDomain)),
-            (b"\xFF".as_slice(), Err(InvalidDomain)),
+    fn parse() {
+        let test_cases: &[TestCase] = &[
+            (b"", Err(InvalidDomain)),
+            (b"localhost", Ok(DomainRef::LOCALHOST)),
+            (b"example.com", Ok(DomainRef::EXAMPLE)),
+            (b"LocalHost", Err(InvalidDomain)),
+            (b"Local!Host", Err(InvalidDomain)),
+            (b"127.0.0.1", Err(InvalidDomain)),
+            (b"\xFF", Err(InvalidDomain)),
             ("ü".as_bytes(), Err(InvalidDomain)),
         ];
 
         for (input, expected) in test_cases {
             let result: Result<DomainRef, ParseError> = DomainRef::parse_text(input);
-            assert_eq!(result, *expected, "input={:?}", input);
+            assert_eq!(result, *expected, "parse_text input={:?}", input);
+
+            let Ok(text) = std::str::from_utf8(input) else {
+                continue;
+            };
+
+            let result: Result<DomainRef, ParseError> = DomainRef::try_from(text);
+            assert_eq!(result, *expected, "try_from(&str) input={}", text);
         }
     }
 

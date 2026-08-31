@@ -28,38 +28,36 @@ impl_parse_ref!(
 #[cfg(test)]
 mod tests {
     use crate::ParseError::InvalidHost;
-    use crate::{DomainRef, HostRef, IPv4Address, ParseError};
+    use crate::{DomainRef, HostRef, IPv4Address, IPv6Address, ParseError};
 
+    type TestCase<'a> = (&'a [u8], Result<HostRef<'a>, ParseError>);
+
+    /// Every entry point must agree on every case; mixed case is rejected, not normalized.
     #[test]
-    fn try_from_str() {
-        let result: Result<HostRef, ParseError> = HostRef::try_from("localhost");
-        let expected: Result<HostRef, ParseError> = Ok(HostRef::Domain(DomainRef::LOCALHOST));
-        assert_eq!(result, expected);
-
-        let result: Result<HostRef, ParseError> = HostRef::try_from("LocalHost");
-        let expected: Result<HostRef, ParseError> = Err(InvalidHost);
-        assert_eq!(result, expected);
-    }
-
-    #[test]
-    fn parse_text() {
-        let test_cases: &[(&[u8], Result<HostRef, ParseError>)] = &[
-            (
-                "localhost".as_bytes(),
-                Ok(HostRef::Domain(DomainRef::LOCALHOST)),
-            ),
-            (
-                "127.0.0.1".as_bytes(),
-                Ok(IPv4Address::LOCALHOST.to_host_ref()),
-            ),
-            ("LocalHost".as_bytes(), Err(InvalidHost)),
-            (b"\xFF".as_slice(), Err(InvalidHost)),
+    fn parse() {
+        let test_cases: &[TestCase] = &[
+            (b"", Err(InvalidHost)),
+            (b"localhost", Ok(DomainRef::LOCALHOST.to_host_ref())),
+            (b"example.com", Ok(DomainRef::EXAMPLE.to_host_ref())),
+            (b"127.0.0.1", Ok(IPv4Address::LOCALHOST.to_host_ref())),
+            (b"::1", Ok(IPv6Address::LOCALHOST.to_host_ref())),
+            (b"[::1]", Err(InvalidHost)),
+            (b"LocalHost", Err(InvalidHost)),
+            (b"Local!Host", Err(InvalidHost)),
+            (b"\xFF", Err(InvalidHost)),
             ("ü".as_bytes(), Err(InvalidHost)),
         ];
 
         for (input, expected) in test_cases {
             let result: Result<HostRef, ParseError> = HostRef::parse_text(input);
-            assert_eq!(result, *expected, "input={:?}", input);
+            assert_eq!(result, *expected, "parse_text input={:?}", input);
+
+            let Ok(text) = std::str::from_utf8(input) else {
+                continue;
+            };
+
+            let result: Result<HostRef, ParseError> = HostRef::try_from(text);
+            assert_eq!(result, *expected, "try_from(&str) input={}", text);
         }
     }
 

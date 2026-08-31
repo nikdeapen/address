@@ -59,146 +59,78 @@ mod tests {
     use crate::{Authority, Domain, IPv4Address, IPv6Address, InvalidAddressError, ParseError};
     use std::str::FromStr;
 
+    type TestCase<'a> = (&'a [u8], Result<Authority, ParseError>);
+
+    /// Builds the expected authority for the canonical domain `name` & `port`.
+    fn authority(name: &str, port: u16) -> Authority {
+        Domain::try_from(name).unwrap().to_host().to_authority(port)
+    }
+
+    /// Every entry point must agree on every case; the owned ones normalize case.
     #[test]
-    fn from_str() {
-        let test_cases: &[(&str, Result<Authority, ParseError>)] = &[
-            ("", Err(InvalidPort)),
-            ("localhost:", Err(InvalidPort)),
-            ("localhost:xx", Err(InvalidPort)),
-            (":80", Err(InvalidHost)),
+    fn parse() {
+        let test_cases: &[TestCase] = &[
+            (b"", Err(InvalidPort)),
+            (b"localhost", Err(InvalidPort)),
+            (b"localhost:", Err(InvalidPort)),
+            (b"localhost:xx", Err(InvalidPort)),
+            (b"localhost:80", Ok(authority("localhost", 80))),
+            (b"LocalHost:80", Ok(authority("localhost", 80))),
             (
-                "127.0.0.1:80",
+                b"WWW.Example.COM:443",
+                Ok(authority("www.example.com", 443)),
+            ),
+            (b"A-B.C--D.EXAMPLE:0", Ok(authority("a-b.c--d.example", 0))),
+            (
+                b"127.0.0.1:80",
                 Ok(IPv4Address::LOCALHOST.to_host().to_authority(80)),
             ),
-            ("::1:80", Err(InvalidAuthority)),
             (
-                "[::1]:80",
+                b"[::1]:80",
                 Ok(IPv6Address::LOCALHOST.to_host().to_authority(80)),
             ),
             (
-                "[::FFFF]:80",
+                b"[::1%1]:80",
+                Ok(IPv6Address::LOCALHOST.to_host().to_authority(80)),
+            ),
+            (
+                b"[::FFFF]:80",
                 Ok(IPv6Address::from([0, 0, 0, 0, 0, 0, 0, 0xFFFF])
                     .to_host()
                     .to_authority(80)),
             ),
-            (
-                "[::1%1]:80",
-                Ok(IPv6Address::LOCALHOST.to_host().to_authority(80)),
-            ),
-            ("[::1%eth0]:80", Err(InvalidIPv6Address)),
-            (
-                "localhost:80",
-                Ok(Domain::localhost().to_host().to_authority(80)),
-            ),
-            (
-                "LocalHost:80",
-                Ok(Domain::localhost().to_host().to_authority(80)),
-            ),
-            ("Local_Host:80", Err(InvalidHost)),
+            (b"[::1%eth0]:80", Err(InvalidIPv6Address)),
+            (b"[]:80", Err(InvalidIPv6Address)),
+            (b"::1:80", Err(InvalidAuthority)),
+            (b"fe80::1:80", Err(InvalidAuthority)),
+            (b":80", Err(InvalidHost)),
+            (b"Local_Host:80", Err(InvalidHost)),
+            (b"Local!Host:80", Err(InvalidHost)),
+            (b"\xFF:80", Err(InvalidHost)),
+            ("ü:80".as_bytes(), Err(InvalidHost)),
         ];
 
         for (input, expected) in test_cases {
-            let result: Result<Authority, ParseError> = Authority::from_str(input);
-            assert_eq!(result, *expected, "input={}", input);
-        }
-    }
+            let result: Result<Authority, ParseError> = Authority::parse_text(input);
+            assert_eq!(result, *expected, "parse_text input={:?}", input);
 
-    #[test]
-    fn try_from_str() {
-        let result: Result<Authority, ParseError> = Authority::try_from("localhost:80");
-        let expected: Result<Authority, ParseError> =
-            Ok(Domain::localhost().to_host().to_authority(80));
-        assert_eq!(result, expected);
+            let Ok(text) = std::str::from_utf8(input) else {
+                continue;
+            };
 
-        let result: Result<Authority, ParseError> = Authority::try_from("LocalHost:80");
-        let expected: Result<Authority, ParseError> =
-            Ok(Domain::localhost().to_host().to_authority(80));
-        assert_eq!(result, expected);
-    }
+            let result: Result<Authority, ParseError> = Authority::from_str(text);
+            assert_eq!(result, *expected, "from_str input={}", text);
 
-    #[test]
-    fn parse_text() {
-        let result: Result<Authority, ParseError> =
-            Authority::parse_text("LocalHost:80".as_bytes());
-        let expected: Result<Authority, ParseError> =
-            Ok(Domain::localhost().to_host().to_authority(80));
-        assert_eq!(result, expected);
+            let result: Result<Authority, ParseError> = Authority::try_from(text);
+            assert_eq!(result, *expected, "try_from(&str) input={}", text);
 
-        let result: Result<Authority, ParseError> = Authority::parse_text(b"\xFF:80".as_slice());
-        let expected: Result<Authority, ParseError> = Err(InvalidHost);
-        assert_eq!(result, expected);
-    }
-
-    #[test]
-    fn try_from_string() {
-        let test_cases: &[(&str, Result<Authority, ParseError>)] = &[
-            (
-                "localhost:80",
-                Ok(Domain::localhost().to_host().to_authority(80)),
-            ),
-            (
-                "LocalHost:80",
-                Ok(Domain::localhost().to_host().to_authority(80)),
-            ),
-            (
-                "[::1]:80",
-                Ok(IPv6Address::LOCALHOST.to_host().to_authority(80)),
-            ),
-            (
-                "[::1%1]:80",
-                Ok(IPv6Address::LOCALHOST.to_host().to_authority(80)),
-            ),
-            ("[::1%eth0]:80", Err(InvalidIPv6Address)),
-            ("::1:80", Err(InvalidAuthority)),
-            ("Local!Host:80", Err(InvalidHost)),
-            ("localhost:", Err(InvalidPort)),
-            (
-                "127.0.0.1:80",
-                Ok(IPv4Address::LOCALHOST.to_host().to_authority(80)),
-            ),
-        ];
-
-        for (input, expected) in test_cases {
             let result: Result<Authority, InvalidAddressError<String>> =
-                Authority::try_from(input.to_string());
-            match result {
-                Ok(value) => assert_eq!(Ok(value), *expected, "input={}", input),
-                Err(error) => {
-                    assert_eq!(error.value().as_str(), *input, "recovered input={}", input);
-                    assert_eq!(Err(error.error()), *expected, "input={}", input);
-                }
-            }
-        }
-    }
-
-    /// Mixed-case domain names are lowercased on every owned parse path.
-    #[test]
-    fn normalizes_case() {
-        let test_cases: &[(&str, &str)] = &[
-            ("LocalHost:80", "localhost:80"),
-            ("WWW.Example.COM:443", "www.example.com:443"),
-            ("A-B.C--D.EXAMPLE:0", "a-b.c--d.example:0"),
-        ];
-
-        for (input, expected) in test_cases {
-            let authority: Authority = input.parse().unwrap();
-            assert_eq!(authority.to_string(), *expected, "from_str input={}", input);
-
-            let authority: Authority = Authority::parse_text(input.as_bytes()).unwrap();
-            assert_eq!(
-                authority.to_string(),
-                *expected,
-                "parse_text input={}",
-                input
-            );
-
-            let authority: Authority = Authority::try_from(input.to_string()).unwrap();
-            assert_eq!(
-                authority.to_string(),
-                *expected,
-                "try_from(String) input={}",
-                input
-            );
+                Authority::try_from(text.to_string());
+            let result: Result<Authority, ParseError> = result.map_err(|error| {
+                assert_eq!(error.value().as_str(), text, "recovered input={}", text);
+                error.error()
+            });
+            assert_eq!(result, *expected, "try_from(String) input={}", text);
         }
     }
 
