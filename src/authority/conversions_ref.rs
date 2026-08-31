@@ -11,33 +11,30 @@ impl<'a> AuthorityRef<'a> {
         Authority::new(self.host().to_host(), self.port())
     }
 
-    /// Converts the authority reference to an optional endpoint.
-    #[must_use]
-    pub fn to_endpoint(self) -> Option<Endpoint> {
+    /// Converts the authority reference to an endpoint.
+    pub fn to_endpoint(self) -> Result<Endpoint, Self> {
         if let HostRef::Domain(domain) = self.host() {
-            Some(Endpoint::new(domain.to_domain(), self.port()))
+            Ok(Endpoint::new(domain.to_domain(), self.port()))
         } else {
-            None
+            Err(self)
         }
     }
 
-    /// Converts the authority reference to an optional endpoint reference.
-    #[must_use]
-    pub const fn to_endpoint_ref(self) -> Option<EndpointRef<'a>> {
+    /// Converts the authority reference to an endpoint reference.
+    pub const fn to_endpoint_ref(self) -> Result<EndpointRef<'a>, Self> {
         if let HostRef::Domain(domain) = self.host() {
-            Some(EndpointRef::new(domain, self.port()))
+            Ok(EndpointRef::new(domain, self.port()))
         } else {
-            None
+            Err(self)
         }
     }
 
-    /// Converts the authority reference to an optional socket address.
-    #[must_use]
-    pub const fn to_socket(self) -> Option<SocketAddress> {
+    /// Converts the authority reference to a socket address.
+    pub const fn to_socket(self) -> Result<SocketAddress, Self> {
         if let HostRef::IP(ip) = self.host() {
-            Some(SocketAddress::new(ip, self.port()))
+            Ok(SocketAddress::new(ip, self.port()))
         } else {
-            None
+            Err(self)
         }
     }
 }
@@ -90,34 +87,36 @@ mod tests {
     #[test]
     fn ref_to_endpoint() {
         let authority: AuthorityRef = AuthorityRef::new(HostRef::Domain(DomainRef::LOCALHOST), 80);
-        let result: Option<Endpoint> = authority.to_endpoint();
-        let expected: Option<Endpoint> = Some(Endpoint::new(Domain::localhost(), 80));
+        let result: Result<Endpoint, AuthorityRef> = authority.to_endpoint();
+        let expected: Result<Endpoint, AuthorityRef> = Ok(Endpoint::new(Domain::localhost(), 80));
         assert_eq!(result, expected);
 
-        let result: Option<EndpointRef> = authority.to_endpoint_ref();
-        let expected: Option<EndpointRef> = Some(EndpointRef::new(DomainRef::LOCALHOST, 80));
+        let result: Result<EndpointRef, AuthorityRef> = authority.to_endpoint_ref();
+        let expected: Result<EndpointRef, AuthorityRef> =
+            Ok(EndpointRef::new(DomainRef::LOCALHOST, 80));
         assert_eq!(result, expected);
 
         let authority: AuthorityRef = AuthorityRef::new(IPv4Address::LOCALHOST.to_host_ref(), 80);
-        let result: Option<Endpoint> = authority.to_endpoint();
-        let expected: Option<Endpoint> = None;
+        let result: Result<Endpoint, AuthorityRef> = authority.to_endpoint();
+        let expected: Result<Endpoint, AuthorityRef> = Err(authority);
         assert_eq!(result, expected);
 
-        let result: Option<EndpointRef> = authority.to_endpoint_ref();
-        let expected: Option<EndpointRef> = None;
+        let result: Result<EndpointRef, AuthorityRef> = authority.to_endpoint_ref();
+        let expected: Result<EndpointRef, AuthorityRef> = Err(authority);
         assert_eq!(result, expected);
     }
 
     #[test]
     fn ref_to_socket() {
         let authority: AuthorityRef = AuthorityRef::new(IPv4Address::LOCALHOST.to_host_ref(), 80);
-        let result: Option<SocketAddress> = authority.to_socket();
-        let expected: Option<SocketAddress> = Some(IPv4Address::LOCALHOST.to_ip().to_socket(80));
+        let result: Result<SocketAddress, AuthorityRef> = authority.to_socket();
+        let expected: Result<SocketAddress, AuthorityRef> =
+            Ok(IPv4Address::LOCALHOST.to_ip().to_socket(80));
         assert_eq!(result, expected);
 
         let authority: AuthorityRef = AuthorityRef::new(HostRef::Domain(DomainRef::LOCALHOST), 80);
-        let result: Option<SocketAddress> = authority.to_socket();
-        let expected: Option<SocketAddress> = None;
+        let result: Result<SocketAddress, AuthorityRef> = authority.to_socket();
+        let expected: Result<SocketAddress, AuthorityRef> = Err(authority);
         assert_eq!(result, expected);
     }
 

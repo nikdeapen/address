@@ -3,23 +3,21 @@ use crate::{Authority, AuthorityRef, IPAddress, SocketAddress, SocketAddressV4, 
 impl SocketAddress {
     //! Conversions
 
-    /// Converts the socket address to an optional IPv4 socket address.
-    #[must_use]
-    pub const fn to_v4(self) -> Option<SocketAddressV4> {
+    /// Converts the socket address to an IPv4 socket address.
+    pub const fn to_v4(self) -> Result<SocketAddressV4, Self> {
         if let IPAddress::V4(v4) = self.ip() {
-            Some(SocketAddressV4::new(v4, self.port()))
+            Ok(SocketAddressV4::new(v4, self.port()))
         } else {
-            None
+            Err(self)
         }
     }
 
-    /// Converts the socket address to an optional IPv6 socket address.
-    #[must_use]
-    pub const fn to_v6(self) -> Option<SocketAddressV6> {
+    /// Converts the socket address to an IPv6 socket address.
+    pub const fn to_v6(self) -> Result<SocketAddressV6, Self> {
         if let IPAddress::V6(v6) = self.ip() {
-            Some(SocketAddressV6::new(v6, self.port()))
+            Ok(SocketAddressV6::new(v6, self.port()))
         } else {
-            None
+            Err(self)
         }
     }
 
@@ -56,28 +54,28 @@ mod tests {
     #[test]
     fn socket_to_v4() {
         let socket: SocketAddress = IPv4Address::LOCALHOST.to_ip().to_socket(80);
-        let result: Option<SocketAddressV4> = socket.to_v4();
-        let expected: Option<SocketAddressV4> =
-            Some(SocketAddressV4::new(IPv4Address::LOCALHOST, 80));
+        let result: Result<SocketAddressV4, SocketAddress> = socket.to_v4();
+        let expected: Result<SocketAddressV4, SocketAddress> =
+            Ok(SocketAddressV4::new(IPv4Address::LOCALHOST, 80));
         assert_eq!(result, expected);
 
         let socket: SocketAddress = IPv6Address::LOCALHOST.to_ip().to_socket(80);
-        let result: Option<SocketAddressV4> = socket.to_v4();
-        let expected: Option<SocketAddressV4> = None;
+        let result: Result<SocketAddressV4, SocketAddress> = socket.to_v4();
+        let expected: Result<SocketAddressV4, SocketAddress> = Err(socket);
         assert_eq!(result, expected);
     }
 
     #[test]
     fn socket_to_v6() {
         let socket: SocketAddress = IPv4Address::LOCALHOST.to_ip().to_socket(80);
-        let result: Option<SocketAddressV6> = socket.to_v6();
-        let expected: Option<SocketAddressV6> = None;
+        let result: Result<SocketAddressV6, SocketAddress> = socket.to_v6();
+        let expected: Result<SocketAddressV6, SocketAddress> = Err(socket);
         assert_eq!(result, expected);
 
         let socket: SocketAddress = IPv6Address::LOCALHOST.to_ip().to_socket(80);
-        let result: Option<SocketAddressV6> = socket.to_v6();
-        let expected: Option<SocketAddressV6> =
-            Some(SocketAddressV6::new(IPv6Address::LOCALHOST, 80));
+        let result: Result<SocketAddressV6, SocketAddress> = socket.to_v6();
+        let expected: Result<SocketAddressV6, SocketAddress> =
+            Ok(SocketAddressV6::new(IPv6Address::LOCALHOST, 80));
         assert_eq!(result, expected);
     }
 
