@@ -21,7 +21,7 @@ impl HostForm {
     pub(crate) fn classify(host: &[u8]) -> Result<Self, ParseError> {
         if let Some(ip) = IPv6Address::parse_bracketed(host) {
             Ok(Self::IP(ip?.to_ip()))
-        } else if let Ok(ip) = IPAddress::parse_text(host) {
+        } else if let Ok(ip) = IPAddress::parse(host) {
             if ip.is_v6() {
                 Err(InvalidAuthority)
             } else {

@@ -11,13 +11,14 @@ pub use parse::*;
 pub use socket::*;
 
 mod authority;
-mod display;
 mod domain;
 mod endpoint;
 mod host;
 mod ip;
 mod parse;
 mod socket;
+
+mod display;
 
 #[cfg(feature = "serde")]
 mod serde;

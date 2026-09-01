@@ -6,7 +6,7 @@ macro_rules! impl_parse {
 
             $(#[doc = $doc])*
             fn from_str(text: &str) -> Result<Self, Self::Err> {
-                Self::parse_text(text.as_bytes())
+                Self::parse(text.as_bytes())
             }
         }
 
@@ -15,7 +15,7 @@ macro_rules! impl_parse {
 
             $(#[doc = $doc])*
             fn try_from(text: &str) -> Result<Self, Self::Error> {
-                Self::parse_text(text.as_bytes())
+                Self::parse(text.as_bytes())
             }
         }
     };
@@ -48,7 +48,7 @@ macro_rules! impl_parse_ref {
 
             $(#[doc = $doc])*
             fn try_from(text: &'a str) -> Result<Self, Self::Error> {
-                Self::parse_text(text.as_bytes())
+                Self::parse(text.as_bytes())
             }
         }
     };

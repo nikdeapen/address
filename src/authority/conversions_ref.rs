@@ -31,7 +31,7 @@ impl<'a> AuthorityRef<'a> {
 
     /// Converts the authority reference to a socket address.
     pub const fn to_socket(self) -> Result<SocketAddress, Self> {
-        if let HostRef::IP(ip) = self.host() {
+        if let HostRef::IPAddress(ip) = self.host() {
             Ok(SocketAddress::new(ip, self.port()))
         } else {
             Err(self)

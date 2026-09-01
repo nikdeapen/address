@@ -10,8 +10,8 @@ impl IPv6Address {
     /// (ffff:ffff:ffff:ffff:ffff:ffff:255.255.255.255)
     const MAX_STR_LEN: usize = 45;
 
-    /// Parses the IPv6 address text.
-    pub fn parse_text(text: &[u8]) -> Result<Self, ParseError> {
+    /// Parses an [IPv6Address] from the `text`.
+    pub fn parse(text: &[u8]) -> Result<Self, ParseError> {
         if text.len() > Self::MAX_STR_LEN {
             return Err(InvalidIPv6Address);
         }
@@ -23,29 +23,16 @@ impl IPv6Address {
 
     /// Parses the bracketed IPv6 address text, ignoring an optional numeric zone.
     ///
-    /// Returns `None` if the address is not bracketed. A bracketed address with an invalid
-    /// interior, the zone included, is `Some(Err(InvalidIPv6Address))`: the brackets declare the
-    /// version, so the error blames the IPv6 address rather than the caller's own variant.
+    /// Returns `None` if the address is not bracketed. A bracketed but invalid interior, the zone
+    /// included, is `Some(Err(InvalidIPv6Address))`: the brackets declare the version, so callers
+    /// propagate it rather than substituting their own error.
     pub(crate) fn parse_bracketed(text: &[u8]) -> Option<Result<Self, ParseError>> {
-        let text: &[u8] = Self::strip_brackets(text)?;
+        let text: &[u8] = text.strip_prefix(b"[")?.strip_suffix(b"]")?;
         if let Some(text) = Self::strip_zone(text) {
-            Some(Self::parse_text(text))
+            Some(Self::parse(text))
         } else {
             Some(Err(InvalidIPv6Address))
         }
-    }
-
-    /// Strips the surrounding brackets from the `text`.
-    ///
-    /// Returns `None` if the address is not bracketed.
-    ///
-    /// # Examples
-    /// `[::1]`   -> `Some("::1")`
-    /// `[]`      -> `Some("")`
-    /// `::1`     -> `None`
-    /// `[::1`    -> `None`
-    fn strip_brackets(text: &[u8]) -> Option<&[u8]> {
-        text.strip_prefix(b"[")?.strip_suffix(b"]")
     }
 
     /// Strips the ignored zone suffix from the `text`, the inner text of a bracketed IPv6 address.
@@ -78,7 +65,7 @@ impl IPv6Address {
 
 impl_parse!(
     IPv6Address,
-    "Matches the standard library, including the embedded IPv4 form. (`::ffff:1.2.3.4`)",
+    "The embedded IPv4 form is accepted. (`::ffff:1.2.3.4`)",
     "Brackets & zones are not accepted; see [`SocketAddressV6`](crate::SocketAddressV6)."
 );
 
@@ -90,8 +77,6 @@ mod tests {
 
     type TestCase<'a> = (&'a [u8], Result<IPv6Address, ParseError>);
 
-    /// Every entry point must agree on every case, the length & UTF-8 guards included. The bare
-    /// address takes neither brackets nor a zone; only the bracketed socket parsers accept those.
     #[test]
     fn parse() {
         let over_max: Vec<u8> = vec![b'0'; IPv6Address::MAX_STR_LEN + 1];
@@ -110,8 +95,8 @@ mod tests {
         ];
 
         for (input, expected) in test_cases {
-            let result: Result<IPv6Address, ParseError> = IPv6Address::parse_text(input);
-            assert_eq!(result, *expected, "parse_text input={:?}", input);
+            let result: Result<IPv6Address, ParseError> = IPv6Address::parse(input);
+            assert_eq!(result, *expected, "parse input={:?}", input);
 
             let Ok(text) = std::str::from_utf8(input) else {
                 continue;
@@ -122,25 +107,6 @@ mod tests {
 
             let result: Result<IPv6Address, ParseError> = IPv6Address::try_from(text);
             assert_eq!(result, *expected, "try_from(&str) input={}", text);
-        }
-    }
-
-    #[test]
-    fn strip_brackets() {
-        let test_cases: &[(&str, Option<&str>)] = &[
-            ("[::1]", Some("::1")),
-            ("[]", Some("")),
-            ("::1", None),
-            ("[::1", None),
-            ("::1]", None),
-            ("", None),
-            ("[", None),
-        ];
-
-        for (input, expected) in test_cases {
-            let result: Option<&[u8]> = IPv6Address::strip_brackets(input.as_bytes());
-            let expected: Option<&[u8]> = expected.map(str::as_bytes);
-            assert_eq!(result, expected, "input={}", input);
         }
     }
 
@@ -166,7 +132,6 @@ mod tests {
         }
     }
 
-    /// Each canonical string must parse and display back to the exact same string.
     #[test]
     fn round_trip() {
         let canonical: &[&str] = &[

@@ -4,18 +4,15 @@ use crate::{IPv4Address, ParseError, SocketAddressV4, impl_parse};
 impl SocketAddressV4 {
     //! Parse
 
-    /// An IPv4 address & a decimal port: `127.0.0.1:80`.
-    pub fn parse_text(text: &[u8]) -> Result<Self, ParseError> {
+    /// Parses a [SocketAddressV4] from the `text`.
+    pub fn parse(text: &[u8]) -> Result<Self, ParseError> {
         let (ip, port): (&[u8], u16) = parse_port(text)?;
-        let ip: IPv4Address = IPv4Address::parse_text(ip)?;
+        let ip: IPv4Address = IPv4Address::parse(ip)?;
         Ok(Self::new(ip, port))
     }
 }
 
-impl_parse!(
-    SocketAddressV4,
-    "An IPv4 address & a decimal port: `127.0.0.1:80`."
-);
+impl_parse!(SocketAddressV4);
 
 #[cfg(test)]
 mod tests {
@@ -25,7 +22,6 @@ mod tests {
 
     type TestCase<'a> = (&'a [u8], Result<SocketAddressV4, ParseError>);
 
-    /// Every entry point must agree on every case, non-UTF-8 bytes included.
     #[test]
     fn parse() {
         let test_cases: &[TestCase] = &[
@@ -48,8 +44,8 @@ mod tests {
         ];
 
         for (input, expected) in test_cases {
-            let result: Result<SocketAddressV4, ParseError> = SocketAddressV4::parse_text(input);
-            assert_eq!(result, *expected, "parse_text input={:?}", input);
+            let result: Result<SocketAddressV4, ParseError> = SocketAddressV4::parse(input);
+            assert_eq!(result, *expected, "parse input={:?}", input);
 
             let Ok(text) = std::str::from_utf8(input) else {
                 continue;
@@ -63,7 +59,6 @@ mod tests {
         }
     }
 
-    /// Each canonical string must parse and display back to the exact same string.
     #[test]
     fn round_trip() {
         let canonical: &[&str] = &["0.0.0.0:0", "127.0.0.1:80", "255.255.255.255:65535"];

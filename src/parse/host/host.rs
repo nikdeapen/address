@@ -6,12 +6,11 @@ use crate::{
 impl Host {
     //! Parse
 
-    /// A domain name or an unbracketed IP address: `localhost`, `127.0.0.1`, or `::1`.
-    /// Domain names are normalized to lowercase.
-    pub fn parse_text(text: &[u8]) -> Result<Self, ParseError> {
-        if let Ok(ip) = IPAddress::parse_text(text) {
+    /// Parses a [Host] from the `text`.
+    pub fn parse(text: &[u8]) -> Result<Self, ParseError> {
+        if let Ok(ip) = IPAddress::parse(text) {
             Ok(ip.to_host())
-        } else if let Ok(domain) = Domain::parse_text(text) {
+        } else if let Ok(domain) = Domain::parse(text) {
             Ok(domain.to_host())
         } else {
             Err(InvalidHost)
@@ -22,7 +21,7 @@ impl Host {
     ///
     /// The error holds the unmodified `text`, which `TryFrom<String>` soundly recovers as a string.
     pub(crate) fn parse_vec(text: Vec<u8>) -> Result<Self, InvalidAddressError<Vec<u8>>> {
-        if let Ok(ip) = IPAddress::parse_text(text.as_slice()) {
+        if let Ok(ip) = IPAddress::parse(text.as_slice()) {
             Ok(ip.to_host())
         } else {
             let len: usize = text.len();
@@ -35,13 +34,13 @@ impl Host {
 
 impl_parse!(
     Host,
-    "A domain name or an unbracketed IP address: `localhost`, `127.0.0.1`, or `::1`.",
+    "IP addresses must be unbracketed: `::1`, not `[::1]`.",
     "Domain names are normalized to lowercase."
 );
 
 impl_parse_string!(
     Host,
-    "A domain name or an unbracketed IP address: `localhost`, `127.0.0.1`, or `::1`.",
+    "IP addresses must be unbracketed: `::1`, not `[::1]`.",
     "Domain names are normalized to lowercase."
 );
 
@@ -53,12 +52,10 @@ mod tests {
 
     type TestCase<'a> = (&'a [u8], Result<Host, ParseError>);
 
-    /// Builds the expected host for the canonical domain `name`.
     fn host(name: &str) -> Host {
         Domain::try_from(name).unwrap().to_host()
     }
 
-    /// Every entry point must agree on every case; the owned ones normalize case.
     #[test]
     fn parse() {
         let test_cases: &[TestCase] = &[
@@ -81,8 +78,8 @@ mod tests {
         ];
 
         for (input, expected) in test_cases {
-            let result: Result<Host, ParseError> = Host::parse_text(input);
-            assert_eq!(result, *expected, "parse_text input={:?}", input);
+            let result: Result<Host, ParseError> = Host::parse(input);
+            assert_eq!(result, *expected, "parse input={:?}", input);
 
             let Ok(text) = std::str::from_utf8(input) else {
                 continue;
@@ -104,7 +101,6 @@ mod tests {
         }
     }
 
-    /// Each canonical string must parse and display back to the exact same string.
     #[test]
     fn round_trip() {
         let canonical: &[&str] = &[

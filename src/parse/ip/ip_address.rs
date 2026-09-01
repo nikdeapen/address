@@ -4,11 +4,11 @@ use crate::{IPAddress, IPv4Address, IPv6Address, ParseError, impl_parse};
 impl IPAddress {
     //! Parse
 
-    /// Parses the IP address text.
-    pub fn parse_text(text: &[u8]) -> Result<Self, ParseError> {
-        if let Ok(ip) = IPv4Address::parse_text(text) {
+    /// Parses an [IPAddress] from the `text`.
+    pub fn parse(text: &[u8]) -> Result<Self, ParseError> {
+        if let Ok(ip) = IPv4Address::parse(text) {
             Ok(ip.to_ip())
-        } else if let Ok(ip) = IPv6Address::parse_text(text) {
+        } else if let Ok(ip) = IPv6Address::parse(text) {
             Ok(ip.to_ip())
         } else {
             Err(InvalidIPAddress)
@@ -16,10 +16,7 @@ impl IPAddress {
     }
 }
 
-impl_parse!(
-    IPAddress,
-    "An IPv4 or an IPv6 address in the standard library syntax."
-);
+impl_parse!(IPAddress);
 
 #[cfg(test)]
 mod tests {
@@ -29,7 +26,6 @@ mod tests {
 
     type TestCase<'a> = (&'a [u8], Result<IPAddress, ParseError>);
 
-    /// Every entry point must agree on every case.
     #[test]
     fn parse() {
         let test_cases: &[TestCase] = &[
@@ -47,8 +43,8 @@ mod tests {
         ];
 
         for (input, expected) in test_cases {
-            let result: Result<IPAddress, ParseError> = IPAddress::parse_text(input);
-            assert_eq!(result, *expected, "parse_text input={:?}", input);
+            let result: Result<IPAddress, ParseError> = IPAddress::parse(input);
+            assert_eq!(result, *expected, "parse input={:?}", input);
 
             let Ok(text) = std::str::from_utf8(input) else {
                 continue;
@@ -62,7 +58,6 @@ mod tests {
         }
     }
 
-    /// Each canonical string must parse and display back to the exact same string.
     #[test]
     fn round_trip() {
         let canonical: &[&str] = &[

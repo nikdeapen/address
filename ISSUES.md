@@ -11,5 +11,7 @@
 
 ## Performance
 
+- Guard the IP `parse` fns with `is_ascii()` + an unchecked conversion; the checked `from_utf8`
+  costs up to 38%.
 - Revisit the `parse` byte -> str conversions with `[u8]::as_ascii()` when nightly `ascii_char`
   (rust#110998).

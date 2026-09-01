@@ -61,6 +61,14 @@ mod tests {
     }
 
     #[test]
+    fn ref_from() {
+        let owned: Endpoint = Endpoint::new(Domain::localhost(), 80);
+        let result: EndpointRef = (&owned).into();
+        let expected: EndpointRef = EndpointRef::new(DomainRef::LOCALHOST, 80);
+        assert_eq!(result, expected);
+    }
+
+    #[test]
     fn ref_try_from() {
         let authority: AuthorityRef = DomainRef::LOCALHOST.to_host_ref().to_authority_ref(80);
         let expected: EndpointRef = EndpointRef::new(DomainRef::LOCALHOST, 80);
@@ -68,13 +76,5 @@ mod tests {
 
         let authority: AuthorityRef = IPv4Address::LOCALHOST.to_host_ref().to_authority_ref(80);
         assert_eq!(EndpointRef::try_from(authority), Err(authority));
-    }
-
-    #[test]
-    fn ref_from() {
-        let owned: Endpoint = Endpoint::new(Domain::localhost(), 80);
-        let result: EndpointRef = (&owned).into();
-        let expected: EndpointRef = EndpointRef::new(DomainRef::LOCALHOST, 80);
-        assert_eq!(result, expected);
     }
 }

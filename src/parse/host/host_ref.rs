@@ -4,13 +4,11 @@ use crate::{DomainRef, HostRef, IPAddress, ParseError, impl_parse_ref};
 impl<'a> HostRef<'a> {
     //! Parse
 
-    /// A domain name or an unbracketed IP address: `localhost`, `127.0.0.1`, or `::1`.
-    /// Domain names must already be in lowercase. Use [`Host`](crate::Host) to parse mixed-case
-    /// input.
-    pub fn parse_text(text: &'a [u8]) -> Result<Self, ParseError> {
-        if let Ok(ip) = IPAddress::parse_text(text) {
+    /// Parses a [HostRef] from the `text`.
+    pub fn parse(text: &'a [u8]) -> Result<Self, ParseError> {
+        if let Ok(ip) = IPAddress::parse(text) {
             Ok(ip.to_host_ref())
-        } else if let Ok(domain) = DomainRef::parse_text(text) {
+        } else if let Ok(domain) = DomainRef::parse(text) {
             Ok(domain.to_host_ref())
         } else {
             Err(InvalidHost)
@@ -20,9 +18,8 @@ impl<'a> HostRef<'a> {
 
 impl_parse_ref!(
     HostRef,
-    "A domain name or an unbracketed IP address: `localhost`, `127.0.0.1`, or `::1`.",
-    "Domain names must already be in lowercase.",
-    "Use [`Host`](crate::Host) to parse mixed-case input."
+    "IP addresses must be unbracketed: `::1`, not `[::1]`.",
+    "A domain must already be lowercase; use [`Host`](crate::Host) for mixed-case input."
 );
 
 #[cfg(test)]
@@ -32,7 +29,6 @@ mod tests {
 
     type TestCase<'a> = (&'a [u8], Result<HostRef<'a>, ParseError>);
 
-    /// Every entry point must agree on every case; mixed case is rejected, not normalized.
     #[test]
     fn parse() {
         let test_cases: &[TestCase] = &[
@@ -49,8 +45,8 @@ mod tests {
         ];
 
         for (input, expected) in test_cases {
-            let result: Result<HostRef, ParseError> = HostRef::parse_text(input);
-            assert_eq!(result, *expected, "parse_text input={:?}", input);
+            let result: Result<HostRef, ParseError> = HostRef::parse(input);
+            assert_eq!(result, *expected, "parse input={:?}", input);
 
             let Ok(text) = std::str::from_utf8(input) else {
                 continue;
@@ -61,7 +57,6 @@ mod tests {
         }
     }
 
-    /// Each canonical string must parse and display back to the exact same string.
     #[test]
     fn round_trip() {
         let canonical: &[&str] = &["localhost", "example.com", "127.0.0.1", "::1", "fe80::1"];
