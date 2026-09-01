@@ -5,14 +5,13 @@ use crate::{IPv4Address, IPv6Address, ParseError, SocketAddress, impl_parse};
 impl SocketAddress {
     //! Parse
 
-    /// An IPv4 address or a bracketed IPv6 address, & a decimal port: `127.0.0.1:80` or `[::1]:80`.
-    /// A numeric IPv6 zone is accepted & ignored: `[fe80::1%1]:80` parses as `[fe80::1]:80`.
-    pub fn parse_text(text: &[u8]) -> Result<Self, ParseError> {
+    /// Parses a [SocketAddress] from the `text`.
+    pub fn parse(text: &[u8]) -> Result<Self, ParseError> {
         let (ip, port): (&[u8], u16) = parse_port(text)?;
         if let Some(ip) = IPv6Address::parse_bracketed(ip) {
             Ok(ip?.to_ip().to_socket(port))
         } else {
-            let ip: IPv4Address = IPv4Address::parse_text(ip).map_err(|_| InvalidSocketAddress)?;
+            let ip: IPv4Address = IPv4Address::parse(ip).map_err(|_| InvalidSocketAddress)?;
             Ok(ip.to_ip().to_socket(port))
         }
     }
@@ -20,7 +19,7 @@ impl SocketAddress {
 
 impl_parse!(
     SocketAddress,
-    "An IPv4 address or a bracketed IPv6 address, & a decimal port: `127.0.0.1:80` or `[::1]:80`.",
+    "An IPv6 address must be bracketed: `[::1]:80`.",
     "A numeric IPv6 zone is accepted & ignored: `[fe80::1%1]:80` parses as `[fe80::1]:80`."
 );
 
@@ -32,7 +31,6 @@ mod tests {
 
     type TestCase<'a> = (&'a [u8], Result<SocketAddress, ParseError>);
 
-    /// Every entry point must agree on every case, non-UTF-8 bytes included.
     #[test]
     fn parse() {
         let test_cases: &[TestCase] = &[
@@ -75,8 +73,8 @@ mod tests {
         ];
 
         for (input, expected) in test_cases {
-            let result: Result<SocketAddress, ParseError> = SocketAddress::parse_text(input);
-            assert_eq!(result, *expected, "parse_text input={:?}", input);
+            let result: Result<SocketAddress, ParseError> = SocketAddress::parse(input);
+            assert_eq!(result, *expected, "parse input={:?}", input);
 
             let Ok(text) = std::str::from_utf8(input) else {
                 continue;
@@ -90,7 +88,6 @@ mod tests {
         }
     }
 
-    /// Each canonical string must parse and display back to the exact same string.
     #[test]
     fn round_trip() {
         let canonical: &[&str] = &["127.0.0.1:80", "[::1]:443", "[fe80::1]:0", "0.0.0.0:0"];

@@ -100,12 +100,25 @@ mod tests {
         let socket: SocketAddress = SocketAddress::new(IPAddress::V4(IPv4Address::LOCALHOST), 80);
         let result: Authority = socket.to_authority();
         let expected: Authority =
-            Authority::new(Host::IP(IPAddress::V4(IPv4Address::LOCALHOST)), 80);
+            Authority::new(Host::IPAddress(IPAddress::V4(IPv4Address::LOCALHOST)), 80);
         assert_eq!(result, expected);
 
         let result: AuthorityRef = socket.to_authority_ref();
-        let expected: AuthorityRef =
-            AuthorityRef::new(HostRef::IP(IPAddress::V4(IPv4Address::LOCALHOST)), 80);
+        let expected: AuthorityRef = AuthorityRef::new(
+            HostRef::IPAddress(IPAddress::V4(IPv4Address::LOCALHOST)),
+            80,
+        );
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn socket_from() {
+        let expected: SocketAddress = SocketAddress::new(IPAddress::V4(IPv4Address::LOCALHOST), 80);
+        let result: SocketAddress = IPv4Address::LOCALHOST.to_socket(80).into();
+        assert_eq!(result, expected);
+
+        let expected: SocketAddress = SocketAddress::new(IPAddress::V6(IPv6Address::LOCALHOST), 80);
+        let result: SocketAddress = IPv6Address::LOCALHOST.to_socket(80).into();
         assert_eq!(result, expected);
     }
 
@@ -127,16 +140,5 @@ mod tests {
 
         let authority: AuthorityRef = DomainRef::LOCALHOST.to_host_ref().to_authority_ref(80);
         assert_eq!(SocketAddress::try_from(authority), Err(authority));
-    }
-
-    #[test]
-    fn socket_from() {
-        let expected: SocketAddress = SocketAddress::new(IPAddress::V4(IPv4Address::LOCALHOST), 80);
-        let result: SocketAddress = IPv4Address::LOCALHOST.to_socket(80).into();
-        assert_eq!(result, expected);
-
-        let expected: SocketAddress = SocketAddress::new(IPAddress::V6(IPv6Address::LOCALHOST), 80);
-        let result: SocketAddress = IPv6Address::LOCALHOST.to_socket(80).into();
-        assert_eq!(result, expected);
     }
 }

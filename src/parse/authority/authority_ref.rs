@@ -5,16 +5,13 @@ use crate::{AuthorityRef, DomainRef, HostForm, ParseError, impl_parse_ref};
 impl<'a> AuthorityRef<'a> {
     //! Parse
 
-    /// A host & a decimal port; an IPv6 host must be bracketed: `localhost:80` or `[::1]:80`.
-    /// Domain names must already be in lowercase. Use [`Authority`](crate::Authority) to parse
-    /// mixed-case input.
-    /// A numeric IPv6 zone is accepted & ignored: `[fe80::1%1]:80` parses as `[fe80::1]:80`.
-    pub fn parse_text(text: &'a [u8]) -> Result<Self, ParseError> {
+    /// Parses an [AuthorityRef] from the `text`.
+    pub fn parse(text: &'a [u8]) -> Result<Self, ParseError> {
         let (host, port): (&'a [u8], u16) = parse_port(text)?;
         match HostForm::classify(host)? {
             HostForm::IP(ip) => Ok(ip.to_host_ref().to_authority_ref(port)),
             HostForm::Domain => {
-                let domain: DomainRef = DomainRef::parse_text(host).map_err(|_| InvalidHost)?;
+                let domain: DomainRef = DomainRef::parse(host).map_err(|_| InvalidHost)?;
                 Ok(domain.to_host_ref().to_authority_ref(port))
             }
         }
@@ -23,9 +20,8 @@ impl<'a> AuthorityRef<'a> {
 
 impl_parse_ref!(
     AuthorityRef,
-    "A host & a decimal port; an IPv6 host must be bracketed: `localhost:80` or `[::1]:80`.",
-    "Domain names must already be in lowercase.",
-    "Use [`Authority`](crate::Authority) to parse mixed-case input.",
+    "An IPv6 host must be bracketed: `[::1]:80`.",
+    "A domain must already be lowercase; use [`Authority`](crate::Authority) for mixed-case input.",
     "A numeric IPv6 zone is accepted & ignored: `[fe80::1%1]:80` parses as `[fe80::1]:80`."
 );
 
@@ -36,7 +32,6 @@ mod tests {
 
     type TestCase<'a> = (&'a [u8], Result<AuthorityRef<'a>, ParseError>);
 
-    /// Every entry point must agree on every case; mixed case is rejected, not normalized.
     #[test]
     fn parse() {
         let test_cases: &[TestCase] = &[
@@ -72,8 +67,8 @@ mod tests {
         ];
 
         for (input, expected) in test_cases {
-            let result: Result<AuthorityRef, ParseError> = AuthorityRef::parse_text(input);
-            assert_eq!(result, *expected, "parse_text input={:?}", input);
+            let result: Result<AuthorityRef, ParseError> = AuthorityRef::parse(input);
+            assert_eq!(result, *expected, "parse input={:?}", input);
 
             let Ok(text) = std::str::from_utf8(input) else {
                 continue;
@@ -84,7 +79,6 @@ mod tests {
         }
     }
 
-    /// Each canonical string must parse and display back to the exact same string.
     #[test]
     fn round_trip() {
         let canonical: &[&str] = &[

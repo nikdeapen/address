@@ -43,6 +43,22 @@ mod tests {
     }
 
     #[test]
+    fn v6_to_authority() {
+        let socket: SocketAddressV6 = IPv6Address::LOCALHOST.to_socket(80);
+        let result: Authority = socket.to_authority();
+        let expected: Authority =
+            Authority::new(Host::IPAddress(IPAddress::V6(IPv6Address::LOCALHOST)), 80);
+        assert_eq!(result, expected);
+
+        let result: AuthorityRef = socket.to_authority_ref();
+        let expected: AuthorityRef = AuthorityRef::new(
+            HostRef::IPAddress(IPAddress::V6(IPv6Address::LOCALHOST)),
+            80,
+        );
+        assert_eq!(result, expected);
+    }
+
+    #[test]
     fn v6_try_from() {
         let socket: SocketAddress = IPv6Address::LOCALHOST.to_ip().to_socket(80);
         let expected: SocketAddressV6 = IPv6Address::LOCALHOST.to_socket(80);
@@ -50,19 +66,5 @@ mod tests {
 
         let socket: SocketAddress = IPv4Address::LOCALHOST.to_ip().to_socket(80);
         assert_eq!(SocketAddressV6::try_from(socket), Err(socket));
-    }
-
-    #[test]
-    fn v6_to_authority() {
-        let socket: SocketAddressV6 = IPv6Address::LOCALHOST.to_socket(80);
-        let result: Authority = socket.to_authority();
-        let expected: Authority =
-            Authority::new(Host::IP(IPAddress::V6(IPv6Address::LOCALHOST)), 80);
-        assert_eq!(result, expected);
-
-        let result: AuthorityRef = socket.to_authority_ref();
-        let expected: AuthorityRef =
-            AuthorityRef::new(HostRef::IP(IPAddress::V6(IPv6Address::LOCALHOST)), 80);
-        assert_eq!(result, expected);
     }
 }

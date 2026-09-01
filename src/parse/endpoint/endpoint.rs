@@ -5,11 +5,10 @@ use crate::{Domain, Endpoint, InvalidAddressError, ParseError, impl_parse, impl_
 impl Endpoint {
     //! Parse
 
-    /// A domain name & a decimal port: `localhost:80`.
-    /// Domain names are normalized to lowercase.
-    pub fn parse_text(text: &[u8]) -> Result<Self, ParseError> {
+    /// Parses an [Endpoint] from the `text`.
+    pub fn parse(text: &[u8]) -> Result<Self, ParseError> {
         let (name, port): (&[u8], u16) = parse_port(text)?;
-        let domain: Domain = Domain::parse_text(name)?;
+        let domain: Domain = Domain::parse(name)?;
         Ok(domain.to_endpoint(port))
     }
 
@@ -29,17 +28,9 @@ impl Endpoint {
     }
 }
 
-impl_parse!(
-    Endpoint,
-    "A domain name & a decimal port: `localhost:80`.",
-    "Domain names are normalized to lowercase."
-);
+impl_parse!(Endpoint, "The domain name is normalized to lowercase.");
 
-impl_parse_string!(
-    Endpoint,
-    "A domain name & a decimal port: `localhost:80`.",
-    "Domain names are normalized to lowercase."
-);
+impl_parse_string!(Endpoint, "The domain name is normalized to lowercase.");
 
 #[cfg(test)]
 mod tests {
@@ -49,12 +40,10 @@ mod tests {
 
     type TestCase<'a> = (&'a [u8], Result<Endpoint, ParseError>);
 
-    /// Builds the expected endpoint for the canonical domain `name` & `port`.
     fn endpoint(name: &str, port: u16) -> Endpoint {
         Domain::try_from(name).unwrap().to_endpoint(port)
     }
 
-    /// Every entry point must agree on every case; the owned ones normalize case.
     #[test]
     fn parse() {
         let test_cases: &[TestCase] = &[
@@ -76,8 +65,8 @@ mod tests {
         ];
 
         for (input, expected) in test_cases {
-            let result: Result<Endpoint, ParseError> = Endpoint::parse_text(input);
-            assert_eq!(result, *expected, "parse_text input={:?}", input);
+            let result: Result<Endpoint, ParseError> = Endpoint::parse(input);
+            assert_eq!(result, *expected, "parse input={:?}", input);
 
             let Ok(text) = std::str::from_utf8(input) else {
                 continue;
@@ -99,7 +88,6 @@ mod tests {
         }
     }
 
-    /// Each canonical string must parse and display back to the exact same string.
     #[test]
     fn round_trip() {
         let canonical: &[&str] = &["localhost:80", "example.com:443", "a.b.c:65535", "x:0"];

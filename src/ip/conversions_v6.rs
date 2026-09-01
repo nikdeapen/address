@@ -42,12 +42,12 @@ impl IPv6Address {
 
     /// Converts the address to a host.
     pub const fn to_host(self) -> Host {
-        Host::IP(self.to_ip())
+        Host::IPAddress(self.to_ip())
     }
 
     /// Converts the address to a host reference.
     pub const fn to_host_ref(self) -> HostRef<'static> {
-        HostRef::IP(self.to_ip())
+        HostRef::IPAddress(self.to_ip())
     }
 }
 
@@ -117,24 +117,24 @@ mod tests {
     }
 
     #[test]
+    fn v6_to_host() {
+        let ip: IPv6Address = IPv6Address::LOCALHOST;
+
+        let result: Host = ip.to_host();
+        let expected: Host = Host::IPAddress(IPAddress::V6(IPv6Address::LOCALHOST));
+        assert_eq!(result, expected);
+
+        let result: HostRef = ip.to_host_ref();
+        let expected: HostRef = HostRef::IPAddress(IPAddress::V6(IPv6Address::LOCALHOST));
+        assert_eq!(result, expected);
+    }
+
+    #[test]
     fn v6_try_from() {
         let ip: IPAddress = IPv6Address::LOCALHOST.to_ip();
         assert_eq!(IPv6Address::try_from(ip), Ok(IPv6Address::LOCALHOST));
 
         let ip: IPAddress = IPv4Address::LOCALHOST.to_ip();
         assert_eq!(IPv6Address::try_from(ip), Err(ip));
-    }
-
-    #[test]
-    fn v6_to_host() {
-        let ip: IPv6Address = IPv6Address::LOCALHOST;
-
-        let result: Host = ip.to_host();
-        let expected: Host = Host::IP(IPAddress::V6(IPv6Address::LOCALHOST));
-        assert_eq!(result, expected);
-
-        let result: HostRef = ip.to_host_ref();
-        let expected: HostRef = HostRef::IP(IPAddress::V6(IPv6Address::LOCALHOST));
-        assert_eq!(result, expected);
     }
 }

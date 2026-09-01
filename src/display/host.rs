@@ -23,7 +23,7 @@ impl<'a> Display for HostRef<'a> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Domain(domain) => Display::fmt(domain, f),
-            Self::IP(ip) => Display::fmt(ip, f),
+            Self::IPAddress(ip) => Display::fmt(ip, f),
         }
     }
 }

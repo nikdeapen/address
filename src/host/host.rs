@@ -8,7 +8,7 @@ pub enum Host {
     Domain(Domain),
 
     /// An [IPAddress].
-    IP(IPAddress),
+    IPAddress(IPAddress),
 }
 
 impl<'a> PartialEq<HostRef<'a>> for Host {
@@ -29,7 +29,7 @@ impl Host {
     /// Checks if the host is an IP address.
     #[must_use]
     pub const fn is_ip(&self) -> bool {
-        matches!(self, Self::IP(_))
+        matches!(self, Self::IPAddress(_))
     }
 }
 

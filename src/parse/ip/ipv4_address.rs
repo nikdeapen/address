@@ -9,8 +9,8 @@ impl IPv4Address {
     /// The maximum length of an IPv4 address string. (255.255.255.255)
     const MAX_STR_LEN: usize = 15;
 
-    /// Parses the IPv4 address text.
-    pub fn parse_text(text: &[u8]) -> Result<Self, ParseError> {
+    /// Parses an [IPv4Address] from the `text`.
+    pub fn parse(text: &[u8]) -> Result<Self, ParseError> {
         if text.len() > Self::MAX_STR_LEN {
             return Err(InvalidIPv4Address);
         }
@@ -23,7 +23,7 @@ impl IPv4Address {
 
 impl_parse!(
     IPv4Address,
-    "Matches the standard library: four decimal octets, no leading zeros. (`127.0.0.01` is invalid)"
+    "No leading zeros, matching the standard library. (`127.0.0.01` is invalid)"
 );
 
 #[cfg(test)]
@@ -34,7 +34,6 @@ mod tests {
 
     type TestCase<'a> = (&'a [u8], Result<IPv4Address, ParseError>);
 
-    /// Every entry point must agree on every case, the length & UTF-8 guards included.
     #[test]
     fn parse() {
         let over_max: Vec<u8> = vec![b'1'; IPv4Address::MAX_STR_LEN + 1];
@@ -55,8 +54,8 @@ mod tests {
         ];
 
         for (input, expected) in test_cases {
-            let result: Result<IPv4Address, ParseError> = IPv4Address::parse_text(input);
-            assert_eq!(result, *expected, "parse_text input={:?}", input);
+            let result: Result<IPv4Address, ParseError> = IPv4Address::parse(input);
+            assert_eq!(result, *expected, "parse input={:?}", input);
 
             let Ok(text) = std::str::from_utf8(input) else {
                 continue;
@@ -70,7 +69,6 @@ mod tests {
         }
     }
 
-    /// Each canonical string must parse and display back to the exact same string.
     #[test]
     fn round_trip() {
         let canonical: &[&str] = &["0.0.0.0", "127.0.0.1", "1.2.3.4", "255.255.255.255"];

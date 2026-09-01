@@ -4,10 +4,8 @@ use crate::{Domain, DomainRef, ParseError, impl_parse_ref};
 impl<'a> DomainRef<'a> {
     //! Parse
 
-    /// Dot-separated labels of ASCII letters, digits, & dashes. (see [`Domain::is_valid_name`])
-    /// The name must already be in lowercase. Use [`Domain`](crate::Domain) to parse mixed-case
-    /// input.
-    pub fn parse_text(text: &'a [u8]) -> Result<Self, ParseError> {
+    /// Parses a [DomainRef] from the `text`.
+    pub fn parse(text: &'a [u8]) -> Result<Self, ParseError> {
         if Domain::is_valid_name(text) {
             let name: &str = unsafe { std::str::from_utf8_unchecked(text) };
             Ok(unsafe { Self::new_unchecked(name) })
@@ -19,9 +17,8 @@ impl<'a> DomainRef<'a> {
 
 impl_parse_ref!(
     DomainRef,
-    "Dot-separated labels of ASCII letters, digits, & dashes. (see [`Domain::is_valid_name`])",
-    "The name must already be in lowercase.",
-    "Use [`Domain`](crate::Domain) to parse mixed-case input."
+    "Dot-separated ASCII labels. (see [`Domain::is_valid_name`])",
+    "The name must already be lowercase; use [`Domain`](crate::Domain) for mixed-case input."
 );
 
 #[cfg(test)]
@@ -31,7 +28,6 @@ mod tests {
 
     type TestCase<'a> = (&'a [u8], Result<DomainRef<'a>, ParseError>);
 
-    /// Every entry point must agree on every case; mixed case is rejected, not normalized.
     #[test]
     fn parse() {
         let test_cases: &[TestCase] = &[
@@ -46,8 +42,8 @@ mod tests {
         ];
 
         for (input, expected) in test_cases {
-            let result: Result<DomainRef, ParseError> = DomainRef::parse_text(input);
-            assert_eq!(result, *expected, "parse_text input={:?}", input);
+            let result: Result<DomainRef, ParseError> = DomainRef::parse(input);
+            assert_eq!(result, *expected, "parse input={:?}", input);
 
             let Ok(text) = std::str::from_utf8(input) else {
                 continue;
@@ -58,7 +54,6 @@ mod tests {
         }
     }
 
-    /// Each canonical string must parse and display back to the exact same string.
     #[test]
     fn round_trip() {
         let canonical: &[&str] = &[

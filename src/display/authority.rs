@@ -23,7 +23,7 @@ impl<'a> Display for AuthorityRef<'a> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self.host() {
             HostRef::Domain(domain) => Display::fmt(&EndpointRef::new(domain, self.port()), f),
-            HostRef::IP(ip) => Display::fmt(&ip.to_socket(self.port()), f),
+            HostRef::IPAddress(ip) => Display::fmt(&ip.to_socket(self.port()), f),
         }
     }
 }

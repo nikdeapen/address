@@ -7,7 +7,7 @@ impl Host {
     pub fn to_ref(&self) -> HostRef<'_> {
         match self {
             Self::Domain(domain) => HostRef::Domain(domain.to_ref()),
-            Self::IP(ip) => HostRef::IP(*ip),
+            Self::IPAddress(ip) => HostRef::IPAddress(*ip),
         }
     }
 
@@ -27,7 +27,7 @@ impl Host {
     /// Converts the host to an IP address.
     pub fn to_ip(self) -> Result<IPAddress, Self> {
         match self {
-            Self::IP(ip) => Ok(ip),
+            Self::IPAddress(ip) => Ok(ip),
             host => Err(host),
         }
     }
@@ -68,9 +68,9 @@ mod tests {
         let expected: HostRef = HostRef::Domain(DomainRef::LOCALHOST);
         assert_eq!(result, expected);
 
-        let host: Host = Host::IP(IPAddress::V4(IPv4Address::LOCALHOST));
+        let host: Host = Host::IPAddress(IPAddress::V4(IPv4Address::LOCALHOST));
         let result: HostRef = host.to_ref();
-        let expected: HostRef = HostRef::IP(IPAddress::V4(IPv4Address::LOCALHOST));
+        let expected: HostRef = HostRef::IPAddress(IPAddress::V4(IPv4Address::LOCALHOST));
         assert_eq!(result, expected);
     }
 
@@ -84,7 +84,7 @@ mod tests {
         let host: Host = IPv4Address::LOCALHOST.to_host();
         let result: Authority = host.to_authority(80);
         let expected: Authority =
-            Authority::new(Host::IP(IPAddress::V4(IPv4Address::LOCALHOST)), 80);
+            Authority::new(Host::IPAddress(IPAddress::V4(IPv4Address::LOCALHOST)), 80);
         assert_eq!(result, expected);
     }
 
@@ -127,7 +127,7 @@ mod tests {
         let result: Host = DomainRef::LOCALHOST.into();
         assert_eq!(result, expected);
 
-        let expected: Host = Host::IP(IPAddress::V4(IPv4Address::LOCALHOST));
+        let expected: Host = Host::IPAddress(IPAddress::V4(IPv4Address::LOCALHOST));
         let result: Host = IPv4Address::LOCALHOST.into();
         assert_eq!(result, expected);
     }

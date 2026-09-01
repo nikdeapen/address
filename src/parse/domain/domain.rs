@@ -4,9 +4,8 @@ use crate::{Domain, InvalidAddressError, NameClass, ParseError, impl_parse, impl
 impl Domain {
     //! Parse
 
-    /// Dot-separated labels of ASCII letters, digits, & dashes. (see [`Domain::is_valid_name`])
-    /// The name is normalized to lowercase.
-    pub fn parse_text(text: &[u8]) -> Result<Self, ParseError> {
+    /// Parses a [Domain] from the `text`.
+    pub fn parse(text: &[u8]) -> Result<Self, ParseError> {
         match Self::classify_name(text) {
             NameClass::Invalid => Err(InvalidDomain),
             class => {
@@ -50,13 +49,13 @@ impl Domain {
 
 impl_parse!(
     Domain,
-    "Dot-separated labels of ASCII letters, digits, & dashes. (see [`Domain::is_valid_name`])",
+    "Dot-separated ASCII labels. (see [`Domain::is_valid_name`])",
     "The name is normalized to lowercase."
 );
 
 impl_parse_string!(
     Domain,
-    "Dot-separated labels of ASCII letters, digits, & dashes. (see [`Domain::is_valid_name`])",
+    "Dot-separated ASCII labels. (see [`Domain::is_valid_name`])",
     "The name is normalized to lowercase."
 );
 
@@ -68,12 +67,10 @@ mod tests {
 
     type TestCase<'a> = (&'a [u8], Result<Domain, ParseError>);
 
-    /// Builds the expected domain for the canonical `name`.
     fn domain(name: &str) -> Domain {
         Domain::try_from(name).unwrap()
     }
 
-    /// Every entry point must agree on every case; the owned ones normalize case.
     #[test]
     fn parse() {
         let test_cases: &[TestCase] = &[
@@ -91,8 +88,8 @@ mod tests {
         ];
 
         for (input, expected) in test_cases {
-            let result: Result<Domain, ParseError> = Domain::parse_text(input);
-            assert_eq!(result, *expected, "parse_text input={:?}", input);
+            let result: Result<Domain, ParseError> = Domain::parse(input);
+            assert_eq!(result, *expected, "parse input={:?}", input);
 
             let Ok(text) = std::str::from_utf8(input) else {
                 continue;
@@ -114,7 +111,6 @@ mod tests {
         }
     }
 
-    /// Each canonical string must parse and display back to the exact same string.
     #[test]
     fn round_trip() {
         let canonical: &[&str] = &[

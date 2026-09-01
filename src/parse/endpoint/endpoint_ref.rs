@@ -4,21 +4,17 @@ use crate::{DomainRef, EndpointRef, ParseError, impl_parse_ref};
 impl<'a> EndpointRef<'a> {
     //! Parse
 
-    /// A domain name & a decimal port: `localhost:80`.
-    /// Domain names must already be in lowercase. Use [`Endpoint`](crate::Endpoint) to parse
-    /// mixed-case input.
-    pub fn parse_text(text: &'a [u8]) -> Result<Self, ParseError> {
+    /// Parses an [EndpointRef] from the `text`.
+    pub fn parse(text: &'a [u8]) -> Result<Self, ParseError> {
         let (domain, port): (&[u8], u16) = parse_port(text)?;
-        let domain: DomainRef = DomainRef::parse_text(domain)?;
+        let domain: DomainRef = DomainRef::parse(domain)?;
         Ok(Self::new(domain, port))
     }
 }
 
 impl_parse_ref!(
     EndpointRef,
-    "A domain name & a decimal port: `localhost:80`.",
-    "Domain names must already be in lowercase.",
-    "Use [`Endpoint`](crate::Endpoint) to parse mixed-case input."
+    "The domain must already be lowercase; use [`Endpoint`](crate::Endpoint) for mixed-case input."
 );
 
 #[cfg(test)]
@@ -28,7 +24,6 @@ mod tests {
 
     type TestCase<'a> = (&'a [u8], Result<EndpointRef<'a>, ParseError>);
 
-    /// Every entry point must agree on every case; mixed case is rejected, not normalized.
     #[test]
     fn parse() {
         let test_cases: &[TestCase] = &[
@@ -52,8 +47,8 @@ mod tests {
         ];
 
         for (input, expected) in test_cases {
-            let result: Result<EndpointRef, ParseError> = EndpointRef::parse_text(input);
-            assert_eq!(result, *expected, "parse_text input={:?}", input);
+            let result: Result<EndpointRef, ParseError> = EndpointRef::parse(input);
+            assert_eq!(result, *expected, "parse input={:?}", input);
 
             let Ok(text) = std::str::from_utf8(input) else {
                 continue;
@@ -64,7 +59,6 @@ mod tests {
         }
     }
 
-    /// Each canonical string must parse and display back to the exact same string.
     #[test]
     fn round_trip() {
         let canonical: &[&str] = &["localhost:80", "example.com:443", "a.b.c:65535", "x:0"];
