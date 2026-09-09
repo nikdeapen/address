@@ -27,7 +27,7 @@ impl Domain {
     /// Creates a new [Domain].
     ///
     /// # Safety
-    /// The `name` must be valid and lowercase.
+    /// The `name` must be valid and lowercase. See [`Domain::is_valid_name`].
     pub unsafe fn new_unchecked<S>(name: S) -> Self
     where
         S: Into<String>,
@@ -52,38 +52,6 @@ impl<'a> PartialEq<DomainRef<'a>> for Domain {
     }
 }
 
-impl PartialEq<&str> for Domain {
-    /// Compares the name exactly; domain names are lowercase, so mixed-case strings are never
-    /// equal.
-    fn eq(&self, other: &&str) -> bool {
-        self.name == *other
-    }
-}
-
-impl PartialEq<Domain> for &str {
-    /// Compares the name exactly; domain names are lowercase, so mixed-case strings are never
-    /// equal.
-    fn eq(&self, other: &Domain) -> bool {
-        *self == other.name
-    }
-}
-
-impl PartialEq<String> for Domain {
-    /// Compares the name exactly; domain names are lowercase, so mixed-case strings are never
-    /// equal.
-    fn eq(&self, other: &String) -> bool {
-        self.name == *other
-    }
-}
-
-impl PartialEq<Domain> for String {
-    /// Compares the name exactly; domain names are lowercase, so mixed-case strings are never
-    /// equal.
-    fn eq(&self, other: &Domain) -> bool {
-        *self == other.name
-    }
-}
-
 impl Domain {
     //! Properties
 
@@ -105,6 +73,12 @@ mod tests {
     }
 
     #[test]
+    fn construction() {
+        let domain: Domain = unsafe { Domain::new_unchecked("localhost") };
+        assert_eq!(domain.name, "localhost");
+    }
+
+    #[test]
     fn deconstruction() {
         let domain: Domain = Domain::localhost();
         let result: String = domain.into();
@@ -117,14 +91,6 @@ mod tests {
         let domain: Domain = Domain::localhost();
         assert_eq!(domain, DomainRef::LOCALHOST);
         assert_ne!(domain, DomainRef::EXAMPLE);
-        assert_eq!(domain, "localhost");
-        assert_ne!(domain, "example.com");
-        assert_eq!("localhost", domain);
-        assert_ne!("example.com", domain);
-        assert_eq!(domain, String::from("localhost"));
-        assert_ne!(domain, String::from("example.com"));
-        assert_eq!(String::from("localhost"), domain);
-        assert_ne!(String::from("example.com"), domain);
     }
 
     #[test]

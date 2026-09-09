@@ -56,7 +56,6 @@ mod tests {
     use serde::Deserializer;
     use serde::de::value::{BorrowedBytesDeserializer, Error as ValueError};
 
-    /// Formats that hand the visitor borrowed bytes take the `visit_borrowed_bytes` path.
     #[test]
     fn visit_borrowed_bytes() {
         let visitor: TryFromStrVisitor<DomainRef> =

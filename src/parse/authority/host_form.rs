@@ -61,7 +61,6 @@ mod tests {
         }
     }
 
-    /// The domain form only means "not an IP address"; the caller does the validating.
     #[test]
     fn classify_does_not_validate_domains() {
         let test_cases: &[&str] = &["", "Local!Host", "a..b", "-a"];

@@ -57,8 +57,6 @@ mod tests {
     use serde::Deserializer;
     use serde::de::value::{BytesDeserializer, Error as ValueError};
 
-    /// Formats that hand the visitor raw bytes take the `visit_bytes` path, which must reject
-    /// non-UTF-8.
     #[test]
     fn visit_bytes() {
         let visitor: FromStrVisitor<IPv4Address> = FromStrVisitor::new("an IPv4 address string");

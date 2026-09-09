@@ -3,11 +3,11 @@ use crate::{Host, HostRef, IPAddress, IPv4Address, IPv6Address, SocketAddressV6}
 impl IPv6Address {
     //! Conversions
 
-    /// Converts an IPv4 compatible (::a.b.c.d) or IPv4 mapped (::ffff:a.b.c.d) address to an IPv4
-    /// address.
+    /// Converts an IPv4 compatible or IPv4 mapped address to an IPv4 address.
     ///
-    /// Plain IPv6 addresses match the compatible pattern (`::1` -> `Ok(0.0.0.1)`); use
-    /// [`Self::to_v4_mapped`] to avoid these false positives.
+    /// Any address in `::/96` matches the compatible pattern, so `::1` converts to `0.0.0.1` even
+    /// though it is the IPv6 loopback, not an embedded IPv4 address. Use [`Self::to_v4_mapped`]
+    /// to accept only mapped addresses.
     pub const fn to_v4(self) -> Result<IPv4Address, Self> {
         match self.address() {
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, a, b, c, d] => Ok(IPv4Address::new([a, b, c, d])),

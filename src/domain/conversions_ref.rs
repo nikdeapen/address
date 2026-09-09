@@ -52,7 +52,7 @@ mod tests {
         let domain: DomainRef = DomainRef::LOCALHOST;
         let result: Domain = domain.to_domain();
         let expected: &str = "localhost";
-        assert_eq!(result, expected);
+        assert_eq!(result.name(), expected);
     }
 
     #[test]

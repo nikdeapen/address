@@ -72,10 +72,7 @@ mod tests {
         assert_eq!(Endpoint::try_from(authority), Ok(expected.clone()));
 
         let authority: Authority = IPv4Address::LOCALHOST.to_host().to_authority(80);
-        assert_eq!(
-            Endpoint::try_from(authority.clone()),
-            Err(authority.clone())
-        );
+        assert_eq!(Endpoint::try_from(authority.clone()), Err(authority));
 
         let authority: AuthorityRef = DomainRef::LOCALHOST.to_host_ref().to_authority_ref(80);
         assert_eq!(Endpoint::try_from(authority), Ok(expected));

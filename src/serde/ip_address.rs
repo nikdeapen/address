@@ -90,8 +90,6 @@ mod tests {
         assert_json(IPv4Address::BROADCAST.to_ip(), "\"255.255.255.255\"");
     }
 
-    /// The binary form is a byte string whose length selects the version, not the standard
-    /// library's enum tag.
     #[test]
     fn postcard() {
         let bytes: Vec<u8> = assert_postcard(IPv4Address::LOCALHOST.to_ip());
@@ -101,7 +99,6 @@ mod tests {
         assert_eq!(bytes.len(), 17, "a length prefix plus 16 address bytes");
     }
 
-    /// Formats that present a byte string as a sequence take the `visit_seq` path.
     #[test]
     fn visit_seq() {
         let test_cases: &[(&[u8], Option<IPAddress>)] = &[

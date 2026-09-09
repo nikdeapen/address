@@ -75,8 +75,6 @@ mod tests {
         }
     }
 
-    /// Non-UTF-8 bytes reach `parse_port` through the `&[u8]` parse impls; the digit check must
-    /// reject them before the port is read as a string.
     #[test]
     fn non_utf8_ports() {
         let test_cases: &[&[u8]] = &[b":\xFF", b":8\xFF", b"localhost:\xFF", b":\xC3\xA9"];
