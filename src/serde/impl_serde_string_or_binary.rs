@@ -106,7 +106,6 @@ mod tests {
         assert_postcard(IPv6Address::LOCALHOST.to_ip().to_socket(443));
     }
 
-    /// The binary form is the raw address bytes, with no tag or length prefix.
     #[test]
     fn compact_sizes() {
         let test_cases: &[(Vec<u8>, usize, &str)] = &[
@@ -129,7 +128,6 @@ mod tests {
         }
     }
 
-    /// The version-specific types are byte-identical to their standard library counterparts.
     #[test]
     fn matches_std_wire_format() {
         let ip: IPv4Address = IPv4Address::LOCALHOST;
@@ -159,8 +157,6 @@ mod tests {
         );
     }
 
-    /// `SocketAddress` deliberately diverges: it encodes the IP as a byte string, not the standard
-    /// library's enum.
     #[test]
     fn socket_address_diverges_from_std() {
         let socket: SocketAddress = IPv4Address::LOCALHOST.to_ip().to_socket(80);

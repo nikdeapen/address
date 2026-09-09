@@ -130,10 +130,7 @@ mod tests {
         assert_eq!(SocketAddress::try_from(authority), Ok(expected));
 
         let authority: Authority = Domain::localhost().to_host().to_authority(80);
-        assert_eq!(
-            SocketAddress::try_from(authority.clone()),
-            Err(authority.clone())
-        );
+        assert_eq!(SocketAddress::try_from(authority.clone()), Err(authority));
 
         let authority: AuthorityRef = IPv4Address::LOCALHOST.to_host_ref().to_authority_ref(80);
         assert_eq!(SocketAddress::try_from(authority), Ok(expected));

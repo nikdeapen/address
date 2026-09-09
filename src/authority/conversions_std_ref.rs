@@ -27,7 +27,7 @@ mod tests {
     use std::net::{SocketAddr, SocketAddrV4, SocketAddrV6};
 
     #[test]
-    fn ref_from() {
+    fn ref_from_std() {
         let expected: AuthorityRef = AuthorityRef::new(IPv4Address::LOCALHOST.to_host_ref(), 80);
 
         let socket: SocketAddr = IPv4Address::LOCALHOST.to_ip().to_socket(80).to_std();

@@ -155,7 +155,6 @@ mod tests {
         );
     }
 
-    /// Domain-bearing types are strings in every format, binary included.
     #[test]
     fn postcard() {
         let bytes: Vec<u8> = assert_postcard(Domain::localhost());
@@ -192,8 +191,6 @@ mod tests {
         assert_eq!(serde_json::to_string(&authority).unwrap(), json);
     }
 
-    /// The owned types normalize mixed case; the reference types cannot, because they borrow the
-    /// input.
     #[test]
     fn mixed_case() {
         let domain: Domain = serde_json::from_str("\"LocalHost\"").unwrap();
@@ -206,8 +203,6 @@ mod tests {
         assert!(serde_json::from_str::<AuthorityRef>("\"LocalHost:80\"").is_err());
     }
 
-    /// `h` is `h`: the owned types accept escaped input, the reference types cannot borrow through
-    /// it.
     #[test]
     fn escaped_input() {
         let json: &str = "\"local\\u0068ost\"";
@@ -230,7 +225,6 @@ mod tests {
         assert!(serde_json::from_str::<Domain>("42").is_err());
     }
 
-    /// The `expecting` message names the type, so decoder errors stay legible.
     #[test]
     fn expecting_message() {
         let error: String = serde_json::from_str::<Domain>("42")

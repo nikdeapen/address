@@ -5,7 +5,8 @@ impl IPv4Address {
 
     /// Converts the address to an IPv6 compatible address. (::a.b.c.d)
     ///
-    /// The compatible format is deprecated (RFC 4291); prefer [`Self::to_v6_mapped`].
+    /// The compatible format is deprecated, prefer [`Self::to_v6_mapped`].
+    /// See [RFC 4291](https://www.rfc-editor.org/rfc/rfc4291#section-2.5.5.1).
     pub const fn to_v6_compatible(self) -> IPv6Address {
         let (a, b, c, d) = self.bytes();
         IPv6Address::new([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, a, b, c, d])

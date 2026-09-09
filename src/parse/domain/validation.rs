@@ -222,7 +222,6 @@ mod tests {
         }
     }
 
-    /// A non-final label may be all digits; the final one may not, so IPv4 text is not a domain.
     #[test]
     fn final_label_not_all_numeric() {
         let test_cases: &[(&str, bool)] = &[

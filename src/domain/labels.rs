@@ -95,6 +95,37 @@ mod tests {
     }
 
     #[test]
+    fn labels_size_hint() {
+        let test_cases: &[&str] = &["x", "a.b", "a.b.c", "www.example.com", "a.bb.ccc.dddd"];
+
+        for name in test_cases {
+            let domain: Domain = name.parse().unwrap();
+            let total: usize = domain.labels().count();
+            let mut labels: Labels = domain.labels();
+
+            for taken in 0..=total {
+                let remaining: usize = total - taken;
+                let (low, high): (usize, Option<usize>) = labels.size_hint();
+                assert!(
+                    low <= remaining,
+                    "name={} taken={} low={}",
+                    name,
+                    taken,
+                    low
+                );
+                assert!(
+                    high.is_some_and(|high| remaining <= high),
+                    "name={} taken={} high={:?}",
+                    name,
+                    taken,
+                    high
+                );
+                labels.next();
+            }
+        }
+    }
+
+    #[test]
     fn labels_rev() {
         let test_cases: &[(&str, &[&str])] = &[
             ("localhost", &["localhost"]),
@@ -124,37 +155,6 @@ mod tests {
         assert_eq!(labels.next(), Some("c"));
         assert_eq!(labels.next(), None);
         assert_eq!(labels.next_back(), None);
-    }
-
-    #[test]
-    fn labels_size_hint() {
-        let test_cases: &[&str] = &["x", "a.b", "a.b.c", "www.example.com", "a.bb.ccc.dddd"];
-
-        for name in test_cases {
-            let domain: Domain = name.parse().unwrap();
-            let total: usize = domain.labels().count();
-            let mut labels: Labels = domain.labels();
-
-            for taken in 0..=total {
-                let remaining: usize = total - taken;
-                let (low, high): (usize, Option<usize>) = labels.size_hint();
-                assert!(
-                    low <= remaining,
-                    "name={} taken={} low={}",
-                    name,
-                    taken,
-                    low
-                );
-                assert!(
-                    high.is_some_and(|high| remaining <= high),
-                    "name={} taken={} high={:?}",
-                    name,
-                    taken,
-                    high
-                );
-                labels.next();
-            }
-        }
     }
 
     #[test]
