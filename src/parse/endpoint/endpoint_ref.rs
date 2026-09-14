@@ -5,17 +5,17 @@ impl<'a> EndpointRef<'a> {
     //! Parse
 
     /// Parses an [EndpointRef] from the `text`.
+    ///
+    /// # Notes
+    /// - The domain must already be lowercase; use [`Endpoint`](crate::Endpoint) for normalization.
     pub fn parse(text: &'a [u8]) -> Result<Self, ParseError> {
         let (domain, port): (&[u8], u16) = parse_port(text)?;
         let domain: DomainRef = DomainRef::parse(domain)?;
-        Ok(Self::new(domain, port))
+        Ok(domain.to_endpoint_ref(port))
     }
 }
 
-impl_parse_ref!(
-    EndpointRef,
-    "The domain must already be lowercase; use [`Endpoint`](crate::Endpoint) for mixed-case input."
-);
+impl_parse_ref!(EndpointRef);
 
 #[cfg(test)]
 mod tests {
@@ -24,6 +24,10 @@ mod tests {
 
     type TestCase<'a> = (&'a [u8], Result<EndpointRef<'a>, ParseError>);
 
+    fn endpoint(name: &'static str, port: u16) -> EndpointRef<'static> {
+        DomainRef::try_from(name).unwrap().to_endpoint_ref(port)
+    }
+
     #[test]
     fn parse() {
         let test_cases: &[TestCase] = &[
@@ -31,16 +35,15 @@ mod tests {
             (b"localhost", Err(InvalidPort)),
             (b"localhost:", Err(InvalidPort)),
             (b"localhost:xx", Err(InvalidPort)),
-            (
-                b"localhost:80",
-                Ok(EndpointRef::new(DomainRef::LOCALHOST, 80)),
-            ),
-            (
-                b"example.com:443",
-                Ok(EndpointRef::new(DomainRef::EXAMPLE, 443)),
-            ),
-            (b":80", Err(InvalidDomain)),
+            (b"localhost:99999", Err(InvalidPort)),
+            (b"localhost:80", Ok(endpoint("localhost", 80))),
+            (b"example.com:443", Ok(endpoint("example.com", 443))),
             (b"LocalHost:80", Err(InvalidDomain)),
+            (b"www.example.com:443", Ok(endpoint("www.example.com", 443))),
+            (b":80", Err(InvalidDomain)),
+            (b"[localhost]:80", Err(InvalidDomain)),
+            (b"local_host:80", Err(InvalidDomain)),
+            (b"local!host:80", Err(InvalidDomain)),
             (b"127.0.0.1:80", Err(InvalidDomain)),
             (b"\xFF:80", Err(InvalidDomain)),
             ("ü:80".as_bytes(), Err(InvalidDomain)),

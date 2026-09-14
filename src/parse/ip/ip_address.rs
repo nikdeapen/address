@@ -5,6 +5,10 @@ impl IPAddress {
     //! Parse
 
     /// Parses an [IPAddress] from the `text`.
+    ///
+    /// # Notes
+    /// - The embedded IPv4 form is accepted. (`::ffff:1.2.3.4`)
+    /// - Brackets & zones are not accepted; see [`SocketAddress`](crate::SocketAddress).
     pub fn parse(text: &[u8]) -> Result<Self, ParseError> {
         if let Ok(ip) = IPv4Address::parse(text) {
             Ok(ip.to_ip())

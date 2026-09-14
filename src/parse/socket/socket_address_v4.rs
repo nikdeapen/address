@@ -8,7 +8,7 @@ impl SocketAddressV4 {
     pub fn parse(text: &[u8]) -> Result<Self, ParseError> {
         let (ip, port): (&[u8], u16) = parse_port(text)?;
         let ip: IPv4Address = IPv4Address::parse(ip)?;
-        Ok(Self::new(ip, port))
+        Ok(ip.to_socket(port))
     }
 }
 

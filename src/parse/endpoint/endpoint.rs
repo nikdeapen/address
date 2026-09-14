@@ -6,15 +6,16 @@ impl Endpoint {
     //! Parse
 
     /// Parses an [Endpoint] from the `text`.
+    ///
+    /// # Notes
+    /// - The domain name is normalized to lowercase.
     pub fn parse(text: &[u8]) -> Result<Self, ParseError> {
         let (name, port): (&[u8], u16) = parse_port(text)?;
         let domain: Domain = Domain::parse(name)?;
         Ok(domain.to_endpoint(port))
     }
 
-    /// Creates an endpoint from the `text`, normalizing the domain name to lowercase.
-    ///
-    /// The error holds the unmodified `text`, which `TryFrom<String>` soundly recovers as a string.
+    /// Parses an [Endpoint] from the `text`.
     pub(crate) fn parse_vec(text: Vec<u8>) -> Result<Self, InvalidAddressError<Vec<u8>>> {
         match parse_port(text.as_slice()) {
             Ok((name, port)) => {
@@ -28,9 +29,9 @@ impl Endpoint {
     }
 }
 
-impl_parse!(Endpoint, "The domain name is normalized to lowercase.");
+impl_parse!(Endpoint);
 
-impl_parse_string!(Endpoint, "The domain name is normalized to lowercase.");
+impl_parse_string!(Endpoint);
 
 #[cfg(test)]
 mod tests {
@@ -53,6 +54,7 @@ mod tests {
             (b"localhost:xx", Err(InvalidPort)),
             (b"localhost:99999", Err(InvalidPort)),
             (b"localhost:80", Ok(endpoint("localhost", 80))),
+            (b"example.com:443", Ok(endpoint("example.com", 443))),
             (b"LocalHost:80", Ok(endpoint("localhost", 80))),
             (b"WWW.Example.COM:443", Ok(endpoint("www.example.com", 443))),
             (b":80", Err(InvalidDomain)),

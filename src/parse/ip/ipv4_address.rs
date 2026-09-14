@@ -10,6 +10,9 @@ impl IPv4Address {
     const MAX_STR_LEN: usize = 15;
 
     /// Parses an [IPv4Address] from the `text`.
+    ///
+    /// # Notes
+    /// - No leading zeros, matching the standard library. (`127.0.0.01` is invalid)
     pub fn parse(text: &[u8]) -> Result<Self, ParseError> {
         if text.len() > Self::MAX_STR_LEN {
             return Err(InvalidIPv4Address);
@@ -21,10 +24,7 @@ impl IPv4Address {
     }
 }
 
-impl_parse!(
-    IPv4Address,
-    "No leading zeros, matching the standard library. (`127.0.0.01` is invalid)"
-);
+impl_parse!(IPv4Address);
 
 #[cfg(test)]
 mod tests {

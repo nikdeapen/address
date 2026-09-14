@@ -11,6 +11,10 @@ impl IPv6Address {
     const MAX_STR_LEN: usize = 45;
 
     /// Parses an [IPv6Address] from the `text`.
+    ///
+    /// # Notes
+    /// - The embedded IPv4 form is accepted. (`::ffff:1.2.3.4`)
+    /// - Brackets & zones are not accepted; see [`SocketAddressV6`](crate::SocketAddressV6).
     pub fn parse(text: &[u8]) -> Result<Self, ParseError> {
         if text.len() > Self::MAX_STR_LEN {
             return Err(InvalidIPv6Address);
@@ -37,11 +41,13 @@ impl IPv6Address {
 
     /// Strips the ignored zone suffix from the `text`, the inner text of a bracketed IPv6 address.
     ///
-    /// Returns the text unchanged if there is no `%`. The zone must be a decimal `u32`, with no
-    /// sign; leading zeros are allowed, matching the scope ids accepted by the standard library
-    /// socket parser. Returns `None` if the zone is invalid.
-    ///
-    /// The digit check runs first, so the zone is known to be ASCII before it is read as a string.
+    /// # Notes
+    /// - The text is returned unchanged if there is no `%`; an invalid zone is `None`.
+    /// - The zone must be a decimal `u32`, with no sign.
+    /// - Leading zeros are allowed, matching the scope ids accepted by the standard library socket
+    ///   parser.
+    /// - The digit check runs first, so the zone is known to be ASCII before it is read as a
+    ///   string.
     ///
     /// # Examples
     /// `fe80::1%1` -> `Some("fe80::1")`
@@ -63,11 +69,7 @@ impl IPv6Address {
     }
 }
 
-impl_parse!(
-    IPv6Address,
-    "The embedded IPv4 form is accepted. (`::ffff:1.2.3.4`)",
-    "Brackets & zones are not accepted; see [`SocketAddressV6`](crate::SocketAddressV6)."
-);
+impl_parse!(IPv6Address);
 
 #[cfg(test)]
 mod tests {
@@ -107,6 +109,26 @@ mod tests {
 
             let result: Result<IPv6Address, ParseError> = IPv6Address::try_from(text);
             assert_eq!(result, *expected, "try_from(&str) input={}", text);
+        }
+    }
+
+    #[test]
+    fn parse_bracketed() {
+        let test_cases: &[(&str, Option<Result<IPv6Address, ParseError>>)] = &[
+            ("[::1]", Some(Ok(IPv6Address::LOCALHOST))),
+            ("[::1%1]", Some(Ok(IPv6Address::LOCALHOST))),
+            ("[::1%eth0]", Some(Err(InvalidIPv6Address))),
+            ("[]", Some(Err(InvalidIPv6Address))),
+            ("[127.0.0.1]", Some(Err(InvalidIPv6Address))),
+            ("::1", None),
+            ("[::1", None),
+            ("::1]", None),
+        ];
+
+        for (input, expected) in test_cases {
+            let result: Option<Result<IPv6Address, ParseError>> =
+                IPv6Address::parse_bracketed(input.as_bytes());
+            assert_eq!(result, *expected, "input={}", input);
         }
     }
 

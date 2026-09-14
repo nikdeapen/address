@@ -26,7 +26,7 @@
 ## Testing
 
 - Test the width & precision handling of the `Display` impls; `EndpointRef` has a dedicated `pad`
-  branch and `DomainRef` relies on `pad`, but `src/display/` only tests `as_str`.
+  branch and `DomainRef` relies on `pad`, but `src/display/` has no tests.
 - Test `ParseError`'s `Display` strings and `InvalidAddressError`'s `Display`, `into_value`, and
   `From` into `ParseError`; they are only exercised through `parse_unicode` under the `idna`
   feature.

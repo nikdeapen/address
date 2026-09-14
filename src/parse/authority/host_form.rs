@@ -3,7 +3,7 @@ use crate::{IPAddress, IPv6Address, ParseError};
 
 /// The host form of an authority.
 #[must_use]
-#[derive(Copy, Clone, Eq, PartialEq, Debug)]
+#[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Debug)]
 pub(crate) enum HostForm {
     /// An IP address host, bracketed or not.
     IP(IPAddress),

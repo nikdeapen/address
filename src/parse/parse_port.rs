@@ -2,13 +2,12 @@ use crate::ParseError;
 use crate::ParseError::InvalidPort;
 use std::str::FromStr;
 
-/// Parses the port from the `text`.
+/// Parses the port from the `text`, returning `(text_without_last_colon, port)`.
 ///
-/// Returns `(text_without_last_colon, port)`.
-///
-/// The port must be decimal digits only, with no sign. Leading zeros are allowed to match the
-/// standard library.
-/// The digit check runs first, so the port is known to be ASCII before it is read as a string.
+/// # Notes
+/// - The port must be decimal digits only, with no sign.
+/// - Leading zeros are allowed, matching the standard library.
+/// - The digit check runs first, so the port is known to be ASCII before it is read as a string.
 ///
 /// # Examples
 /// `localhost:80` -> `Ok(("localhost", 80))`
