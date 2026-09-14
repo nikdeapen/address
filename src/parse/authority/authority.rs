@@ -8,6 +8,11 @@ impl Authority {
     //! Parse
 
     /// Parses an [Authority] from the `text`.
+    ///
+    /// # Notes
+    /// - An IPv6 host must be bracketed: `[::1]:80`.
+    /// - Domain names are normalized to lowercase.
+    /// - A numeric IPv6 zone is accepted & ignored: `[fe80::1%1]:80` parses as `[fe80::1]:80`.
     pub fn parse(text: &[u8]) -> Result<Self, ParseError> {
         let (host, port): (&[u8], u16) = parse_port(text)?;
         match HostForm::classify(host)? {
@@ -19,9 +24,7 @@ impl Authority {
         }
     }
 
-    /// Creates an authority from the `text`, normalizing domain names to lowercase.
-    ///
-    /// The error holds the unmodified `text`, which `TryFrom<String>` soundly recovers as a string.
+    /// Parses an [Authority] from the `text`.
     pub(crate) fn parse_vec(text: Vec<u8>) -> Result<Self, InvalidAddressError<Vec<u8>>> {
         let (host_len, port): (usize, u16) = match parse_port(text.as_slice()) {
             Ok((host, port)) => (host.len(), port),
@@ -37,19 +40,9 @@ impl Authority {
     }
 }
 
-impl_parse!(
-    Authority,
-    "An IPv6 host must be bracketed: `[::1]:80`.",
-    "Domain names are normalized to lowercase.",
-    "A numeric IPv6 zone is accepted & ignored: `[fe80::1%1]:80` parses as `[fe80::1]:80`."
-);
+impl_parse!(Authority);
 
-impl_parse_string!(
-    Authority,
-    "An IPv6 host must be bracketed: `[::1]:80`.",
-    "Domain names are normalized to lowercase.",
-    "A numeric IPv6 zone is accepted & ignored: `[fe80::1%1]:80` parses as `[fe80::1]:80`."
-);
+impl_parse_string!(Authority);
 
 #[cfg(test)]
 mod tests {
@@ -99,6 +92,7 @@ mod tests {
             (b"[]:80", Err(InvalidIPv6Address)),
             (b"::1:80", Err(InvalidAuthority)),
             (b"fe80::1:80", Err(InvalidAuthority)),
+            (b"::80", Err(InvalidHost)),
             (b":80", Err(InvalidHost)),
             (b"Local_Host:80", Err(InvalidHost)),
             (b"Local!Host:80", Err(InvalidHost)),

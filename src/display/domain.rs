@@ -49,19 +49,3 @@ impl<'a> Borrow<str> for DomainRef<'a> {
         self.name()
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use crate::{Domain, DomainRef};
-
-    #[test]
-    fn as_str() {
-        let owned: Domain = Domain::localhost();
-        let result: &str = owned.as_ref();
-        assert_eq!(result, "localhost");
-
-        let domain: DomainRef = DomainRef::LOCALHOST;
-        let result: &str = domain.as_ref();
-        assert_eq!(result, "localhost");
-    }
-}

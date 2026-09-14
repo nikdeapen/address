@@ -4,11 +4,11 @@ use crate::{Domain, DomainRef, ParseError};
 impl Domain {
     //! International Domain Names
 
-    /// Parses the Unicode domain `text`.
+    /// Parses a [Domain] from the Unicode `text`.
     ///
-    /// Unicode labels are converted to their ASCII A-label form, so the domain will only contain
-    /// ASCII.
-    /// (example: `Bücher.example` becomes `xn--bcher-kva.example`)
+    /// # Notes
+    /// - Unicode labels become A-labels: `Bücher.example` parses as `xn--bcher-kva.example`.
+    /// - The name is normalized to lowercase.
     pub fn parse_unicode(text: &str) -> Result<Self, ParseError> {
         let name: String = idna::domain_to_ascii(text).map_err(|_| InvalidDomain)?;
         Self::try_from(name).map_err(ParseError::from)

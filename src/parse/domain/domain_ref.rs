@@ -5,6 +5,10 @@ impl<'a> DomainRef<'a> {
     //! Parse
 
     /// Parses a [DomainRef] from the `text`.
+    ///
+    /// # Notes
+    /// - Dot-separated ASCII labels. (see [`Domain::is_valid_name`])
+    /// - The name must already be lowercase; use [`Domain`](crate::Domain) for normalization.
     pub fn parse(text: &'a [u8]) -> Result<Self, ParseError> {
         if Domain::is_valid_name(text) {
             let name: &str = unsafe { std::str::from_utf8_unchecked(text) };
@@ -15,11 +19,7 @@ impl<'a> DomainRef<'a> {
     }
 }
 
-impl_parse_ref!(
-    DomainRef,
-    "Dot-separated ASCII labels. (see [`Domain::is_valid_name`])",
-    "The name must already be lowercase; use [`Domain`](crate::Domain) for mixed-case input."
-);
+impl_parse_ref!(DomainRef);
 
 #[cfg(test)]
 mod tests {
@@ -28,6 +28,10 @@ mod tests {
 
     type TestCase<'a> = (&'a [u8], Result<DomainRef<'a>, ParseError>);
 
+    fn domain(name: &'static str) -> DomainRef<'static> {
+        DomainRef::try_from(name).unwrap()
+    }
+
     #[test]
     fn parse() {
         let test_cases: &[TestCase] = &[
@@ -35,7 +39,11 @@ mod tests {
             (b"localhost", Ok(DomainRef::LOCALHOST)),
             (b"example.com", Ok(DomainRef::EXAMPLE)),
             (b"LocalHost", Err(InvalidDomain)),
-            (b"Local!Host", Err(InvalidDomain)),
+            (b"www.example.com", Ok(domain("www.example.com"))),
+            (b"a-b.c--d.example", Ok(domain("a-b.c--d.example"))),
+            (b"123.example", Ok(domain("123.example"))),
+            (b"local!host", Err(InvalidDomain)),
+            (b"local_host", Err(InvalidDomain)),
             (b"127.0.0.1", Err(InvalidDomain)),
             (b"\xFF", Err(InvalidDomain)),
             ("ü".as_bytes(), Err(InvalidDomain)),
@@ -62,6 +70,8 @@ mod tests {
             "a-b.c--d.example",
             "xn--bcher-kva.example",
             "123.example",
+            "a.b.c",
+            "x",
         ];
 
         for input in canonical {

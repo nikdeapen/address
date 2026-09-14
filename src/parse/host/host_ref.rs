@@ -5,6 +5,10 @@ impl<'a> HostRef<'a> {
     //! Parse
 
     /// Parses a [HostRef] from the `text`.
+    ///
+    /// # Notes
+    /// - IP addresses must be unbracketed: `::1`, not `[::1]`.
+    /// - A domain must already be lowercase; use [`Host`](crate::Host) for normalization.
     pub fn parse(text: &'a [u8]) -> Result<Self, ParseError> {
         if let Ok(ip) = IPAddress::parse(text) {
             Ok(ip.to_host_ref())
@@ -16,11 +20,7 @@ impl<'a> HostRef<'a> {
     }
 }
 
-impl_parse_ref!(
-    HostRef,
-    "IP addresses must be unbracketed: `::1`, not `[::1]`.",
-    "A domain must already be lowercase; use [`Host`](crate::Host) for mixed-case input."
-);
+impl_parse_ref!(HostRef);
 
 #[cfg(test)]
 mod tests {
@@ -29,17 +29,28 @@ mod tests {
 
     type TestCase<'a> = (&'a [u8], Result<HostRef<'a>, ParseError>);
 
+    fn host(name: &'static str) -> HostRef<'static> {
+        DomainRef::try_from(name).unwrap().to_host_ref()
+    }
+
     #[test]
     fn parse() {
         let test_cases: &[TestCase] = &[
             (b"", Err(InvalidHost)),
-            (b"localhost", Ok(DomainRef::LOCALHOST.to_host_ref())),
-            (b"example.com", Ok(DomainRef::EXAMPLE.to_host_ref())),
+            (b"localhost", Ok(host("localhost"))),
+            (b"example.com", Ok(host("example.com"))),
+            (b"LocalHost", Err(InvalidHost)),
+            (b"www.example.com", Ok(host("www.example.com"))),
+            (b"a-b.c--d.example", Ok(host("a-b.c--d.example"))),
             (b"127.0.0.1", Ok(IPv4Address::LOCALHOST.to_host_ref())),
             (b"::1", Ok(IPv6Address::LOCALHOST.to_host_ref())),
+            (
+                b"::FFFF",
+                Ok(IPv6Address::from([0, 0, 0, 0, 0, 0, 0, 0xFFFF]).to_host_ref()),
+            ),
             (b"[::1]", Err(InvalidHost)),
-            (b"LocalHost", Err(InvalidHost)),
-            (b"Local!Host", Err(InvalidHost)),
+            (b"local_host", Err(InvalidHost)),
+            (b"local!host", Err(InvalidHost)),
             (b"\xFF", Err(InvalidHost)),
             ("ü".as_bytes(), Err(InvalidHost)),
         ];
@@ -59,7 +70,14 @@ mod tests {
 
     #[test]
     fn round_trip() {
-        let canonical: &[&str] = &["localhost", "example.com", "127.0.0.1", "::1", "fe80::1"];
+        let canonical: &[&str] = &[
+            "localhost",
+            "example.com",
+            "a-b.c--d.example",
+            "127.0.0.1",
+            "::1",
+            "fe80::1",
+        ];
 
         for input in canonical {
             let value: HostRef = HostRef::try_from(*input).unwrap();

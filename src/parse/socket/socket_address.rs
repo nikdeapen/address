@@ -6,6 +6,10 @@ impl SocketAddress {
     //! Parse
 
     /// Parses a [SocketAddress] from the `text`.
+    ///
+    /// # Notes
+    /// - An IPv6 address must be bracketed: `[::1]:80`.
+    /// - A numeric IPv6 zone is accepted & ignored: `[fe80::1%1]:80` parses as `[fe80::1]:80`.
     pub fn parse(text: &[u8]) -> Result<Self, ParseError> {
         let (ip, port): (&[u8], u16) = parse_port(text)?;
         if let Some(ip) = IPv6Address::parse_bracketed(ip) {
@@ -17,11 +21,7 @@ impl SocketAddress {
     }
 }
 
-impl_parse!(
-    SocketAddress,
-    "An IPv6 address must be bracketed: `[::1]:80`.",
-    "A numeric IPv6 zone is accepted & ignored: `[fe80::1%1]:80` parses as `[fe80::1]:80`."
-);
+impl_parse!(SocketAddress);
 
 #[cfg(test)]
 mod tests {

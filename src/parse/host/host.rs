@@ -7,6 +7,10 @@ impl Host {
     //! Parse
 
     /// Parses a [Host] from the `text`.
+    ///
+    /// # Notes
+    /// - IP addresses must be unbracketed: `::1`, not `[::1]`.
+    /// - Domain names are normalized to lowercase.
     pub fn parse(text: &[u8]) -> Result<Self, ParseError> {
         if let Ok(ip) = IPAddress::parse(text) {
             Ok(ip.to_host())
@@ -17,9 +21,7 @@ impl Host {
         }
     }
 
-    /// Creates a host from the `text`, normalizing domain names to lowercase.
-    ///
-    /// The error holds the unmodified `text`, which `TryFrom<String>` soundly recovers as a string.
+    /// Parses a [Host] from the `text`.
     pub(crate) fn parse_vec(text: Vec<u8>) -> Result<Self, InvalidAddressError<Vec<u8>>> {
         if let Ok(ip) = IPAddress::parse(text.as_slice()) {
             Ok(ip.to_host())
@@ -32,17 +34,9 @@ impl Host {
     }
 }
 
-impl_parse!(
-    Host,
-    "IP addresses must be unbracketed: `::1`, not `[::1]`.",
-    "Domain names are normalized to lowercase."
-);
+impl_parse!(Host);
 
-impl_parse_string!(
-    Host,
-    "IP addresses must be unbracketed: `::1`, not `[::1]`.",
-    "Domain names are normalized to lowercase."
-);
+impl_parse_string!(Host);
 
 #[cfg(test)]
 mod tests {
@@ -61,6 +55,7 @@ mod tests {
         let test_cases: &[TestCase] = &[
             (b"", Err(InvalidHost)),
             (b"localhost", Ok(host("localhost"))),
+            (b"example.com", Ok(host("example.com"))),
             (b"LocalHost", Ok(host("localhost"))),
             (b"WWW.Example.COM", Ok(host("www.example.com"))),
             (b"A-B.C--D.EXAMPLE", Ok(host("a-b.c--d.example"))),

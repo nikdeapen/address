@@ -1,10 +1,10 @@
 /// Implements `FromStr` & `TryFrom<&str>` for an owned type, delegating to its byte-slice parser.
 macro_rules! impl_parse {
-    ($ty:ident $(, $doc:expr)*) => {
+    ($ty:ident) => {
         impl ::std::str::FromStr for crate::$ty {
             type Err = crate::ParseError;
 
-            $(#[doc = $doc])*
+            /// Parses the `text`. (see [`Self::parse`])
             fn from_str(text: &str) -> Result<Self, Self::Err> {
                 Self::parse(text.as_bytes())
             }
@@ -13,7 +13,7 @@ macro_rules! impl_parse {
         impl TryFrom<&str> for crate::$ty {
             type Error = crate::ParseError;
 
-            $(#[doc = $doc])*
+            /// Parses the `text`. (see [`Self::parse`])
             fn try_from(text: &str) -> Result<Self, Self::Error> {
                 Self::parse(text.as_bytes())
             }
@@ -26,14 +26,14 @@ macro_rules! impl_parse {
 /// The byte-vector parser must leave the value unmodified on failure, which is what makes the
 /// recovered `String` sound.
 macro_rules! impl_parse_string {
-    ($ty:ident $(, $doc:expr)*) => {
+    ($ty:ident) => {
         impl TryFrom<String> for crate::$ty {
             type Error = crate::InvalidAddressError<String>;
 
-            $(#[doc = $doc])*
-            fn try_from(value: String) -> Result<Self, Self::Error> {
-                let len: usize = value.len();
-                Self::parse_vec(value.into_bytes())
+            /// Parses the `text`. (see [`Self::parse`])
+            fn try_from(text: String) -> Result<Self, Self::Error> {
+                let len: usize = text.len();
+                Self::parse_vec(text.into_bytes())
                     .map_err(|error| unsafe { error.into_string_unchecked(len) })
             }
         }
@@ -42,11 +42,11 @@ macro_rules! impl_parse_string {
 
 /// Implements `TryFrom<&str>` for a reference type, delegating to its byte-slice parser.
 macro_rules! impl_parse_ref {
-    ($ty:ident $(, $doc:expr)*) => {
+    ($ty:ident) => {
         impl<'a> TryFrom<&'a str> for crate::$ty<'a> {
             type Error = crate::ParseError;
 
-            $(#[doc = $doc])*
+            /// Parses the `text`. (see [`Self::parse`])
             fn try_from(text: &'a str) -> Result<Self, Self::Error> {
                 Self::parse(text.as_bytes())
             }

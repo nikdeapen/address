@@ -5,6 +5,10 @@ impl Domain {
     //! Parse
 
     /// Parses a [Domain] from the `text`.
+    ///
+    /// # Notes
+    /// - Dot-separated ASCII labels. (see [`Domain::is_valid_name`])
+    /// - The name is normalized to lowercase.
     pub fn parse(text: &[u8]) -> Result<Self, ParseError> {
         match Self::classify_name(text) {
             NameClass::Invalid => Err(InvalidDomain),
@@ -19,9 +23,7 @@ impl Domain {
         }
     }
 
-    /// Creates a domain from the `text`, normalizing the name to lowercase.
-    ///
-    /// The error holds the unmodified `text`, which `TryFrom<String>` soundly recovers as a string.
+    /// Parses a [Domain] from the `text`.
     pub(crate) fn parse_vec(text: Vec<u8>) -> Result<Self, InvalidAddressError<Vec<u8>>> {
         let len: usize = text.len();
         Self::parse_vec_prefix(text, len)
@@ -47,17 +49,9 @@ impl Domain {
     }
 }
 
-impl_parse!(
-    Domain,
-    "Dot-separated ASCII labels. (see [`Domain::is_valid_name`])",
-    "The name is normalized to lowercase."
-);
+impl_parse!(Domain);
 
-impl_parse_string!(
-    Domain,
-    "Dot-separated ASCII labels. (see [`Domain::is_valid_name`])",
-    "The name is normalized to lowercase."
-);
+impl_parse_string!(Domain);
 
 #[cfg(test)]
 mod tests {
@@ -76,6 +70,7 @@ mod tests {
         let test_cases: &[TestCase] = &[
             (b"", Err(InvalidDomain)),
             (b"localhost", Ok(Domain::localhost())),
+            (b"example.com", Ok(Domain::example())),
             (b"LocalHost", Ok(Domain::localhost())),
             (b"WWW.Example.COM", Ok(domain("www.example.com"))),
             (b"A-B.C--D.EXAMPLE", Ok(domain("a-b.c--d.example"))),

@@ -59,12 +59,14 @@ impl Domain {
     }
 
     /// Checks if the domain `label` is valid.
+    /// (see [`Self::is_valid_label`])
     #[must_use]
     pub fn is_valid_label_str(label: &str) -> bool {
         Self::is_valid_label(label.as_bytes())
     }
 
     /// Checks if the domain `label` is valid, accepting uppercase letters.
+    /// (see [`Self::is_valid_label`])
     #[must_use]
     pub fn is_valid_label_ignore_case_str(label: &str) -> bool {
         Self::is_valid_label_ignore_case(label.as_bytes())
@@ -147,12 +149,14 @@ impl Domain {
     }
 
     /// Checks if the domain `name` is valid.
+    /// (see [`Self::is_valid_name`])
     #[must_use]
     pub fn is_valid_name_str(name: &str) -> bool {
         Self::is_valid_name(name.as_bytes())
     }
 
     /// Checks if the domain `name` is valid, accepting uppercase letters.
+    /// (see [`Self::is_valid_name`])
     #[must_use]
     pub fn is_valid_name_ignore_case_str(name: &str) -> bool {
         Self::is_valid_name_ignore_case(name.as_bytes())
@@ -176,6 +180,7 @@ mod tests {
             ("a-a", true, true),
             ("a-a-a", true, true),
         ];
+
         for (label, expected, expected_ignore_case) in test_cases {
             let result: bool = Domain::is_valid_label_str(label);
             assert_eq!(result, *expected, "label={}", label);
@@ -213,6 +218,7 @@ mod tests {
             ("a.a.a", true, true),
             ("a-a.a-a.a-a", true, true),
         ];
+
         for (name, expected, expected_ignore_case) in test_cases {
             let result: bool = Domain::is_valid_name_str(name);
             assert_eq!(result, *expected, "name={}", name);
