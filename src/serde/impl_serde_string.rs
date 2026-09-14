@@ -2,7 +2,6 @@
 macro_rules! impl_serialize_display {
     ($ty:ident) => {
         impl ::serde::Serialize for crate::$ty {
-            /// Serializes as the `Display` string in every format, binary included.
             fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
             where
                 S: ::serde::Serializer,
@@ -17,7 +16,6 @@ macro_rules! impl_serialize_display {
 macro_rules! impl_serialize_display_ref {
     ($ty:ident) => {
         impl<'a> ::serde::Serialize for crate::$ty<'a> {
-            /// Serializes as the `Display` string in every format, binary included.
             fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
             where
                 S: ::serde::Serializer,
@@ -52,7 +50,7 @@ macro_rules! impl_deserialize_string_ref {
                 stringify!($owned),
                 "`](crate::",
                 stringify!($owned),
-                ") to deserialize mixed-case or escaped input."
+                ") for normalization or escaped input."
             )]
             fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
             where
@@ -64,10 +62,10 @@ macro_rules! impl_deserialize_string_ref {
     };
 }
 
+impl_serialize_display!(Authority);
+impl_serialize_display_ref!(AuthorityRef);
+
 impl ::serde::Serialize for crate::Domain {
-    /// Serializes as the name in every format, binary included.
-    ///
-    /// Writes the name directly; `collect_str` formats first, which binary formats must buffer.
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: ::serde::Serializer,
@@ -77,7 +75,6 @@ impl ::serde::Serialize for crate::Domain {
 }
 
 impl<'a> ::serde::Serialize for crate::DomainRef<'a> {
-    /// Serializes as the name in every format, binary included.
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: ::serde::Serializer,
@@ -86,8 +83,10 @@ impl<'a> ::serde::Serialize for crate::DomainRef<'a> {
     }
 }
 
+impl_serialize_display!(Endpoint);
+impl_serialize_display_ref!(EndpointRef);
+
 impl ::serde::Serialize for crate::Host {
-    /// Serializes as the `Display` string in every format, binary included.
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: ::serde::Serializer,
@@ -100,7 +99,6 @@ impl ::serde::Serialize for crate::Host {
 }
 
 impl<'a> ::serde::Serialize for crate::HostRef<'a> {
-    /// Serializes as the `Display` string in every format, binary included.
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: ::serde::Serializer,
@@ -111,12 +109,6 @@ impl<'a> ::serde::Serialize for crate::HostRef<'a> {
         }
     }
 }
-
-impl_serialize_display!(Authority);
-impl_serialize_display_ref!(AuthorityRef);
-
-impl_serialize_display!(Endpoint);
-impl_serialize_display_ref!(EndpointRef);
 
 impl_deserialize_string!(Authority, "an authority string");
 impl_deserialize_string_ref!(AuthorityRef, Authority, "a borrowed authority string");

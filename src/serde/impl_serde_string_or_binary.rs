@@ -4,17 +4,8 @@ use crate::{IPAddress, IPv4Address, IPv6Address};
 /// string in human-readable formats and as the `$bin` type in other formats, converting through
 /// their `From` impls.
 macro_rules! impl_serde_string_or_binary {
-    ($ty:ident, $expecting:literal, $bin:ty $(, $doc:expr)*) => {
+    ($ty:ident, $expecting:literal, $bin:ty) => {
         impl ::serde::Serialize for crate::$ty {
-            #[doc = concat!(
-                "Serializes as the `Display` string in human-readable formats and as `",
-                stringify!($bin),
-                "` in others."
-            )]
-            $(
-                #[doc = ""]
-                #[doc = $doc]
-            )*
             fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
             where
                 S: ::serde::Serializer,
@@ -43,35 +34,18 @@ macro_rules! impl_serde_string_or_binary {
     };
 }
 
-impl_serde_string_or_binary!(
-    IPv4Address,
-    "an IPv4 address string",
-    [u8; 4],
-    "The binary form is byte-identical to the standard library's."
-);
-impl_serde_string_or_binary!(
-    IPv6Address,
-    "an IPv6 address string",
-    [u8; 16],
-    "The binary form is byte-identical to the standard library's."
-);
-impl_serde_string_or_binary!(
-    SocketAddress,
-    "a socket address string",
-    (IPAddress, u16),
-    "The IP address is a byte string, not the standard library's enum tag."
-);
+impl_serde_string_or_binary!(IPv4Address, "an IPv4 address string", [u8; 4]);
+impl_serde_string_or_binary!(IPv6Address, "an IPv6 address string", [u8; 16]);
+impl_serde_string_or_binary!(SocketAddress, "a socket address string", (IPAddress, u16));
 impl_serde_string_or_binary!(
     SocketAddressV4,
     "an IPv4 socket address string",
-    (IPv4Address, u16),
-    "The binary form is byte-identical to the standard library's."
+    (IPv4Address, u16)
 );
 impl_serde_string_or_binary!(
     SocketAddressV6,
     "an IPv6 socket address string",
-    (IPv6Address, u16),
-    "The binary form is byte-identical to the standard library's."
+    (IPv6Address, u16)
 );
 
 #[cfg(test)]
