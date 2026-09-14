@@ -2,8 +2,8 @@ use serde::de::{Error, Unexpected, Visitor};
 use std::fmt::{Display, Formatter};
 use std::marker::PhantomData;
 
-/// A serde visitor that parses a string with `TryFrom`.
-pub(crate) struct TryFromStrVisitor<'de, T> {
+/// A serde visitor that parses a borrowed string with `TryFrom<&str>`.
+pub(in crate::serde) struct TryFromStrVisitor<'de, T> {
     expecting: &'static str,
     phantom: PhantomData<fn(&'de str) -> T>,
 }
@@ -12,7 +12,7 @@ impl<'de, T> TryFromStrVisitor<'de, T> {
     //! Construction
 
     /// Creates a new visitor with the `expecting` message.
-    pub(crate) const fn new(expecting: &'static str) -> Self {
+    pub(in crate::serde) const fn new(expecting: &'static str) -> Self {
         Self {
             expecting,
             phantom: PhantomData,

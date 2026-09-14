@@ -5,10 +5,6 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::fmt::Formatter;
 
 impl Serialize for IPAddress {
-    /// Serializes as the `Display` string in human-readable formats and as a 4- or 16-byte string
-    /// in others.
-    ///
-    /// The length selects the version, not the standard library's enum tag.
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -21,15 +17,13 @@ impl Serialize for IPAddress {
     }
 }
 
-/// A serde visitor that matches a byte string's length: 4 bytes for an IPv4 address, 16 bytes for
-/// an IPv6 address.
 struct IPAddressBytesVisitor;
 
 impl<'de> Visitor<'de> for IPAddressBytesVisitor {
     type Value = IPAddress;
 
     fn expecting(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("4 or 16 IP address bytes")
+        f.write_str("a 4 or 16 byte IP address")
     }
 
     fn visit_bytes<E>(self, v: &[u8]) -> Result<Self::Value, E>

@@ -1,8 +1,6 @@
-//! Serde support for the address types.
-
-pub(crate) use from_str_visitor::*;
-pub(crate) use from_string_visitor::*;
-pub(crate) use try_from_str_visitor::*;
+pub(in crate::serde) use from_str_visitor::*;
+pub(in crate::serde) use from_string_visitor::*;
+pub(in crate::serde) use try_from_str_visitor::*;
 
 mod from_str_visitor;
 mod from_string_visitor;
@@ -13,13 +11,13 @@ mod impl_serde_string_or_binary;
 mod ip_address;
 
 #[cfg(test)]
-pub(crate) mod test_util {
+pub(in crate::serde) mod test_util {
     use serde::Serialize;
     use serde::de::DeserializeOwned;
     use std::fmt::Debug;
 
     /// Asserts the value serializes to the `expected` JSON & deserializes back to an equal value.
-    pub(crate) fn assert_json<T>(value: T, expected: &str)
+    pub(in crate::serde) fn assert_json<T>(value: T, expected: &str)
     where
         T: Serialize + DeserializeOwned + PartialEq + Debug,
     {
@@ -31,7 +29,7 @@ pub(crate) mod test_util {
     }
 
     /// Asserts the value survives a postcard round trip & returns its encoded bytes.
-    pub(crate) fn assert_postcard<T>(value: T) -> Vec<u8>
+    pub(in crate::serde) fn assert_postcard<T>(value: T) -> Vec<u8>
     where
         T: Serialize + DeserializeOwned + PartialEq + Debug,
     {
