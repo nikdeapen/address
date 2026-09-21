@@ -28,10 +28,7 @@ impl Domain {
     ///
     /// # Safety
     /// The `name` must be valid and lowercase. See [`Domain::is_valid_name`].
-    pub unsafe fn new_unchecked<S>(name: S) -> Self
-    where
-        S: Into<String>,
-    {
+    pub unsafe fn new_unchecked<S: Into<String>>(name: S) -> Self {
         let name: String = name.into();
 
         debug_assert!(Self::is_valid_name_str(name.as_str()));

@@ -11,6 +11,8 @@ impl SocketAddress {
     }
 
     /// Converts the address to a standard library address with the `flow_info` & `scope_id`.
+    ///
+    /// Both are ignored for IPv4 socket addresses.
     #[must_use]
     pub const fn to_std_with(self, flow_info: u32, scope_id: u32) -> SocketAddr {
         match self.ip() {

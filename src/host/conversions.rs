@@ -11,25 +11,27 @@ impl Host {
         }
     }
 
-    /// Converts the host to an authority with the `port`.
-    pub const fn to_authority(self, port: u16) -> Authority {
-        Authority::new(self, port)
-    }
-
     /// Converts the host to a domain.
     pub fn to_domain(self) -> Result<Domain, Self> {
-        match self {
-            Self::Domain(domain) => Ok(domain),
-            host => Err(host),
+        if let Self::Domain(domain) = self {
+            Ok(domain)
+        } else {
+            Err(self)
         }
     }
 
     /// Converts the host to an IP address.
     pub fn to_ip(self) -> Result<IPAddress, Self> {
-        match self {
-            Self::IPAddress(ip) => Ok(ip),
-            host => Err(host),
+        if let Self::IPAddress(ip) = self {
+            Ok(ip)
+        } else {
+            Err(self)
         }
+    }
+
+    /// Converts the host to an authority with the `port`.
+    pub const fn to_authority(self, port: u16) -> Authority {
+        Authority::new(self, port)
     }
 }
 
@@ -75,20 +77,6 @@ mod tests {
     }
 
     #[test]
-    fn host_to_authority() {
-        let host: Host = Domain::localhost().to_host();
-        let result: Authority = host.to_authority(80);
-        let expected: Authority = Authority::new(Host::Domain(Domain::localhost()), 80);
-        assert_eq!(result, expected);
-
-        let host: Host = IPv4Address::LOCALHOST.to_host();
-        let result: Authority = host.to_authority(80);
-        let expected: Authority =
-            Authority::new(Host::IPAddress(IPAddress::V4(IPv4Address::LOCALHOST)), 80);
-        assert_eq!(result, expected);
-    }
-
-    #[test]
     fn host_to_domain() {
         let host: Host = Domain::localhost().to_host();
         let result: Result<Domain, Host> = host.to_domain();
@@ -111,6 +99,20 @@ mod tests {
         let host: Host = Domain::localhost().to_host();
         let result: Result<IPAddress, Host> = host.to_ip();
         let expected: Result<IPAddress, Host> = Err(Domain::localhost().to_host());
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn host_to_authority() {
+        let host: Host = Domain::localhost().to_host();
+        let result: Authority = host.to_authority(80);
+        let expected: Authority = Authority::new(Host::Domain(Domain::localhost()), 80);
+        assert_eq!(result, expected);
+
+        let host: Host = IPv4Address::LOCALHOST.to_host();
+        let result: Authority = host.to_authority(80);
+        let expected: Authority =
+            Authority::new(Host::IPAddress(IPAddress::V4(IPv4Address::LOCALHOST)), 80);
         assert_eq!(result, expected);
     }
 

@@ -30,7 +30,7 @@ impl<'a> Labels<'a> {
     //! Construction
 
     /// Creates a new label iterator for the domain `name`.
-    pub(crate) const fn new(name: &'a str) -> Self {
+    const fn new(name: &'a str) -> Self {
         Self { name: Some(name) }
     }
 }
@@ -51,7 +51,7 @@ impl<'a> Iterator for Labels<'a> {
 
     fn size_hint(&self) -> (usize, Option<usize>) {
         match self.name {
-            Some(name) => (1, Some(name.len() / 2 + 1)),
+            Some(name) => (1, Some(name.len().div_ceil(2))),
             None => (0, Some(0)),
         }
     }
