@@ -56,7 +56,7 @@ impl<'de> Deserialize<'de> for IPAddress {
 #[cfg(test)]
 mod tests {
     use crate::serde::test_util::{assert_json, assert_postcard};
-    use crate::{IPv4Address, IPv6Address};
+    use crate::{IPAddress, IPv4Address, IPv6Address};
 
     #[test]
     fn json() {
@@ -72,5 +72,15 @@ mod tests {
 
         let bytes: Vec<u8> = assert_postcard(IPv6Address::LOCALHOST.to_ip());
         assert_eq!(bytes.len(), 17, "a length prefix plus 16 address bytes");
+    }
+
+    #[test]
+    fn invalid_length() {
+        let test_cases: &[&[u8]] = &[&[0], &[3, 1, 2, 3], &[5, 1, 2, 3, 4, 5]];
+
+        for bytes in test_cases {
+            let result: Result<IPAddress, postcard::Error> = postcard::from_bytes(bytes);
+            assert!(result.is_err(), "bytes={:?}", bytes);
+        }
     }
 }

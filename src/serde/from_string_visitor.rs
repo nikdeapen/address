@@ -78,6 +78,18 @@ mod tests {
     use serde::de::value::{BytesDeserializer, Error as ValueError};
 
     #[test]
+    fn visit_bytes() {
+        let visitor: FromStringVisitor<Domain> = FromStringVisitor::new("a domain string");
+        let deserializer: BytesDeserializer<ValueError> = BytesDeserializer::new(b"LocalHost");
+        let result: Domain = deserializer.deserialize_string(visitor).unwrap();
+        assert_eq!(result.name(), "localhost");
+
+        let visitor: FromStringVisitor<Domain> = FromStringVisitor::new("a domain string");
+        let deserializer: BytesDeserializer<ValueError> = BytesDeserializer::new(b"\xFF");
+        assert!(deserializer.deserialize_string(visitor).is_err());
+    }
+
+    #[test]
     fn visit_byte_buf() {
         let visitor: FromStringVisitor<Domain> = FromStringVisitor::new("a domain string");
         let result: Domain = visitor
@@ -91,17 +103,5 @@ mod tests {
                 .visit_byte_buf::<ValueError>(Vec::from("Local!Host"))
                 .is_err()
         );
-    }
-
-    #[test]
-    fn visit_bytes() {
-        let visitor: FromStringVisitor<Domain> = FromStringVisitor::new("a domain string");
-        let deserializer: BytesDeserializer<ValueError> = BytesDeserializer::new(b"LocalHost");
-        let result: Domain = deserializer.deserialize_string(visitor).unwrap();
-        assert_eq!(result.name(), "localhost");
-
-        let visitor: FromStringVisitor<Domain> = FromStringVisitor::new("a domain string");
-        let deserializer: BytesDeserializer<ValueError> = BytesDeserializer::new(b"\xFF");
-        assert!(deserializer.deserialize_string(visitor).is_err());
     }
 }

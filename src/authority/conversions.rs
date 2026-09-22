@@ -24,7 +24,7 @@ impl Authority {
     pub fn to_socket(self) -> Result<SocketAddress, Self> {
         let (host, port): (Host, u16) = self.into();
         match host.to_ip() {
-            Ok(ip) => Ok(ip.to_socket(port)),
+            Ok(ip) => Ok(SocketAddress::new(ip, port)),
             Err(host) => Err(Self::new(host, port)),
         }
     }
