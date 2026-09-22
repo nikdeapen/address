@@ -3,16 +3,14 @@
 - Ambiguous conversions. Examples: `Host::from(1u32)` and `Authority::from((1u32, 80))`.
 - Document on the `TryFrom<String>` impls that the string is returned in the error; only the
   `InvalidAddressError` doc says the value is preserved.
-- Return `InvalidAuthority` for any unbracketed host with a colon; RFC 3986 allows none.
-  Today it depends on the text before the last colon parsing as IPv6, so `2001:db8::1` & `::1`
-  report `InvalidHost`. Checking for the colon in `HostForm::classify` also drops the IPv6 parse
-  attempt from the domain path.
 - Add an `exclude` list to `Cargo.toml`; the tarball ships `.github/`, `.idea/`, `.gitignore`,
   `ISSUES.md`, & `NOTES.md`.
 - Mention `IPv4Address`, `IPv6Address`, `SocketAddressV4`, & `SocketAddressV6` in the README; the
   table only lists the six core types.
 - Rename `is_valid_label_op_ignore_case` & `is_valid_name_op_ignore_case`; "op" reads as
   "operation".
+- Add `IPAddress::to_canonical` & `IPv6Address::to_canonical` mirroring std; collapsing a mapped
+  IPv6 address today takes a match on the variant plus `to_v4_mapped().map_or(..)`.
 
 ## Parsing
 

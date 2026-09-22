@@ -1,4 +1,5 @@
 use crate::ParseError::InvalidIPv6Address;
+use crate::parse_digits;
 use crate::{IPv6Address, ParseError, impl_parse};
 use std::net::Ipv6Addr;
 use std::str::FromStr;
@@ -6,17 +7,14 @@ use std::str::FromStr;
 impl IPv6Address {
     //! Parse
 
-    /// The maximum length of an IPv6 address string.
-    /// (ffff:ffff:ffff:ffff:ffff:ffff:255.255.255.255)
-    const MAX_STR_LEN: usize = 45;
-
     /// Parses an [IPv6Address] from the `text`.
     ///
     /// # Notes
     /// - The embedded IPv4 form is accepted. (`::ffff:1.2.3.4`)
     /// - Brackets & zones are not accepted; see [`SocketAddressV6`](crate::SocketAddressV6).
     pub fn parse(text: &[u8]) -> Result<Self, ParseError> {
-        if text.len() > Self::MAX_STR_LEN {
+        const MAX_STR_LEN: usize = "ffff:ffff:ffff:ffff:ffff:ffff:255.255.255.255".len();
+        if text.len() > MAX_STR_LEN {
             return Err(InvalidIPv6Address);
         }
         let text: &str = std::str::from_utf8(text).map_err(|_| InvalidIPv6Address)?;
@@ -26,17 +24,13 @@ impl IPv6Address {
     }
 
     /// Parses the bracketed IPv6 address text, ignoring an optional numeric zone.
-    ///
-    /// Returns `None` if the address is not bracketed. A bracketed but invalid interior, the zone
-    /// included, is `Some(Err(InvalidIPv6Address))`: the brackets declare the version, so callers
-    /// propagate it rather than substituting their own error.
-    pub(crate) fn parse_bracketed(text: &[u8]) -> Option<Result<Self, ParseError>> {
-        let text: &[u8] = text.strip_prefix(b"[")?.strip_suffix(b"]")?;
-        if let Some(text) = Self::strip_zone(text) {
-            Some(Self::parse(text))
-        } else {
-            Some(Err(InvalidIPv6Address))
-        }
+    pub(crate) fn parse_bracketed(text: &[u8]) -> Result<Self, ParseError> {
+        let text: &[u8] = text
+            .strip_prefix(b"[")
+            .and_then(|text| text.strip_suffix(b"]"))
+            .ok_or(InvalidIPv6Address)?;
+        let text: &[u8] = Self::strip_zone(text).ok_or(InvalidIPv6Address)?;
+        Self::parse(text)
     }
 
     /// Strips the ignored zone suffix from the `text`, the inner text of a bracketed IPv6 address.
@@ -44,27 +38,16 @@ impl IPv6Address {
     /// # Notes
     /// - The text is returned unchanged if there is no `%`; an invalid zone is `None`.
     /// - The zone must be a decimal `u32`, with no sign.
-    /// - Leading zeros are allowed, matching the scope ids accepted by the standard library socket
-    ///   parser.
-    /// - The digit check runs first, so the zone is known to be ASCII before it is read as a
-    ///   string.
+    /// - Leading zeros are allowed, matching the scope ids accepted by the std-lib socket parser.
     ///
     /// # Examples
     /// `fe80::1%1` -> `Some("fe80::1")`
     /// `fe80::1`   -> `Some("fe80::1")`
     /// `fe80::1%`  -> `None`
     fn strip_zone(text: &[u8]) -> Option<&[u8]> {
-        if let Some(percent) = text.iter().position(|c| *c == b'%') {
-            let zone: &[u8] = &text[percent + 1..];
-            let valid: bool = !zone.is_empty() && zone.iter().all(|c| c.is_ascii_digit());
-            if !valid {
-                return None;
-            }
-            let zone: &str = unsafe { std::str::from_utf8_unchecked(zone) };
-            let _: u32 = u32::from_str(zone).ok()?;
-            Some(&text[..percent])
-        } else {
-            Some(text)
+        match text.iter().position(|c| *c == b'%') {
+            Some(percent) => parse_digits(&text[percent + 1..]).map(|_| &text[..percent]),
+            None => Some(text),
         }
     }
 }
@@ -78,10 +61,11 @@ mod tests {
     use std::str::FromStr;
 
     type TestCase<'a> = (&'a [u8], Result<IPv6Address, ParseError>);
+    const MAX_STR_LEN: usize = "ffff:ffff:ffff:ffff:ffff:ffff:255.255.255.255".len();
 
     #[test]
     fn parse() {
-        let over_max: Vec<u8> = vec![b'0'; IPv6Address::MAX_STR_LEN + 1];
+        let over_max: Vec<u8> = vec![b'0'; MAX_STR_LEN + 1];
         let test_cases: &[TestCase] = &[
             (b"", Err(InvalidIPv6Address)),
             (b"::", Ok(IPv6Address::UNSPECIFIED)),
@@ -114,19 +98,19 @@ mod tests {
 
     #[test]
     fn parse_bracketed() {
-        let test_cases: &[(&str, Option<Result<IPv6Address, ParseError>>)] = &[
-            ("[::1]", Some(Ok(IPv6Address::LOCALHOST))),
-            ("[::1%1]", Some(Ok(IPv6Address::LOCALHOST))),
-            ("[::1%eth0]", Some(Err(InvalidIPv6Address))),
-            ("[]", Some(Err(InvalidIPv6Address))),
-            ("[127.0.0.1]", Some(Err(InvalidIPv6Address))),
-            ("::1", None),
-            ("[::1", None),
-            ("::1]", None),
+        let test_cases: &[(&str, Result<IPv6Address, ParseError>)] = &[
+            ("[::1]", Ok(IPv6Address::LOCALHOST)),
+            ("[::1%1]", Ok(IPv6Address::LOCALHOST)),
+            ("[::1%eth0]", Err(InvalidIPv6Address)),
+            ("[]", Err(InvalidIPv6Address)),
+            ("[127.0.0.1]", Err(InvalidIPv6Address)),
+            ("::1", Err(InvalidIPv6Address)),
+            ("[::1", Err(InvalidIPv6Address)),
+            ("::1]", Err(InvalidIPv6Address)),
         ];
 
         for (input, expected) in test_cases {
-            let result: Option<Result<IPv6Address, ParseError>> =
+            let result: Result<IPv6Address, ParseError> =
                 IPv6Address::parse_bracketed(input.as_bytes());
             assert_eq!(result, *expected, "input={}", input);
         }

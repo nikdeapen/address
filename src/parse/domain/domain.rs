@@ -24,26 +24,25 @@ impl Domain {
     }
 
     /// Parses a [Domain] from the `text`.
-    pub(crate) fn parse_vec(text: Vec<u8>) -> Result<Self, InvalidAddressError<Vec<u8>>> {
+    pub(crate) fn parse_string(text: String) -> Result<Self, InvalidAddressError<String>> {
         let len: usize = text.len();
-        Self::parse_vec_prefix(text, len)
+        Self::parse_string_prefix(text, len)
             .map_err(|text| InvalidAddressError::new(text, InvalidDomain))
     }
 
     /// Creates a domain from the first `len` bytes of `text`, normalizing the name to lowercase.
     ///
     /// Returns the unmodified `text` if the prefix is not a valid domain name.
-    pub(crate) fn parse_vec_prefix(text: Vec<u8>, len: usize) -> Result<Self, Vec<u8>> {
-        match Self::classify_name(&text[..len]) {
+    pub(crate) fn parse_string_prefix(text: String, len: usize) -> Result<Self, String> {
+        match Self::classify_name(&text.as_bytes()[..len]) {
             NameClass::Invalid => Err(text),
             class => {
-                let mut text: Vec<u8> = text;
+                let mut text: String = text;
                 text.truncate(len);
                 if class == NameClass::MixedCase {
                     text.make_ascii_lowercase();
                 }
-                let name: String = unsafe { String::from_utf8_unchecked(text) };
-                Ok(unsafe { Self::new_unchecked(name) })
+                Ok(unsafe { Self::new_unchecked(text) })
             }
         }
     }

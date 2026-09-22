@@ -6,15 +6,13 @@ use std::str::FromStr;
 impl IPv4Address {
     //! Parse
 
-    /// The maximum length of an IPv4 address string. (255.255.255.255)
-    const MAX_STR_LEN: usize = 15;
-
     /// Parses an [IPv4Address] from the `text`.
     ///
     /// # Notes
     /// - No leading zeros, matching the standard library. (`127.0.0.01` is invalid)
     pub fn parse(text: &[u8]) -> Result<Self, ParseError> {
-        if text.len() > Self::MAX_STR_LEN {
+        const MAX_STR_LEN: usize = "255.255.255.255".len();
+        if text.len() > MAX_STR_LEN {
             return Err(InvalidIPv4Address);
         }
         let text: &str = std::str::from_utf8(text).map_err(|_| InvalidIPv4Address)?;
@@ -33,10 +31,11 @@ mod tests {
     use std::str::FromStr;
 
     type TestCase<'a> = (&'a [u8], Result<IPv4Address, ParseError>);
+    const MAX_STR_LEN: usize = "255.255.255.255".len();
 
     #[test]
     fn parse() {
-        let over_max: Vec<u8> = vec![b'1'; IPv4Address::MAX_STR_LEN + 1];
+        let over_max: Vec<u8> = vec![b'1'; MAX_STR_LEN + 1];
         let test_cases: &[TestCase] = &[
             (b"", Err(InvalidIPv4Address)),
             (b"1.2.3.4", Ok(IPv4Address::from([1, 2, 3, 4]))),

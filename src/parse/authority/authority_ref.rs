@@ -1,4 +1,3 @@
-use crate::ParseError::InvalidHost;
 use crate::parse_port;
 use crate::{AuthorityRef, DomainRef, HostForm, ParseError, impl_parse_ref};
 
@@ -16,7 +15,8 @@ impl<'a> AuthorityRef<'a> {
         match HostForm::classify(host)? {
             HostForm::IP(ip) => Ok(ip.to_host_ref().to_authority_ref(port)),
             HostForm::Domain => {
-                let domain: DomainRef = DomainRef::parse(host).map_err(|_| InvalidHost)?;
+                let domain: DomainRef =
+                    DomainRef::parse(host).map_err(|_| HostForm::domain_error(host))?;
                 Ok(domain.to_host_ref().to_authority_ref(port))
             }
         }
@@ -75,7 +75,8 @@ mod tests {
             (b"[]:80", Err(InvalidIPv6Address)),
             (b"::1:80", Err(InvalidAuthority)),
             (b"fe80::1:80", Err(InvalidAuthority)),
-            (b"::80", Err(InvalidHost)),
+            (b"2001:db8::1", Err(InvalidAuthority)),
+            (b"::80", Err(InvalidAuthority)),
             (b":80", Err(InvalidHost)),
             (b"local_host:80", Err(InvalidHost)),
             (b"local!host:80", Err(InvalidHost)),

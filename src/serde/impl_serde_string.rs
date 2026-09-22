@@ -70,7 +70,7 @@ impl ::serde::Serialize for crate::Domain {
     where
         S: ::serde::Serializer,
     {
-        serializer.serialize_str(self.name())
+        ::serde::Serialize::serialize(&self.to_ref(), serializer)
     }
 }
 
@@ -91,10 +91,7 @@ impl ::serde::Serialize for crate::Host {
     where
         S: ::serde::Serializer,
     {
-        match self {
-            Self::Domain(domain) => serializer.serialize_str(domain.name()),
-            Self::IPAddress(ip) => serializer.collect_str(ip),
-        }
+        ::serde::Serialize::serialize(&self.to_ref(), serializer)
     }
 }
 

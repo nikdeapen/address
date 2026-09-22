@@ -24,24 +24,22 @@ impl<'a> From<SocketAddrV6> for AuthorityRef<'a> {
 #[cfg(test)]
 mod tests {
     use crate::{AuthorityRef, IPv4Address, IPv6Address};
-    use std::net::{SocketAddr, SocketAddrV4, SocketAddrV6};
+    use std::net::{Ipv4Addr, Ipv6Addr, SocketAddr, SocketAddrV4, SocketAddrV6};
 
     #[test]
     fn ref_from_std() {
         let expected: AuthorityRef = AuthorityRef::new(IPv4Address::LOCALHOST.to_host_ref(), 80);
 
-        let socket: SocketAddr = IPv4Address::LOCALHOST.to_ip().to_socket(80).to_std();
-        let result: AuthorityRef = socket.into();
+        let result: AuthorityRef =
+            SocketAddr::V4(SocketAddrV4::new(Ipv4Addr::LOCALHOST, 80)).into();
         assert_eq!(result, expected);
 
-        let socket: SocketAddrV4 = IPv4Address::LOCALHOST.to_socket(80).into();
-        let result: AuthorityRef = socket.into();
+        let result: AuthorityRef = SocketAddrV4::new(Ipv4Addr::LOCALHOST, 80).into();
         assert_eq!(result, expected);
 
         let expected: AuthorityRef = AuthorityRef::new(IPv6Address::LOCALHOST.to_host_ref(), 80);
 
-        let socket: SocketAddrV6 = IPv6Address::LOCALHOST.to_socket(80).into();
-        let result: AuthorityRef = socket.into();
+        let result: AuthorityRef = SocketAddrV6::new(Ipv6Addr::LOCALHOST, 80, 0, 0).into();
         assert_eq!(result, expected);
     }
 }

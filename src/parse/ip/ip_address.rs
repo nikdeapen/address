@@ -1,5 +1,7 @@
 use crate::ParseError::InvalidIPAddress;
-use crate::{IPAddress, IPv4Address, IPv6Address, ParseError, impl_parse};
+use crate::{IPAddress, ParseError, impl_parse};
+use std::net::IpAddr;
+use std::str::FromStr;
 
 impl IPAddress {
     //! Parse
@@ -10,13 +12,12 @@ impl IPAddress {
     /// - The embedded IPv4 form is accepted. (`::ffff:1.2.3.4`)
     /// - Brackets & zones are not accepted; see [`SocketAddress`](crate::SocketAddress).
     pub fn parse(text: &[u8]) -> Result<Self, ParseError> {
-        if let Ok(ip) = IPv4Address::parse(text) {
-            Ok(ip.to_ip())
-        } else if let Ok(ip) = IPv6Address::parse(text) {
-            Ok(ip.to_ip())
-        } else {
-            Err(InvalidIPAddress)
+        const MAX_STR_LEN: usize = "ffff:ffff:ffff:ffff:ffff:ffff:255.255.255.255".len();
+        if text.len() > MAX_STR_LEN {
+            return Err(InvalidIPAddress);
         }
+        let text: &str = std::str::from_utf8(text).map_err(|_| InvalidIPAddress)?;
+        Ok(IpAddr::from_str(text).map_err(|_| InvalidIPAddress)?.into())
     }
 }
 

@@ -1,13 +1,12 @@
 use crate::ParseError;
 use crate::ParseError::InvalidPort;
-use std::str::FromStr;
+use crate::parse_digits;
 
-/// Parses the port from the `text`, returning `(text_without_last_colon, port)`.
+/// Parses the port from the `text`, returning `(text_before_port_colon, port)`.
 ///
 /// # Notes
 /// - The port must be decimal digits only, with no sign.
 /// - Leading zeros are allowed, matching the standard library.
-/// - The digit check runs first, so the port is known to be ASCII before it is read as a string.
 ///
 /// # Examples
 /// `localhost:80` -> `Ok(("localhost", 80))`
@@ -18,18 +17,11 @@ use std::str::FromStr;
 /// `:+80`         -> `Err(InvalidPort)`
 /// `80`           -> `Err(InvalidPort)`
 pub(crate) fn parse_port(text: &[u8]) -> Result<(&[u8], u16), ParseError> {
-    if let Some(colon) = text.iter().rposition(|c| *c == b':') {
-        let port: &[u8] = &text[colon + 1..];
-        let valid: bool = !port.is_empty() && port.iter().all(|c| c.is_ascii_digit());
-        if !valid {
-            return Err(InvalidPort);
-        }
-        let port: &str = unsafe { std::str::from_utf8_unchecked(port) };
-        let port: u16 = u16::from_str(port).map_err(|_| InvalidPort)?;
-        Ok((&text[..colon], port))
-    } else {
-        Err(InvalidPort)
-    }
+    let colon: usize = text.iter().rposition(|c| *c == b':').ok_or(InvalidPort)?;
+    let port: u16 = parse_digits(&text[colon + 1..])
+        .and_then(|port| u16::try_from(port).ok())
+        .ok_or(InvalidPort)?;
+    Ok((&text[..colon], port))
 }
 
 #[cfg(test)]

@@ -4,7 +4,6 @@ macro_rules! impl_parse {
         impl ::std::str::FromStr for crate::$ty {
             type Err = crate::ParseError;
 
-            /// Parses the `text`. (see [`Self::parse`])
             fn from_str(text: &str) -> Result<Self, Self::Err> {
                 Self::parse(text.as_bytes())
             }
@@ -13,7 +12,6 @@ macro_rules! impl_parse {
         impl TryFrom<&str> for crate::$ty {
             type Error = crate::ParseError;
 
-            /// Parses the `text`. (see [`Self::parse`])
             fn try_from(text: &str) -> Result<Self, Self::Error> {
                 Self::parse(text.as_bytes())
             }
@@ -21,20 +19,14 @@ macro_rules! impl_parse {
     };
 }
 
-/// Implements `TryFrom<String>` for an owned type, delegating to its byte-vector parser.
-///
-/// The byte-vector parser must leave the value unmodified on failure, which is what makes the
-/// recovered `String` sound.
+/// Implements `TryFrom<String>` for an owned type, delegating to its string parser.
 macro_rules! impl_parse_string {
     ($ty:ident) => {
         impl TryFrom<String> for crate::$ty {
             type Error = crate::InvalidAddressError<String>;
 
-            /// Parses the `text`. (see [`Self::parse`])
             fn try_from(text: String) -> Result<Self, Self::Error> {
-                let len: usize = text.len();
-                Self::parse_vec(text.into_bytes())
-                    .map_err(|error| unsafe { error.into_string_unchecked(len) })
+                Self::parse_string(text)
             }
         }
     };
@@ -46,7 +38,6 @@ macro_rules! impl_parse_ref {
         impl<'a> TryFrom<&'a str> for crate::$ty<'a> {
             type Error = crate::ParseError;
 
-            /// Parses the `text`. (see [`Self::parse`])
             fn try_from(text: &'a str) -> Result<Self, Self::Error> {
                 Self::parse(text.as_bytes())
             }

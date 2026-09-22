@@ -16,11 +16,11 @@ impl Endpoint {
     }
 
     /// Parses an [Endpoint] from the `text`.
-    pub(crate) fn parse_vec(text: Vec<u8>) -> Result<Self, InvalidAddressError<Vec<u8>>> {
-        match parse_port(text.as_slice()) {
+    pub(crate) fn parse_string(text: String) -> Result<Self, InvalidAddressError<String>> {
+        match parse_port(text.as_bytes()) {
             Ok((name, port)) => {
                 let name_len: usize = name.len();
-                Domain::parse_vec_prefix(text, name_len)
+                Domain::parse_string_prefix(text, name_len)
                     .map(|domain| domain.to_endpoint(port))
                     .map_err(|text| InvalidAddressError::new(text, InvalidDomain))
             }

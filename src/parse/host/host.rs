@@ -22,12 +22,12 @@ impl Host {
     }
 
     /// Parses a [Host] from the `text`.
-    pub(crate) fn parse_vec(text: Vec<u8>) -> Result<Self, InvalidAddressError<Vec<u8>>> {
-        if let Ok(ip) = IPAddress::parse(text.as_slice()) {
+    pub(crate) fn parse_string(text: String) -> Result<Self, InvalidAddressError<String>> {
+        if let Ok(ip) = IPAddress::parse(text.as_bytes()) {
             Ok(ip.to_host())
         } else {
             let len: usize = text.len();
-            Domain::parse_vec_prefix(text, len)
+            Domain::parse_string_prefix(text, len)
                 .map(Domain::to_host)
                 .map_err(|text| InvalidAddressError::new(text, InvalidHost))
         }

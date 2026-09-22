@@ -1,6 +1,6 @@
 use crate::serde::FromStrVisitor;
 use crate::{IPAddress, IPv4Address, IPv6Address};
-use serde::de::{Error, SeqAccess, Visitor};
+use serde::de::{Error, Visitor};
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::fmt::Formatter;
 
@@ -38,22 +38,6 @@ impl<'de> Visitor<'de> for IPAddressBytesVisitor {
             Err(E::invalid_length(v.len(), &self))
         }
     }
-
-    fn visit_seq<A>(self, mut seq: A) -> Result<Self::Value, A::Error>
-    where
-        A: SeqAccess<'de>,
-    {
-        let mut address: [u8; 16] = [0; 16];
-        let mut len: usize = 0;
-        while let Some(byte) = seq.next_element::<u8>()? {
-            if len == address.len() {
-                return Err(A::Error::invalid_length(len + 1, &self));
-            }
-            address[len] = byte;
-            len += 1;
-        }
-        self.visit_bytes(&address[..len])
-    }
 }
 
 impl<'de> Deserialize<'de> for IPAddress {
@@ -71,11 +55,8 @@ impl<'de> Deserialize<'de> for IPAddress {
 
 #[cfg(test)]
 mod tests {
-    use crate::serde::ip_address::IPAddressBytesVisitor;
     use crate::serde::test_util::{assert_json, assert_postcard};
-    use crate::{IPAddress, IPv4Address, IPv6Address};
-    use serde::Deserializer;
-    use serde::de::value::{Error as ValueError, SeqDeserializer};
+    use crate::{IPv4Address, IPv6Address};
 
     #[test]
     fn json() {
@@ -91,23 +72,5 @@ mod tests {
 
         let bytes: Vec<u8> = assert_postcard(IPv6Address::LOCALHOST.to_ip());
         assert_eq!(bytes.len(), 17, "a length prefix plus 16 address bytes");
-    }
-
-    #[test]
-    fn visit_seq() {
-        let test_cases: &[(&[u8], Option<IPAddress>)] = &[
-            (&[127, 0, 0, 1], Some(IPv4Address::LOCALHOST.to_ip())),
-            (&[0; 16], Some(IPv6Address::UNSPECIFIED.to_ip())),
-            (&[], None),
-            (&[127, 0, 0], None),
-            (&[0; 5], None),
-            (&[0; 17], None),
-        ];
-
-        for (input, expected) in test_cases {
-            let seq: SeqDeserializer<_, ValueError> = SeqDeserializer::new(input.iter().copied());
-            let result: Option<IPAddress> = seq.deserialize_seq(IPAddressBytesVisitor).ok();
-            assert_eq!(result, *expected, "input={:?}", input);
-        }
     }
 }
