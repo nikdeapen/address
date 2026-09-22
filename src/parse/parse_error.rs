@@ -1,11 +1,6 @@
 use std::fmt::{Display, Formatter};
 
 /// An error parsing an address.
-///
-/// Errors name the most specific part that can be blamed. When the expected address version is
-/// declared by the type (`SocketAddressV4`) or by the syntax (brackets imply IPv6), the specific IP
-/// error is returned. When the version is ambiguous (an unbracketed `SocketAddress`), the aggregate
-/// error is returned.
 #[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Debug)]
 #[non_exhaustive]
 pub enum ParseError {
@@ -24,10 +19,10 @@ pub enum ParseError {
     /// The socket address is invalid. (neither IPv4 nor bracketed IPv6)
     InvalidSocketAddress,
 
-    /// The IPv6 socket address is invalid. (the IP address must be bracketed)
+    /// The IPv6 socket address is invalid. (the IPv6 address must be bracketed)
     InvalidSocketAddressV6,
 
-    /// The port is missing or invalid.
+    /// The port is missing or invalid. (decimal, 0 to 65535, leading zeros allowed)
     InvalidPort,
 
     /// The host is invalid. (neither an IP address nor a domain)

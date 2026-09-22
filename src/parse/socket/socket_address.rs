@@ -1,6 +1,6 @@
 use crate::ParseError::InvalidSocketAddress;
 use crate::parse_port;
-use crate::{IPv4Address, IPv6Address, ParseError, SocketAddress, impl_parse};
+use crate::{IPAddress, IPv4Address, IPv6Address, ParseError, SocketAddress, impl_parse};
 
 impl SocketAddress {
     //! Parse
@@ -12,12 +12,14 @@ impl SocketAddress {
     /// - A numeric IPv6 zone is accepted & ignored: `[fe80::1%1]:80` parses as `[fe80::1]:80`.
     pub fn parse(text: &[u8]) -> Result<Self, ParseError> {
         let (ip, port): (&[u8], u16) = parse_port(text)?;
-        if let Some(ip) = IPv6Address::parse_bracketed(ip) {
-            Ok(ip?.to_ip().to_socket(port))
+        let ip: IPAddress = if ip.starts_with(b"[") {
+            IPv6Address::parse_bracketed(ip)?.to_ip()
         } else {
-            let ip: IPv4Address = IPv4Address::parse(ip).map_err(|_| InvalidSocketAddress)?;
-            Ok(ip.to_ip().to_socket(port))
-        }
+            IPv4Address::parse(ip)
+                .map_err(|_| InvalidSocketAddress)?
+                .to_ip()
+        };
+        Ok(ip.to_socket(port))
     }
 }
 

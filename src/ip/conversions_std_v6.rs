@@ -7,17 +7,7 @@ impl IPv6Address {
     /// Converts the address to a standard library address.
     #[must_use]
     pub const fn to_std(self) -> Ipv6Addr {
-        let segments: [u16; 8] = self.segments();
-        Ipv6Addr::new(
-            segments[0],
-            segments[1],
-            segments[2],
-            segments[3],
-            segments[4],
-            segments[5],
-            segments[6],
-            segments[7],
-        )
+        Ipv6Addr::from_bits(u128::from_be_bytes(self.address()))
     }
 }
 

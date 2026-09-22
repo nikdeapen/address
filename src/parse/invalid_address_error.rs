@@ -36,29 +36,10 @@ impl<T> InvalidAddressError<T> {
 impl<T> InvalidAddressError<T> {
     //! Deconstruction
 
-    /// Converts the error back into the invalid address value.
+    /// Converts the error back into the value.
     #[must_use]
     pub fn into_value(self) -> T {
         self.value
-    }
-}
-
-impl InvalidAddressError<Vec<u8>> {
-    //! String Deconstruction
-
-    /// Converts the byte vector error into a string error, debug-asserting the value kept its
-    /// original `len`.
-    ///
-    /// # Safety
-    /// The value must be valid UTF-8.
-    pub(crate) unsafe fn into_string_unchecked(self, len: usize) -> InvalidAddressError<String> {
-        debug_assert_eq!(self.value.len(), len);
-        debug_assert!(std::str::from_utf8(self.value.as_slice()).is_ok());
-
-        InvalidAddressError::new(
-            unsafe { String::from_utf8_unchecked(self.value) },
-            self.error,
-        )
     }
 }
 

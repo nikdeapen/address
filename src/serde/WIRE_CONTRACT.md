@@ -27,7 +27,7 @@ was written with.
 | `SocketAddress`   | `(IPAddress, u16)`     | Differs; `SocketAddr` writes a variant tag. |
 | All other types   | The `Display` string   | No counterpart.                             |
 
-- The `IPAddress` length selects the version. A sequence of 4 or 16 bytes is also accepted on read.
+- The `IPAddress` length selects the version.
 - Formats that length-prefix byte strings make an `IPAddress` larger than the concrete type: 5 bytes
   in postcard for an IPv4 address against 4 for an `IPv4Address`.
 - The domain, endpoint, host, & authority types write & read the `Display` string in binary formats

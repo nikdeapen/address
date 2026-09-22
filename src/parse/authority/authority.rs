@@ -1,4 +1,3 @@
-use crate::ParseError::InvalidHost;
 use crate::parse_port;
 use crate::{
     Authority, Domain, HostForm, InvalidAddressError, ParseError, impl_parse, impl_parse_string,
@@ -18,24 +17,28 @@ impl Authority {
         match HostForm::classify(host)? {
             HostForm::IP(ip) => Ok(ip.to_host().to_authority(port)),
             HostForm::Domain => {
-                let domain: Domain = Domain::parse(host).map_err(|_| InvalidHost)?;
+                let domain: Domain =
+                    Domain::parse(host).map_err(|_| HostForm::domain_error(host))?;
                 Ok(domain.to_host().to_authority(port))
             }
         }
     }
 
     /// Parses an [Authority] from the `text`.
-    pub(crate) fn parse_vec(text: Vec<u8>) -> Result<Self, InvalidAddressError<Vec<u8>>> {
-        let (host_len, port): (usize, u16) = match parse_port(text.as_slice()) {
+    pub(crate) fn parse_string(text: String) -> Result<Self, InvalidAddressError<String>> {
+        let (host_len, port): (usize, u16) = match parse_port(text.as_bytes()) {
             Ok((host, port)) => (host.len(), port),
             Err(error) => return Err(InvalidAddressError::new(text, error)),
         };
-        match HostForm::classify(&text[..host_len]) {
+        match HostForm::classify(&text.as_bytes()[..host_len]) {
             Err(error) => Err(InvalidAddressError::new(text, error)),
             Ok(HostForm::IP(ip)) => Ok(ip.to_host().to_authority(port)),
-            Ok(HostForm::Domain) => Domain::parse_vec_prefix(text, host_len)
+            Ok(HostForm::Domain) => Domain::parse_string_prefix(text, host_len)
                 .map(|domain| domain.to_host().to_authority(port))
-                .map_err(|text| InvalidAddressError::new(text, InvalidHost)),
+                .map_err(|text| {
+                    let error: ParseError = HostForm::domain_error(&text.as_bytes()[..host_len]);
+                    InvalidAddressError::new(text, error)
+                }),
         }
     }
 }
@@ -92,7 +95,8 @@ mod tests {
             (b"[]:80", Err(InvalidIPv6Address)),
             (b"::1:80", Err(InvalidAuthority)),
             (b"fe80::1:80", Err(InvalidAuthority)),
-            (b"::80", Err(InvalidHost)),
+            (b"2001:db8::1", Err(InvalidAuthority)),
+            (b"::80", Err(InvalidAuthority)),
             (b":80", Err(InvalidHost)),
             (b"Local_Host:80", Err(InvalidHost)),
             (b"Local!Host:80", Err(InvalidHost)),

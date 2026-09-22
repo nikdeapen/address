@@ -12,10 +12,10 @@ impl SocketAddressV6 {
     /// - A numeric IPv6 zone is accepted & ignored: `[fe80::1%1]:80` parses as `[fe80::1]:80`.
     pub fn parse(text: &[u8]) -> Result<Self, ParseError> {
         let (ip, port): (&[u8], u16) = parse_port(text)?;
-        match IPv6Address::parse_bracketed(ip) {
-            Some(ip) => Ok(ip?.to_socket(port)),
-            None => Err(InvalidSocketAddressV6),
+        if !ip.starts_with(b"[") {
+            return Err(InvalidSocketAddressV6);
         }
+        Ok(IPv6Address::parse_bracketed(ip)?.to_socket(port))
     }
 }
 
