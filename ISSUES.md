@@ -1,5 +1,7 @@
 # Issues
 
+## General
+
 - Ambiguous conversions. Examples: `Host::from(1u32)` and `Authority::from((1u32, 80))`.
 - Document on the `TryFrom<String>` impls that the string is returned in the error; only the
   `InvalidAddressError` doc says the value is preserved.
@@ -14,7 +16,7 @@
 
 ## Parsing
 
-- Guard the IP parse fns with is_ascii() + an unchecked conversion; the checked from_utf8
+- Guard the IP parse fns with `is_ascii()` + an unchecked conversion; the checked `from_utf8`
   costs up to 38%.
 
 ## Testing
@@ -27,9 +29,9 @@
 - Add a nightly Miri job and `cargo fuzz` targets for the `parse` fns, plus a bench for the
   `is_ascii()` issue above; Miri passes the suite today.
 
-# Future Work
+## Future Work
 
 - Add support for `no_std` + `alloc`.
 - Add `idna` support to the `Host`, `Endpoint`, and `Authority` types.
 - Add DNS support via implementing `std::net::ToSocketAddrs` as well as async support.
-- Remove unsafe use `is_ascii()` in the `parse` fns. (blocked on rust#110998)
+- Replace the unchecked conversions in the `parse` fns with `as_ascii()`. (blocked on rust#110998)

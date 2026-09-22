@@ -30,9 +30,11 @@ mod tests {
     use std::str::FromStr;
 
     type TestCase<'a> = (&'a [u8], Result<IPAddress, ParseError>);
+    const MAX_STR_LEN: usize = "ffff:ffff:ffff:ffff:ffff:ffff:255.255.255.255".len();
 
     #[test]
     fn parse() {
+        let over_max: Vec<u8> = vec![b'0'; MAX_STR_LEN + 1];
         let test_cases: &[TestCase] = &[
             (b"", Err(InvalidIPAddress)),
             (b"127.0.0.1", Ok(IPv4Address::LOCALHOST.to_ip())),
@@ -45,6 +47,7 @@ mod tests {
             (b"fe80::1%1", Err(InvalidIPAddress)),
             (b"localhost", Err(InvalidIPAddress)),
             (b"\xFF", Err(InvalidIPAddress)),
+            (over_max.as_slice(), Err(InvalidIPAddress)),
         ];
 
         for (input, expected) in test_cases {

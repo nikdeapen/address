@@ -38,6 +38,10 @@ mod tests {
 
         let expected: Authority = Authority::new(IPv6Address::LOCALHOST.to_host(), 80);
 
+        let result: Authority =
+            SocketAddr::V6(SocketAddrV6::new(Ipv6Addr::LOCALHOST, 80, 0, 0)).into();
+        assert_eq!(result, expected);
+
         let result: Authority = SocketAddrV6::new(Ipv6Addr::LOCALHOST, 80, 0, 0).into();
         assert_eq!(result, expected);
     }
