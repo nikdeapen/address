@@ -35,7 +35,7 @@ mod tests {
     };
 
     #[test]
-    fn v6_to_socket() {
+    fn to_socket() {
         let socket: SocketAddressV6 = IPv6Address::LOCALHOST.to_socket(80);
         let result: SocketAddress = socket.to_socket();
         let expected: SocketAddress = SocketAddress::new(IPAddress::V6(IPv6Address::LOCALHOST), 80);
@@ -43,7 +43,7 @@ mod tests {
     }
 
     #[test]
-    fn v6_to_authority() {
+    fn to_authority() {
         let socket: SocketAddressV6 = IPv6Address::LOCALHOST.to_socket(80);
         let result: Authority = socket.to_authority();
         let expected: Authority =
@@ -59,7 +59,7 @@ mod tests {
     }
 
     #[test]
-    fn v6_try_from() {
+    fn try_from() {
         let socket: SocketAddress = IPv6Address::LOCALHOST.to_ip().to_socket(80);
         let expected: SocketAddressV6 = IPv6Address::LOCALHOST.to_socket(80);
         assert_eq!(SocketAddressV6::try_from(socket), Ok(expected));

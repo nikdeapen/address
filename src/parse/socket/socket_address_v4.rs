@@ -1,5 +1,4 @@
-use crate::parse_port;
-use crate::{IPv4Address, ParseError, SocketAddressV4, impl_parse};
+use crate::{IPv4Address, ParseError, SocketAddressV4, impl_parse, parse_port};
 
 impl SocketAddressV4 {
     //! Parse

@@ -1,5 +1,4 @@
-use crate::parse_port;
-use crate::{AuthorityRef, DomainRef, HostForm, ParseError, impl_parse_ref};
+use crate::{AuthorityRef, DomainRef, HostForm, ParseError, impl_parse_ref, parse_port};
 
 impl<'a> AuthorityRef<'a> {
     //! Parse
@@ -11,7 +10,7 @@ impl<'a> AuthorityRef<'a> {
     /// - A domain must already be lowercase; use [`Authority`](crate::Authority) for normalization.
     /// - A numeric IPv6 zone is accepted & ignored: `[fe80::1%1]:80` parses as `[fe80::1]:80`.
     pub fn parse(text: &'a [u8]) -> Result<Self, ParseError> {
-        let (host, port): (&'a [u8], u16) = parse_port(text)?;
+        let (host, port): (&[u8], u16) = parse_port(text)?;
         match HostForm::classify(host)? {
             HostForm::IP(ip) => Ok(ip.to_host_ref().to_authority_ref(port)),
             HostForm::Domain => {

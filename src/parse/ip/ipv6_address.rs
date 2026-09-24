@@ -1,6 +1,5 @@
 use crate::ParseError::InvalidIPv6Address;
-use crate::parse_digits;
-use crate::{IPv6Address, ParseError, impl_parse};
+use crate::{IPv6Address, ParseError, impl_parse, parse_digits};
 use std::net::Ipv6Addr;
 use std::str::FromStr;
 
@@ -14,10 +13,10 @@ impl IPv6Address {
     /// - Brackets & zones are not accepted; see [`SocketAddressV6`](crate::SocketAddressV6).
     pub fn parse(text: &[u8]) -> Result<Self, ParseError> {
         const MAX_STR_LEN: usize = "ffff:ffff:ffff:ffff:ffff:ffff:255.255.255.255".len();
-        if text.len() > MAX_STR_LEN {
+        if text.len() > MAX_STR_LEN || !text.is_ascii() {
             return Err(InvalidIPv6Address);
         }
-        let text: &str = std::str::from_utf8(text).map_err(|_| InvalidIPv6Address)?;
+        let text: &str = unsafe { std::str::from_utf8_unchecked(text) };
         Ok(Ipv6Addr::from_str(text)
             .map_err(|_| InvalidIPv6Address)?
             .into())

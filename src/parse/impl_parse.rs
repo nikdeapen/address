@@ -25,6 +25,7 @@ macro_rules! impl_parse_string {
         impl TryFrom<String> for crate::$ty {
             type Error = crate::InvalidAddressError<String>;
 
+            /// The `text` is returned unmodified in the error.
             fn try_from(text: String) -> Result<Self, Self::Error> {
                 Self::parse_string(text)
             }

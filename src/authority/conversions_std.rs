@@ -27,7 +27,7 @@ mod tests {
     use std::net::{Ipv4Addr, Ipv6Addr, SocketAddr, SocketAddrV4, SocketAddrV6};
 
     #[test]
-    fn authority_from_std() {
+    fn from() {
         let expected: Authority = Authority::new(IPv4Address::LOCALHOST.to_host(), 80);
 
         let result: Authority = SocketAddr::V4(SocketAddrV4::new(Ipv4Addr::LOCALHOST, 80)).into();

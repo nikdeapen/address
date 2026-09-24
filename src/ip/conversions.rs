@@ -38,14 +38,14 @@ impl IPAddress {
 }
 
 impl From<IPv4Address> for IPAddress {
-    fn from(v4: IPv4Address) -> Self {
-        v4.to_ip()
+    fn from(ip: IPv4Address) -> Self {
+        ip.to_ip()
     }
 }
 
 impl From<IPv6Address> for IPAddress {
-    fn from(v6: IPv6Address) -> Self {
-        v6.to_ip()
+    fn from(ip: IPv6Address) -> Self {
+        ip.to_ip()
     }
 }
 
@@ -72,7 +72,7 @@ mod tests {
     };
 
     #[test]
-    fn ip_to_v4() {
+    fn to_v4() {
         let ip: IPAddress = IPv4Address::LOCALHOST.to_ip();
         let result: Result<IPv4Address, IPAddress> = ip.to_v4();
         let expected: Result<IPv4Address, IPAddress> = Ok(IPv4Address::LOCALHOST);
@@ -85,7 +85,7 @@ mod tests {
     }
 
     #[test]
-    fn ip_to_v6() {
+    fn to_v6() {
         let ip: IPAddress = IPv4Address::LOCALHOST.to_ip();
         let result: Result<IPv6Address, IPAddress> = ip.to_v6();
         let expected: Result<IPv6Address, IPAddress> = Err(IPv4Address::LOCALHOST.to_ip());
@@ -98,7 +98,7 @@ mod tests {
     }
 
     #[test]
-    fn ip_to_socket() {
+    fn to_socket() {
         let ip: IPAddress = IPv4Address::LOCALHOST.to_ip();
         let result: SocketAddress = ip.to_socket(80);
         let expected: SocketAddress = SocketAddress::new(IPAddress::V4(IPv4Address::LOCALHOST), 80);
@@ -106,7 +106,7 @@ mod tests {
     }
 
     #[test]
-    fn ip_to_host() {
+    fn to_host() {
         let ip: IPAddress = IPAddress::V4(IPv4Address::LOCALHOST);
 
         let result: Host = ip.to_host();
@@ -119,7 +119,7 @@ mod tests {
     }
 
     #[test]
-    fn ip_from() {
+    fn from() {
         let result: IPAddress = IPv4Address::LOCALHOST.into();
         let expected: IPAddress = IPAddress::V4(IPv4Address::LOCALHOST);
         assert_eq!(result, expected);
@@ -130,7 +130,7 @@ mod tests {
     }
 
     #[test]
-    fn ip_try_from() {
+    fn try_from() {
         let host: Host = IPv4Address::LOCALHOST.to_host();
         let expected: IPAddress = IPv4Address::LOCALHOST.to_ip();
         assert_eq!(IPAddress::try_from(host), Ok(expected));

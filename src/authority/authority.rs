@@ -68,7 +68,7 @@ impl Authority {
 
 #[cfg(test)]
 mod tests {
-    use crate::{Authority, Domain, DomainRef, Host, HostRef, IPv4Address};
+    use crate::{Authority, AuthorityRef, Domain, DomainRef, Host, HostRef, IPv4Address};
 
     #[test]
     fn construction() {
@@ -95,11 +95,15 @@ mod tests {
 
     #[test]
     fn equality() {
-        let eighty: Authority = Authority::new(Host::Domain(Domain::localhost()), 80);
-        assert_eq!(eighty, eighty.to_ref());
-
-        let eighty_one: Authority = Authority::new(Host::Domain(Domain::localhost()), 81);
-        assert_ne!(eighty, eighty_one.to_ref());
+        let authority: Authority = Authority::new(Host::Domain(Domain::localhost()), 80);
+        assert_eq!(
+            authority,
+            AuthorityRef::new(HostRef::Domain(DomainRef::LOCALHOST), 80)
+        );
+        assert_ne!(
+            authority,
+            AuthorityRef::new(HostRef::Domain(DomainRef::LOCALHOST), 81)
+        );
     }
 
     #[test]

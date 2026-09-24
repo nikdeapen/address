@@ -5,8 +5,8 @@ impl SocketAddress {
 
     /// Converts the socket address to an IPv4 socket address.
     pub const fn to_v4(self) -> Result<SocketAddressV4, Self> {
-        if let IPAddress::V4(v4) = self.ip() {
-            Ok(SocketAddressV4::new(v4, self.port()))
+        if let IPAddress::V4(ip) = self.ip() {
+            Ok(SocketAddressV4::new(ip, self.port()))
         } else {
             Err(self)
         }
@@ -14,8 +14,8 @@ impl SocketAddress {
 
     /// Converts the socket address to an IPv6 socket address.
     pub const fn to_v6(self) -> Result<SocketAddressV6, Self> {
-        if let IPAddress::V6(v6) = self.ip() {
-            Ok(SocketAddressV6::new(v6, self.port()))
+        if let IPAddress::V6(ip) = self.ip() {
+            Ok(SocketAddressV6::new(ip, self.port()))
         } else {
             Err(self)
         }
@@ -68,7 +68,7 @@ mod tests {
     };
 
     #[test]
-    fn socket_to_v4() {
+    fn to_v4() {
         let socket: SocketAddress = IPv4Address::LOCALHOST.to_ip().to_socket(80);
         let result: Result<SocketAddressV4, SocketAddress> = socket.to_v4();
         let expected: Result<SocketAddressV4, SocketAddress> =
@@ -82,7 +82,7 @@ mod tests {
     }
 
     #[test]
-    fn socket_to_v6() {
+    fn to_v6() {
         let socket: SocketAddress = IPv4Address::LOCALHOST.to_ip().to_socket(80);
         let result: Result<SocketAddressV6, SocketAddress> = socket.to_v6();
         let expected: Result<SocketAddressV6, SocketAddress> = Err(socket);
@@ -96,7 +96,7 @@ mod tests {
     }
 
     #[test]
-    fn socket_to_authority() {
+    fn to_authority() {
         let socket: SocketAddress = SocketAddress::new(IPAddress::V4(IPv4Address::LOCALHOST), 80);
         let result: Authority = socket.to_authority();
         let expected: Authority =
@@ -112,7 +112,7 @@ mod tests {
     }
 
     #[test]
-    fn socket_from() {
+    fn from() {
         let expected: SocketAddress = SocketAddress::new(IPAddress::V4(IPv4Address::LOCALHOST), 80);
         let result: SocketAddress = IPv4Address::LOCALHOST.to_socket(80).into();
         assert_eq!(result, expected);
@@ -123,7 +123,7 @@ mod tests {
     }
 
     #[test]
-    fn socket_try_from() {
+    fn try_from() {
         let expected: SocketAddress = IPv4Address::LOCALHOST.to_ip().to_socket(80);
 
         let authority: Authority = IPv4Address::LOCALHOST.to_host().to_authority(80);

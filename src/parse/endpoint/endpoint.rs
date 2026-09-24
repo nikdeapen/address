@@ -1,6 +1,7 @@
 use crate::ParseError::InvalidDomain;
-use crate::parse_port;
-use crate::{Domain, Endpoint, InvalidAddressError, ParseError, impl_parse, impl_parse_string};
+use crate::{
+    Domain, Endpoint, InvalidAddressError, ParseError, impl_parse, impl_parse_string, parse_port,
+};
 
 impl Endpoint {
     //! Parse
@@ -8,19 +9,19 @@ impl Endpoint {
     /// Parses an [Endpoint] from the `text`.
     ///
     /// # Notes
-    /// - The domain name is normalized to lowercase.
+    /// - The domain is normalized to lowercase.
     pub fn parse(text: &[u8]) -> Result<Self, ParseError> {
-        let (name, port): (&[u8], u16) = parse_port(text)?;
-        let domain: Domain = Domain::parse(name)?;
+        let (domain, port): (&[u8], u16) = parse_port(text)?;
+        let domain: Domain = Domain::parse(domain)?;
         Ok(domain.to_endpoint(port))
     }
 
     /// Parses an [Endpoint] from the `text`.
     pub(crate) fn parse_string(text: String) -> Result<Self, InvalidAddressError<String>> {
         match parse_port(text.as_bytes()) {
-            Ok((name, port)) => {
-                let name_len: usize = name.len();
-                Domain::parse_string_prefix(text, name_len)
+            Ok((domain, port)) => {
+                let domain_len: usize = domain.len();
+                Domain::parse_string_prefix(text, domain_len)
                     .map(|domain| domain.to_endpoint(port))
                     .map_err(|text| InvalidAddressError::new(text, InvalidDomain))
             }

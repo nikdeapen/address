@@ -12,8 +12,8 @@ impl IPv6Address {
 }
 
 impl From<Ipv6Addr> for IPv6Address {
-    fn from(std: Ipv6Addr) -> Self {
-        Self::new(std.octets())
+    fn from(ip: Ipv6Addr) -> Self {
+        Self::new(ip.octets())
     }
 }
 
@@ -29,20 +29,21 @@ mod tests {
     use std::net::Ipv6Addr;
 
     #[test]
-    fn v6_to_std() {
+    fn to_std() {
         let ip: IPv6Address = IPv6Address::LOCALHOST;
-        let std: Ipv6Addr = Ipv6Addr::LOCALHOST;
+        let expected: Ipv6Addr = Ipv6Addr::LOCALHOST;
 
         let result: Ipv6Addr = ip.to_std();
-        assert_eq!(result, std);
+        assert_eq!(result, expected);
 
         let result: Ipv6Addr = ip.into();
-        assert_eq!(result, std);
+        assert_eq!(result, expected);
     }
 
     #[test]
-    fn v6_from_std() {
+    fn from() {
         let result: IPv6Address = Ipv6Addr::LOCALHOST.into();
-        assert_eq!(result, IPv6Address::LOCALHOST);
+        let expected: IPv6Address = IPv6Address::LOCALHOST;
+        assert_eq!(result, expected);
     }
 }

@@ -13,10 +13,10 @@ impl IPAddress {
     /// - Brackets & zones are not accepted; see [`SocketAddress`](crate::SocketAddress).
     pub fn parse(text: &[u8]) -> Result<Self, ParseError> {
         const MAX_STR_LEN: usize = "ffff:ffff:ffff:ffff:ffff:ffff:255.255.255.255".len();
-        if text.len() > MAX_STR_LEN {
+        if text.len() > MAX_STR_LEN || !text.is_ascii() {
             return Err(InvalidIPAddress);
         }
-        let text: &str = std::str::from_utf8(text).map_err(|_| InvalidIPAddress)?;
+        let text: &str = unsafe { std::str::from_utf8_unchecked(text) };
         Ok(IpAddr::from_str(text).map_err(|_| InvalidIPAddress)?.into())
     }
 }

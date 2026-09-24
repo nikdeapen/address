@@ -35,7 +35,7 @@ mod tests {
     };
 
     #[test]
-    fn v4_to_socket() {
+    fn to_socket() {
         let socket: SocketAddressV4 = IPv4Address::LOCALHOST.to_socket(80);
         let result: SocketAddress = socket.to_socket();
         let expected: SocketAddress = SocketAddress::new(IPAddress::V4(IPv4Address::LOCALHOST), 80);
@@ -43,7 +43,7 @@ mod tests {
     }
 
     #[test]
-    fn v4_to_authority() {
+    fn to_authority() {
         let socket: SocketAddressV4 = IPv4Address::LOCALHOST.to_socket(80);
         let result: Authority = socket.to_authority();
         let expected: Authority =
@@ -59,7 +59,7 @@ mod tests {
     }
 
     #[test]
-    fn v4_try_from() {
+    fn try_from() {
         let socket: SocketAddress = IPv4Address::LOCALHOST.to_ip().to_socket(80);
         let expected: SocketAddressV4 = IPv4Address::LOCALHOST.to_socket(80);
         assert_eq!(SocketAddressV4::try_from(socket), Ok(expected));

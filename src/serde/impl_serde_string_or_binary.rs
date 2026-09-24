@@ -117,17 +117,15 @@ mod tests {
         );
 
         let socket: SocketAddressV4 = IPv4Address::LOCALHOST.to_socket(80);
-        let std: SocketAddrV4 = SocketAddrV4::new(Ipv4Addr::LOCALHOST, 80);
         assert_eq!(
             assert_postcard(socket),
-            postcard::to_allocvec(&std).unwrap()
+            postcard::to_allocvec(&SocketAddrV4::new(Ipv4Addr::LOCALHOST, 80)).unwrap()
         );
 
         let socket: SocketAddressV6 = IPv6Address::LOCALHOST.to_socket(80);
-        let std: SocketAddrV6 = SocketAddrV6::new(Ipv6Addr::LOCALHOST, 80, 0, 0);
         assert_eq!(
             assert_postcard(socket),
-            postcard::to_allocvec(&std).unwrap()
+            postcard::to_allocvec(&SocketAddrV6::new(Ipv6Addr::LOCALHOST, 80, 0, 0)).unwrap()
         );
     }
 

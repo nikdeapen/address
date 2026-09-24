@@ -42,7 +42,7 @@ mod tests {
     use crate::{Authority, AuthorityRef, Domain, DomainRef, Endpoint, EndpointRef, IPv4Address};
 
     #[test]
-    fn endpoint_to_ref() {
+    fn to_ref() {
         let endpoint: Endpoint = Endpoint::new(Domain::localhost(), 80);
         let result: EndpointRef = endpoint.to_ref();
         let expected: EndpointRef = EndpointRef::new(DomainRef::LOCALHOST, 80);
@@ -50,7 +50,7 @@ mod tests {
     }
 
     #[test]
-    fn endpoint_to_authority() {
+    fn to_authority() {
         let endpoint: Endpoint = Endpoint::new(Domain::localhost(), 80);
         let result: Authority = endpoint.to_authority();
         let expected: Authority = Authority::new(Domain::localhost().to_host(), 80);
@@ -58,14 +58,14 @@ mod tests {
     }
 
     #[test]
-    fn endpoint_from() {
+    fn from() {
         let result: Endpoint = EndpointRef::new(DomainRef::LOCALHOST, 80).into();
         let expected: Endpoint = Endpoint::new(Domain::localhost(), 80);
         assert_eq!(result, expected);
     }
 
     #[test]
-    fn endpoint_try_from() {
+    fn try_from() {
         let expected: Endpoint = Endpoint::new(Domain::localhost(), 80);
 
         let authority: Authority = Domain::localhost().to_host().to_authority(80);

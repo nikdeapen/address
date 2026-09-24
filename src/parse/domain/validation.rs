@@ -29,15 +29,6 @@ impl Domain {
         }
     }
 
-    /// Checks if the domain `label` is valid, optionally ignoring case.
-    fn is_valid_label_op_ignore_case(label: &[u8], ignore_case: bool) -> bool {
-        match Self::classify_label(label) {
-            NameClass::Lowercase => true,
-            NameClass::MixedCase => ignore_case,
-            NameClass::Invalid => false,
-        }
-    }
-
     /// Checks if the domain `label` is valid.
     ///
     /// A valid label is 1 to 63 ([`Self::MAX_LABEL_LEN`]) bytes of ASCII lowercase letters, digits,
@@ -48,14 +39,14 @@ impl Domain {
     /// [`Self::is_valid_name`] for how the crate diverges from those documents.
     #[must_use]
     pub fn is_valid_label(label: &[u8]) -> bool {
-        Self::is_valid_label_op_ignore_case(label, false)
+        Self::classify_label(label) == NameClass::Lowercase
     }
 
     /// Checks if the domain `label` is valid, accepting uppercase letters.
     /// (see [`Self::is_valid_label`])
     #[must_use]
     pub fn is_valid_label_ignore_case(label: &[u8]) -> bool {
-        Self::is_valid_label_op_ignore_case(label, true)
+        Self::classify_label(label) != NameClass::Invalid
     }
 
     /// Checks if the domain `label` is valid.
@@ -107,15 +98,6 @@ impl Domain {
         }
     }
 
-    /// Checks if the domain `name` is valid, optionally ignoring case.
-    fn is_valid_name_op_ignore_case(name: &[u8], ignore_case: bool) -> bool {
-        match Self::classify_name(name) {
-            NameClass::Lowercase => true,
-            NameClass::MixedCase => ignore_case,
-            NameClass::Invalid => false,
-        }
-    }
-
     /// Checks if the domain `name` is valid.
     ///
     /// A valid name is 1 to 253 ([`Self::MAX_NAME_LEN`]) bytes of dot-separated valid labels: the
@@ -138,14 +120,14 @@ impl Domain {
     /// [RFC 2181](https://www.rfc-editor.org/rfc/rfc2181#section-11) permits any octet in a label.
     #[must_use]
     pub fn is_valid_name(name: &[u8]) -> bool {
-        Self::is_valid_name_op_ignore_case(name, false)
+        Self::classify_name(name) == NameClass::Lowercase
     }
 
     /// Checks if the domain `name` is valid, accepting uppercase letters.
     /// (see [`Self::is_valid_name`])
     #[must_use]
     pub fn is_valid_name_ignore_case(name: &[u8]) -> bool {
-        Self::is_valid_name_op_ignore_case(name, true)
+        Self::classify_name(name) != NameClass::Invalid
     }
 
     /// Checks if the domain `name` is valid.

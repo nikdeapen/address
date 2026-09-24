@@ -1,6 +1,7 @@
 use crate::ParseError::InvalidSocketAddress;
-use crate::parse_port;
-use crate::{IPAddress, IPv4Address, IPv6Address, ParseError, SocketAddress, impl_parse};
+use crate::{
+    IPAddress, IPv4Address, IPv6Address, ParseError, SocketAddress, impl_parse, parse_port,
+};
 
 impl SocketAddress {
     //! Parse
@@ -55,11 +56,11 @@ mod tests {
             ),
             (
                 b"[::1]:80",
-                Ok(IPv6Address::LOCALHOST.to_socket(80).to_socket()),
+                Ok(IPv6Address::LOCALHOST.to_ip().to_socket(80)),
             ),
             (
                 b"[::1%1]:80",
-                Ok(IPv6Address::LOCALHOST.to_socket(80).to_socket()),
+                Ok(IPv6Address::LOCALHOST.to_ip().to_socket(80)),
             ),
             (b"[]:80", Err(InvalidIPv6Address)),
             (b"[xx]:80", Err(InvalidIPv6Address)),
