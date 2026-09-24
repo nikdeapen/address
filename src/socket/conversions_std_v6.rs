@@ -19,8 +19,8 @@ impl SocketAddressV6 {
 
 impl From<SocketAddrV6> for SocketAddressV6 {
     /// The `flow_info` & `scope_id` are discarded.
-    fn from(std: SocketAddrV6) -> Self {
-        Self::new((*std.ip()).into(), std.port())
+    fn from(socket: SocketAddrV6) -> Self {
+        Self::new((*socket.ip()).into(), socket.port())
     }
 }
 
@@ -36,19 +36,19 @@ mod tests {
     use std::net::{Ipv6Addr, SocketAddrV6};
 
     #[test]
-    fn v6_to_std() {
+    fn to_std() {
         let socket: SocketAddressV6 = SocketAddressV6::new(IPv6Address::LOCALHOST, 80);
-        let std: SocketAddrV6 = SocketAddrV6::new(Ipv6Addr::LOCALHOST, 80, 0, 0);
+        let expected: SocketAddrV6 = SocketAddrV6::new(Ipv6Addr::LOCALHOST, 80, 0, 0);
 
         let result: SocketAddrV6 = socket.to_std();
-        assert_eq!(result, std);
+        assert_eq!(result, expected);
 
         let result: SocketAddrV6 = socket.into();
-        assert_eq!(result, std);
+        assert_eq!(result, expected);
     }
 
     #[test]
-    fn v6_to_std_with() {
+    fn to_std_with() {
         let socket: SocketAddressV6 = SocketAddressV6::new(IPv6Address::LOCALHOST, 80);
         let result: SocketAddrV6 = socket.to_std_with(123, 456);
         let expected: SocketAddrV6 = SocketAddrV6::new(Ipv6Addr::LOCALHOST, 80, 123, 456);
@@ -56,7 +56,7 @@ mod tests {
     }
 
     #[test]
-    fn v6_from_std() {
+    fn from() {
         let expected: SocketAddressV6 = SocketAddressV6::new(IPv6Address::LOCALHOST, 80);
 
         let result: SocketAddressV6 = SocketAddrV6::new(Ipv6Addr::LOCALHOST, 80, 0, 0).into();

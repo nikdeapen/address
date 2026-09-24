@@ -64,7 +64,7 @@ mod tests {
     use crate::{Host, HostRef, IPAddress, IPv4Address, IPv6Address, SocketAddressV6};
 
     #[test]
-    fn v6_to_v4() {
+    fn to_v4() {
         let test_cases: &[(IPv6Address, Result<IPv4Address, IPv6Address>)] = &[
             (
                 IPv6Address::from([0, 0, 0, 0, 0, 0, 0x7F00, 1]),
@@ -101,7 +101,7 @@ mod tests {
     }
 
     #[test]
-    fn v6_to_ip() {
+    fn to_ip() {
         let ip: IPv6Address = IPv6Address::LOCALHOST;
         let result: IPAddress = ip.to_ip();
         let expected: IPAddress = IPAddress::V6(IPv6Address::LOCALHOST);
@@ -109,7 +109,7 @@ mod tests {
     }
 
     #[test]
-    fn v6_to_socket() {
+    fn to_socket() {
         let ip: IPv6Address = IPv6Address::LOCALHOST;
         let result: SocketAddressV6 = ip.to_socket(80);
         let expected: SocketAddressV6 = SocketAddressV6::new(IPv6Address::LOCALHOST, 80);
@@ -117,7 +117,7 @@ mod tests {
     }
 
     #[test]
-    fn v6_to_host() {
+    fn to_host() {
         let ip: IPv6Address = IPv6Address::LOCALHOST;
 
         let result: Host = ip.to_host();
@@ -130,7 +130,7 @@ mod tests {
     }
 
     #[test]
-    fn v6_try_from() {
+    fn try_from() {
         let ip: IPAddress = IPv6Address::LOCALHOST.to_ip();
         assert_eq!(IPv6Address::try_from(ip), Ok(IPv6Address::LOCALHOST));
 

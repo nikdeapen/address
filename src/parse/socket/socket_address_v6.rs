@@ -1,6 +1,5 @@
 use crate::ParseError::InvalidSocketAddressV6;
-use crate::parse_port;
-use crate::{IPv6Address, ParseError, SocketAddressV6, impl_parse};
+use crate::{IPv6Address, ParseError, SocketAddressV6, impl_parse, parse_port};
 
 impl SocketAddressV6 {
     //! Parse

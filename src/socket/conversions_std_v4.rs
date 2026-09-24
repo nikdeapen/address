@@ -12,8 +12,8 @@ impl SocketAddressV4 {
 }
 
 impl From<SocketAddrV4> for SocketAddressV4 {
-    fn from(std: SocketAddrV4) -> Self {
-        Self::new((*std.ip()).into(), std.port())
+    fn from(socket: SocketAddrV4) -> Self {
+        Self::new((*socket.ip()).into(), socket.port())
     }
 }
 
@@ -29,20 +29,21 @@ mod tests {
     use std::net::{Ipv4Addr, SocketAddrV4};
 
     #[test]
-    fn v4_to_std() {
+    fn to_std() {
         let socket: SocketAddressV4 = SocketAddressV4::new(IPv4Address::LOCALHOST, 80);
-        let std: SocketAddrV4 = SocketAddrV4::new(Ipv4Addr::LOCALHOST, 80);
+        let expected: SocketAddrV4 = SocketAddrV4::new(Ipv4Addr::LOCALHOST, 80);
 
         let result: SocketAddrV4 = socket.to_std();
-        assert_eq!(result, std);
+        assert_eq!(result, expected);
 
         let result: SocketAddrV4 = socket.into();
-        assert_eq!(result, std);
+        assert_eq!(result, expected);
     }
 
     #[test]
-    fn v4_from_std() {
+    fn from() {
         let result: SocketAddressV4 = SocketAddrV4::new(Ipv4Addr::LOCALHOST, 80).into();
-        assert_eq!(result, SocketAddressV4::new(IPv4Address::LOCALHOST, 80));
+        let expected: SocketAddressV4 = SocketAddressV4::new(IPv4Address::LOCALHOST, 80);
+        assert_eq!(result, expected);
     }
 }

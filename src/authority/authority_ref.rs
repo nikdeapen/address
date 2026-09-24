@@ -91,11 +91,15 @@ mod tests {
 
     #[test]
     fn equality() {
-        let eighty: Authority = Authority::new(Host::Domain(Domain::localhost()), 80);
-        assert_eq!(eighty.to_ref(), eighty);
-
-        let eighty_one: Authority = Authority::new(Host::Domain(Domain::localhost()), 81);
-        assert_ne!(eighty.to_ref(), eighty_one);
+        let owned: Authority = Authority::new(Host::Domain(Domain::localhost()), 80);
+        assert_eq!(
+            AuthorityRef::new(HostRef::Domain(DomainRef::LOCALHOST), 80),
+            owned
+        );
+        assert_ne!(
+            AuthorityRef::new(HostRef::Domain(DomainRef::LOCALHOST), 81),
+            owned
+        );
     }
 
     #[test]

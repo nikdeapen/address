@@ -1,6 +1,6 @@
-use crate::parse_port;
 use crate::{
     Authority, Domain, HostForm, InvalidAddressError, ParseError, impl_parse, impl_parse_string,
+    parse_port,
 };
 
 impl Authority {
@@ -10,7 +10,7 @@ impl Authority {
     ///
     /// # Notes
     /// - An IPv6 host must be bracketed: `[::1]:80`.
-    /// - Domain names are normalized to lowercase.
+    /// - A domain is normalized to lowercase.
     /// - A numeric IPv6 zone is accepted & ignored: `[fe80::1%1]:80` parses as `[fe80::1]:80`.
     pub fn parse(text: &[u8]) -> Result<Self, ParseError> {
         let (host, port): (&[u8], u16) = parse_port(text)?;

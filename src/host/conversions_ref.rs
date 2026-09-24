@@ -74,7 +74,7 @@ mod tests {
     };
 
     #[test]
-    fn ref_to_host() {
+    fn to_host() {
         let host: HostRef = HostRef::Domain(DomainRef::LOCALHOST);
         let result: Host = host.to_host();
         let expected: Host = Host::Domain(Domain::localhost());
@@ -87,7 +87,7 @@ mod tests {
     }
 
     #[test]
-    fn ref_to_domain() {
+    fn to_domain() {
         let host: HostRef = DomainRef::LOCALHOST.to_host_ref();
         let result: Result<Domain, HostRef> = host.to_domain();
         let expected: Result<Domain, HostRef> = Ok(Domain::localhost());
@@ -108,7 +108,7 @@ mod tests {
     }
 
     #[test]
-    fn ref_to_ip() {
+    fn to_ip() {
         let host: HostRef = IPv4Address::LOCALHOST.to_host_ref();
         let result: Result<IPAddress, HostRef> = host.to_ip();
         let expected: Result<IPAddress, HostRef> = Ok(IPv4Address::LOCALHOST.to_ip());
@@ -121,7 +121,7 @@ mod tests {
     }
 
     #[test]
-    fn ref_to_authority() {
+    fn to_authority() {
         let host: HostRef = DomainRef::LOCALHOST.to_host_ref();
         let result: Authority = host.to_authority(80);
         let expected: Authority = Authority::new(Host::Domain(Domain::localhost()), 80);
@@ -146,7 +146,7 @@ mod tests {
     }
 
     #[test]
-    fn ref_from() {
+    fn from() {
         let expected: HostRef = HostRef::Domain(DomainRef::LOCALHOST);
 
         let owned: Host = Host::Domain(Domain::localhost());

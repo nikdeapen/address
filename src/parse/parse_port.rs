@@ -1,6 +1,5 @@
-use crate::ParseError;
 use crate::ParseError::InvalidPort;
-use crate::parse_digits;
+use crate::{ParseError, parse_digits};
 
 /// Parses the port from the `text`, returning `(text_before_port_colon, port)`.
 ///
@@ -26,9 +25,8 @@ pub(crate) fn parse_port(text: &[u8]) -> Result<(&[u8], u16), ParseError> {
 
 #[cfg(test)]
 mod tests {
-    use crate::ParseError;
     use crate::ParseError::InvalidPort;
-    use crate::parse_port;
+    use crate::{ParseError, parse_port};
 
     type TestCase<'a> = (&'a str, Result<(&'a str, u16), ParseError>);
 

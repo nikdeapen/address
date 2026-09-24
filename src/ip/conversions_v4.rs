@@ -52,7 +52,7 @@ mod tests {
     use crate::{Host, HostRef, IPAddress, IPv4Address, IPv6Address, SocketAddressV4};
 
     #[test]
-    fn v4_to_v6() {
+    fn to_v6() {
         let ip: IPv4Address = IPv4Address::LOCALHOST;
 
         let result: IPv6Address = ip.to_v6_compatible();
@@ -65,7 +65,7 @@ mod tests {
     }
 
     #[test]
-    fn v4_to_ip() {
+    fn to_ip() {
         let ip: IPv4Address = IPv4Address::LOCALHOST;
         let result: IPAddress = ip.to_ip();
         let expected: IPAddress = IPAddress::V4(IPv4Address::LOCALHOST);
@@ -73,7 +73,7 @@ mod tests {
     }
 
     #[test]
-    fn v4_to_socket() {
+    fn to_socket() {
         let ip: IPv4Address = IPv4Address::LOCALHOST;
         let result: SocketAddressV4 = ip.to_socket(80);
         let expected: SocketAddressV4 = SocketAddressV4::new(IPv4Address::LOCALHOST, 80);
@@ -81,7 +81,7 @@ mod tests {
     }
 
     #[test]
-    fn v4_to_host() {
+    fn to_host() {
         let ip: IPv4Address = IPv4Address::LOCALHOST;
 
         let result: Host = ip.to_host();
@@ -94,7 +94,7 @@ mod tests {
     }
 
     #[test]
-    fn v4_try_from() {
+    fn try_from() {
         let ip: IPAddress = IPv4Address::LOCALHOST.to_ip();
         assert_eq!(IPv4Address::try_from(ip), Ok(IPv4Address::LOCALHOST));
 

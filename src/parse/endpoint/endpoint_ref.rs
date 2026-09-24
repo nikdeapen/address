@@ -1,5 +1,4 @@
-use crate::parse_port;
-use crate::{DomainRef, EndpointRef, ParseError, impl_parse_ref};
+use crate::{DomainRef, EndpointRef, ParseError, impl_parse_ref, parse_port};
 
 impl<'a> EndpointRef<'a> {
     //! Parse

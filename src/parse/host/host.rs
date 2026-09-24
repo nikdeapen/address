@@ -10,7 +10,7 @@ impl Host {
     ///
     /// # Notes
     /// - IP addresses must be unbracketed: `::1`, not `[::1]`.
-    /// - Domain names are normalized to lowercase.
+    /// - A domain is normalized to lowercase.
     pub fn parse(text: &[u8]) -> Result<Self, ParseError> {
         if let Ok(ip) = IPAddress::parse(text) {
             Ok(ip.to_host())

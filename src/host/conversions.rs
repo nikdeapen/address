@@ -64,7 +64,7 @@ mod tests {
     use crate::{Authority, Domain, DomainRef, Host, HostRef, IPAddress, IPv4Address};
 
     #[test]
-    fn host_to_ref() {
+    fn to_ref() {
         let host: Host = Host::Domain(Domain::localhost());
         let result: HostRef = host.to_ref();
         let expected: HostRef = HostRef::Domain(DomainRef::LOCALHOST);
@@ -77,7 +77,7 @@ mod tests {
     }
 
     #[test]
-    fn host_to_domain() {
+    fn to_domain() {
         let host: Host = Domain::localhost().to_host();
         let result: Result<Domain, Host> = host.to_domain();
         let expected: Result<Domain, Host> = Ok(Domain::localhost());
@@ -90,7 +90,7 @@ mod tests {
     }
 
     #[test]
-    fn host_to_ip() {
+    fn to_ip() {
         let host: Host = IPv4Address::LOCALHOST.to_host();
         let result: Result<IPAddress, Host> = host.to_ip();
         let expected: Result<IPAddress, Host> = Ok(IPv4Address::LOCALHOST.to_ip());
@@ -103,7 +103,7 @@ mod tests {
     }
 
     #[test]
-    fn host_to_authority() {
+    fn to_authority() {
         let host: Host = Domain::localhost().to_host();
         let result: Authority = host.to_authority(80);
         let expected: Authority = Authority::new(Host::Domain(Domain::localhost()), 80);
@@ -117,7 +117,7 @@ mod tests {
     }
 
     #[test]
-    fn host_from() {
+    fn from() {
         let expected: Host = Host::Domain(Domain::localhost());
 
         let result: Host = HostRef::Domain(DomainRef::LOCALHOST).into();

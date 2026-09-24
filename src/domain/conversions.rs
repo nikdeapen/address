@@ -46,7 +46,7 @@ mod tests {
     use crate::{Domain, DomainRef, Endpoint, Host, HostRef, IPv4Address};
 
     #[test]
-    fn domain_to_ref() {
+    fn to_ref() {
         let domain: Domain = Domain::localhost();
         let result: DomainRef = domain.to_ref();
         let expected: DomainRef = DomainRef::LOCALHOST;
@@ -54,7 +54,7 @@ mod tests {
     }
 
     #[test]
-    fn domain_to_endpoint() {
+    fn to_endpoint() {
         let domain: Domain = Domain::localhost();
         let result: Endpoint = domain.to_endpoint(80);
         let expected: Endpoint = Endpoint::new(Domain::localhost(), 80);
@@ -62,7 +62,7 @@ mod tests {
     }
 
     #[test]
-    fn domain_to_host() {
+    fn to_host() {
         let domain: Domain = Domain::localhost();
         let result: Host = domain.to_host();
         let expected: Host = Host::Domain(Domain::localhost());
@@ -70,14 +70,14 @@ mod tests {
     }
 
     #[test]
-    fn domain_from() {
+    fn from() {
         let result: Domain = DomainRef::LOCALHOST.into();
         let expected: &str = "localhost";
         assert_eq!(result.name(), expected);
     }
 
     #[test]
-    fn domain_try_from() {
+    fn try_from() {
         let host: Host = Domain::localhost().to_host();
         assert_eq!(Domain::try_from(host), Ok(Domain::localhost()));
 

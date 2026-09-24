@@ -12,10 +12,10 @@ impl IPv4Address {
     /// - No leading zeros, matching the standard library. (`127.0.0.01` is invalid)
     pub fn parse(text: &[u8]) -> Result<Self, ParseError> {
         const MAX_STR_LEN: usize = "255.255.255.255".len();
-        if text.len() > MAX_STR_LEN {
+        if text.len() > MAX_STR_LEN || !text.is_ascii() {
             return Err(InvalidIPv4Address);
         }
-        let text: &str = std::str::from_utf8(text).map_err(|_| InvalidIPv4Address)?;
+        let text: &str = unsafe { std::str::from_utf8_unchecked(text) };
         Ok(Ipv4Addr::from_str(text)
             .map_err(|_| InvalidIPv4Address)?
             .into())

@@ -13,8 +13,8 @@ impl IPv4Address {
 }
 
 impl From<Ipv4Addr> for IPv4Address {
-    fn from(std: Ipv4Addr) -> Self {
-        Self::new(std.octets())
+    fn from(ip: Ipv4Addr) -> Self {
+        Self::new(ip.octets())
     }
 }
 
@@ -30,20 +30,21 @@ mod tests {
     use std::net::Ipv4Addr;
 
     #[test]
-    fn v4_to_std() {
+    fn to_std() {
         let ip: IPv4Address = IPv4Address::LOCALHOST;
-        let std: Ipv4Addr = Ipv4Addr::LOCALHOST;
+        let expected: Ipv4Addr = Ipv4Addr::LOCALHOST;
 
         let result: Ipv4Addr = ip.to_std();
-        assert_eq!(result, std);
+        assert_eq!(result, expected);
 
         let result: Ipv4Addr = ip.into();
-        assert_eq!(result, std);
+        assert_eq!(result, expected);
     }
 
     #[test]
-    fn v4_from_std() {
+    fn from() {
         let result: IPv4Address = Ipv4Addr::LOCALHOST.into();
-        assert_eq!(result, IPv4Address::LOCALHOST);
+        let expected: IPv4Address = IPv4Address::LOCALHOST;
+        assert_eq!(result, expected);
     }
 }

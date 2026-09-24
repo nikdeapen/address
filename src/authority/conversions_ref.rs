@@ -77,7 +77,7 @@ mod tests {
     };
 
     #[test]
-    fn ref_to_authority() {
+    fn to_authority() {
         let authority: AuthorityRef = AuthorityRef::new(HostRef::Domain(DomainRef::LOCALHOST), 80);
         let result: Authority = authority.to_authority();
         let expected: Authority = Authority::new(Host::Domain(Domain::localhost()), 80);
@@ -85,7 +85,7 @@ mod tests {
     }
 
     #[test]
-    fn ref_to_endpoint() {
+    fn to_endpoint() {
         let authority: AuthorityRef = AuthorityRef::new(HostRef::Domain(DomainRef::LOCALHOST), 80);
         let result: Result<Endpoint, AuthorityRef> = authority.to_endpoint();
         let expected: Result<Endpoint, AuthorityRef> = Ok(Endpoint::new(Domain::localhost(), 80));
@@ -107,7 +107,7 @@ mod tests {
     }
 
     #[test]
-    fn ref_to_socket() {
+    fn to_socket() {
         let authority: AuthorityRef = AuthorityRef::new(IPv4Address::LOCALHOST.to_host_ref(), 80);
         let result: Result<SocketAddress, AuthorityRef> = authority.to_socket();
         let expected: Result<SocketAddress, AuthorityRef> =
@@ -121,7 +121,7 @@ mod tests {
     }
 
     #[test]
-    fn ref_from() {
+    fn from() {
         let expected: AuthorityRef = AuthorityRef::new(HostRef::Domain(DomainRef::LOCALHOST), 80);
 
         let owned: Authority = Authority::new(Host::Domain(Domain::localhost()), 80);

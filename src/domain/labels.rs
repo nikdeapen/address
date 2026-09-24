@@ -6,7 +6,9 @@ impl Domain {
 
     /// Gets the labels.
     pub const fn labels(&self) -> Labels<'_> {
-        Labels::new(self.name())
+        Labels {
+            name: Some(self.name()),
+        }
     }
 }
 
@@ -15,7 +17,9 @@ impl<'a> DomainRef<'a> {
 
     /// Gets the labels.
     pub const fn labels(self) -> Labels<'a> {
-        Labels::new(self.name())
+        Labels {
+            name: Some(self.name()),
+        }
     }
 }
 
@@ -24,15 +28,6 @@ impl<'a> DomainRef<'a> {
 #[derive(Clone, Debug)]
 pub struct Labels<'a> {
     name: Option<&'a str>,
-}
-
-impl<'a> Labels<'a> {
-    //! Construction
-
-    /// Creates a new label iterator for the domain `name`.
-    const fn new(name: &'a str) -> Self {
-        Self { name: Some(name) }
-    }
 }
 
 impl<'a> Iterator for Labels<'a> {
