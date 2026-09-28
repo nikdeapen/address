@@ -17,7 +17,7 @@ impl Endpoint {
     }
 
     /// Parses an [Endpoint] from the `text`.
-    pub(crate) fn parse_string(text: String) -> Result<Self, InvalidAddressError<String>> {
+    fn parse_string(text: String) -> Result<Self, InvalidAddressError<String>> {
         match parse_port(text.as_bytes()) {
             Ok((domain, port)) => {
                 let domain_len: usize = domain.len();

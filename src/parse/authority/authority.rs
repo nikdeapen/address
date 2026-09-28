@@ -25,7 +25,7 @@ impl Authority {
     }
 
     /// Parses an [Authority] from the `text`.
-    pub(crate) fn parse_string(text: String) -> Result<Self, InvalidAddressError<String>> {
+    fn parse_string(text: String) -> Result<Self, InvalidAddressError<String>> {
         let (host_len, port): (usize, u16) = match parse_port(text.as_bytes()) {
             Ok((host, port)) => (host.len(), port),
             Err(error) => return Err(InvalidAddressError::new(text, error)),

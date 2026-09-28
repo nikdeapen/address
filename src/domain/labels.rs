@@ -90,7 +90,7 @@ mod tests {
     }
 
     #[test]
-    fn labels_size_hint() {
+    fn size_hint() {
         let test_cases: &[&str] = &["x", "a.b", "a.b.c", "www.example.com", "a.bb.ccc.dddd"];
 
         for name in test_cases {
@@ -121,7 +121,7 @@ mod tests {
     }
 
     #[test]
-    fn labels_rev() {
+    fn rev() {
         let test_cases: &[(&str, &[&str])] = &[
             ("localhost", &["localhost"]),
             ("example.com", &["com", "example"]),
@@ -139,7 +139,7 @@ mod tests {
     }
 
     #[test]
-    fn labels_mixed() {
+    fn mixed() {
         let domain: Domain = "a.b.c.d.e".parse().unwrap();
         let mut labels: Labels = domain.labels();
 
@@ -153,7 +153,7 @@ mod tests {
     }
 
     #[test]
-    fn labels_fused() {
+    fn fused() {
         let mut labels: Labels = DomainRef::LOCALHOST.labels();
         assert_eq!(labels.next(), Some("localhost"));
         assert_eq!(labels.next(), None);

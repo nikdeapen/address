@@ -3,7 +3,6 @@
 /// # Notes
 /// - The text must be decimal digits only, with no sign.
 /// - Leading zeros are allowed.
-/// - Empty text & values over `u32::MAX` are `None`.
 pub(crate) fn parse_digits(text: &[u8]) -> Option<u32> {
     if text.is_empty() {
         return None;

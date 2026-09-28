@@ -9,6 +9,7 @@ impl IPAddress {
     /// Parses an [IPAddress] from the `text`.
     ///
     /// # Notes
+    /// - No leading zeros, matching the standard library. (`127.0.0.01` is invalid)
     /// - The embedded IPv4 form is accepted. (`::ffff:1.2.3.4`)
     /// - Brackets & zones are not accepted; see [`SocketAddress`](crate::SocketAddress).
     pub fn parse(text: &[u8]) -> Result<Self, ParseError> {

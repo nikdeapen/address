@@ -52,7 +52,7 @@ impl From<u128> for IPAddress {
 impl IPAddress {
     //! Properties
 
-    /// Gets the address. (V4: [a, b, c, d], V6: [a-high, a-low, ..., h-high, h-low])
+    /// Gets the address. `(V4: [a, b, c, d], V6: [a-high, a-low, ..., h-high, h-low])`
     #[must_use]
     pub const fn address(&self) -> &[u8] {
         match self {

@@ -56,6 +56,10 @@ mod tests {
             ),
             ("::1", Ok(HostForm::Domain)),
             ("localhost", Ok(HostForm::Domain)),
+            ("", Ok(HostForm::Domain)),
+            ("Local!Host", Ok(HostForm::Domain)),
+            ("a..b", Ok(HostForm::Domain)),
+            ("-a", Ok(HostForm::Domain)),
         ];
 
         for (input, expected) in test_cases {
@@ -79,16 +83,6 @@ mod tests {
         for (input, expected) in test_cases {
             let result: ParseError = HostForm::domain_error(input.as_bytes());
             assert_eq!(result, *expected, "input={}", input);
-        }
-    }
-
-    #[test]
-    fn classify_does_not_validate_domains() {
-        let test_cases: &[&str] = &["", "Local!Host", "a..b", "-a"];
-
-        for input in test_cases {
-            let result: Result<HostForm, ParseError> = HostForm::classify(input.as_bytes());
-            assert_eq!(result, Ok(HostForm::Domain), "input={}", input);
         }
     }
 }
