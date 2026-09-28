@@ -40,8 +40,7 @@ mod tests {
     #[test]
     fn equality() {
         let owned: Host = Domain::localhost().into();
-        let host: HostRef = HostRef::Domain(DomainRef::LOCALHOST);
-        assert_eq!(host, owned);
+        assert_eq!(HostRef::Domain(DomainRef::LOCALHOST), owned);
         assert_ne!(IPv4Address::LOCALHOST.to_host_ref(), owned);
     }
 

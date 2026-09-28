@@ -37,7 +37,7 @@ impl IPv6Address {
     /// # Notes
     /// - The text is returned unchanged if there is no `%`; an invalid zone is `None`.
     /// - The zone must be a decimal `u32`, with no sign.
-    /// - Leading zeros are allowed, matching the scope ids accepted by the std-lib socket parser.
+    /// - Leading zeros are allowed, matching the standard library.
     ///
     /// # Examples
     /// `fe80::1%1` -> `Some("fe80::1")`

@@ -1,4 +1,4 @@
-/// An IPv6 address. (a:b:c:d:e:f:g:h)
+/// An IPv6 address. `(a:b:c:d:e:f:g:h)`
 #[must_use]
 #[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Default)]
 pub struct IPv6Address {
@@ -8,22 +8,22 @@ pub struct IPv6Address {
 impl IPv6Address {
     //! Special Addresses
 
-    /// The unspecified address. (::)
+    /// The unspecified address. `(::)`
     pub const UNSPECIFIED: Self = Self::from_segments([0, 0, 0, 0, 0, 0, 0, 0]);
 
-    /// The localhost address. (::1)
+    /// The localhost address. `(::1)`
     pub const LOCALHOST: Self = Self::from_segments([0, 0, 0, 0, 0, 0, 0, 1]);
 }
 
 impl IPv6Address {
     //! Construction
 
-    /// Creates a new [IPv6Address]. [a-high, a-low, b-high, b-low, ..., h-high, h-low]
+    /// Creates a new [IPv6Address]. `[a-high, a-low, b-high, b-low, ..., h-high, h-low]`
     pub const fn new(address: [u8; 16]) -> Self {
         Self { address }
     }
 
-    /// Creates an [IPv6Address] from the `segments`. [a, b, c, d, e, f, g, h]
+    /// Creates an [IPv6Address] from the `segments`. `[a, b, c, d, e, f, g, h]`
     pub const fn from_segments(segments: [u16; 8]) -> Self {
         Self {
             address: [
@@ -89,13 +89,13 @@ impl From<IPv6Address> for u128 {
 impl IPv6Address {
     //! Properties
 
-    /// Gets the address. [a-high, a-low, b-high, b-low, ..., h-high, h-low]
+    /// Gets the address. `[a-high, a-low, b-high, b-low, ..., h-high, h-low]`
     #[must_use]
     pub const fn address(self) -> [u8; 16] {
         self.address
     }
 
-    /// Gets the segments. [a, b, c, d, e, f, g, h]
+    /// Gets the segments. `[a, b, c, d, e, f, g, h]`
     #[must_use]
     pub const fn segments(self) -> [u16; 8] {
         [

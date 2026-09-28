@@ -17,6 +17,7 @@ impl Serialize for IPAddress {
     }
 }
 
+/// A serde visitor that reads an [IPAddress] from its 4 or 16 bytes.
 struct IPAddressBytesVisitor;
 
 impl<'de> Visitor<'de> for IPAddressBytesVisitor {
@@ -57,6 +58,7 @@ impl<'de> Deserialize<'de> for IPAddress {
 mod tests {
     use crate::serde::test_util::{assert_json, assert_postcard};
     use crate::{IPAddress, IPv4Address, IPv6Address};
+    use std::net::IpAddr;
 
     #[test]
     fn json() {
@@ -72,6 +74,16 @@ mod tests {
 
         let bytes: Vec<u8> = assert_postcard(IPv6Address::LOCALHOST.to_ip());
         assert_eq!(bytes.len(), 17, "a length prefix plus 16 address bytes");
+    }
+
+    #[test]
+    fn diverges_from_std() {
+        let ip: IPAddress = IPv4Address::LOCALHOST.to_ip();
+        let bytes: Vec<u8> = assert_postcard(ip);
+        let std_bytes: Vec<u8> = postcard::to_allocvec(&ip.to_std()).unwrap();
+        assert_ne!(bytes, std_bytes);
+        assert!(postcard::from_bytes::<IpAddr>(&bytes).is_err());
+        assert!(postcard::from_bytes::<IPAddress>(&std_bytes).is_err());
     }
 
     #[test]

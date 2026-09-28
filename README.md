@@ -12,7 +12,7 @@ library conversions.
 ## Usage
 
 ```toml
-address = "0.23.0"
+address = "0.24.0"
 ```
 
 ## Features

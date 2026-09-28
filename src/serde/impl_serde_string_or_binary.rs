@@ -52,7 +52,7 @@ impl_serde_string_or_binary!(
 mod tests {
     use crate::serde::test_util::{assert_json, assert_postcard};
     use crate::{IPv4Address, IPv6Address, SocketAddress, SocketAddressV4, SocketAddressV6};
-    use std::net::{Ipv4Addr, Ipv6Addr, SocketAddrV4, SocketAddrV6};
+    use std::net::{Ipv4Addr, Ipv6Addr, SocketAddr, SocketAddrV4, SocketAddrV6};
 
     #[test]
     fn json() {
@@ -130,13 +130,12 @@ mod tests {
     }
 
     #[test]
-    fn socket_address_diverges_from_std() {
+    fn diverges_from_std() {
         let socket: SocketAddress = IPv4Address::LOCALHOST.to_ip().to_socket(80);
         let bytes: Vec<u8> = assert_postcard(socket);
-        assert_eq!(
-            bytes.len(),
-            6,
-            "4 address bytes with a length prefix, plus the port"
-        );
+        let std_bytes: Vec<u8> = postcard::to_allocvec(&socket.to_std()).unwrap();
+        assert_ne!(bytes, std_bytes);
+        assert!(postcard::from_bytes::<SocketAddr>(&bytes).is_err());
+        assert!(postcard::from_bytes::<SocketAddress>(&std_bytes).is_err());
     }
 }

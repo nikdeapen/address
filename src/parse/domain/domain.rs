@@ -24,7 +24,7 @@ impl Domain {
     }
 
     /// Parses a [Domain] from the `text`.
-    pub(crate) fn parse_string(text: String) -> Result<Self, InvalidAddressError<String>> {
+    fn parse_string(text: String) -> Result<Self, InvalidAddressError<String>> {
         let len: usize = text.len();
         Self::parse_string_prefix(text, len)
             .map_err(|text| InvalidAddressError::new(text, InvalidDomain))

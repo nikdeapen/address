@@ -2,7 +2,7 @@
 
 There are currently no issues aside from future work.
 
-# Future Work
+## Future Work
 
 - Add `IPAddress::to_canonical` & `IPv6Address::to_canonical` to mirror `std`.
 - Add support for `no_std` + `alloc`.

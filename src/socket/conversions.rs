@@ -113,12 +113,12 @@ mod tests {
 
     #[test]
     fn from() {
-        let expected: SocketAddress = SocketAddress::new(IPAddress::V4(IPv4Address::LOCALHOST), 80);
         let result: SocketAddress = IPv4Address::LOCALHOST.to_socket(80).into();
+        let expected: SocketAddress = SocketAddress::new(IPAddress::V4(IPv4Address::LOCALHOST), 80);
         assert_eq!(result, expected);
 
-        let expected: SocketAddress = SocketAddress::new(IPAddress::V6(IPv6Address::LOCALHOST), 80);
         let result: SocketAddress = IPv6Address::LOCALHOST.to_socket(80).into();
+        let expected: SocketAddress = SocketAddress::new(IPAddress::V6(IPv6Address::LOCALHOST), 80);
         assert_eq!(result, expected);
     }
 

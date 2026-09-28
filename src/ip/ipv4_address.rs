@@ -1,4 +1,4 @@
-/// An IPv4 address. (a.b.c.d)
+/// An IPv4 address. `(a.b.c.d)`
 #[must_use]
 #[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Default)]
 pub struct IPv4Address {
@@ -8,20 +8,20 @@ pub struct IPv4Address {
 impl IPv4Address {
     //! Special Addresses
 
-    /// The unspecified address. (0.0.0.0)
+    /// The unspecified address. `(0.0.0.0)`
     pub const UNSPECIFIED: Self = Self::new([0, 0, 0, 0]);
 
-    /// The localhost address. (127.0.0.1)
+    /// The localhost address. `(127.0.0.1)`
     pub const LOCALHOST: Self = Self::new([127, 0, 0, 1]);
 
-    /// The broadcast address. (255.255.255.255)
+    /// The broadcast address. `(255.255.255.255)`
     pub const BROADCAST: Self = Self::new([255, 255, 255, 255]);
 }
 
 impl IPv4Address {
     //! Construction
 
-    /// Creates a new [IPv4Address]. [a, b, c, d]
+    /// Creates a new [IPv4Address]. `[a, b, c, d]`
     pub const fn new(address: [u8; 4]) -> Self {
         Self { address }
     }
@@ -68,13 +68,13 @@ impl From<IPv4Address> for u32 {
 impl IPv4Address {
     //! Properties
 
-    /// Gets the address. [a, b, c, d]
+    /// Gets the address. `[a, b, c, d]`
     #[must_use]
     pub const fn address(self) -> [u8; 4] {
         self.address
     }
 
-    /// Gets the bytes. (a, b, c, d)
+    /// Gets the bytes. `(a, b, c, d)`
     #[must_use]
     pub const fn bytes(self) -> (u8, u8, u8, u8) {
         (

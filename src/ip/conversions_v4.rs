@@ -3,7 +3,7 @@ use crate::{Host, HostRef, IPAddress, IPv4Address, IPv6Address, SocketAddressV4}
 impl IPv4Address {
     //! Conversions
 
-    /// Converts the address to an IPv4-compatible IPv6 address. (::a.b.c.d)
+    /// Converts the address to an IPv4-compatible IPv6 address. `(::a.b.c.d)`
     ///
     /// The compatible format is deprecated, prefer [`Self::to_v6_mapped`].
     /// See [RFC 4291](https://www.rfc-editor.org/rfc/rfc4291#section-2.5.5.1).
@@ -12,7 +12,7 @@ impl IPv4Address {
         IPv6Address::new([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, a, b, c, d])
     }
 
-    /// Converts the address to an IPv4-mapped IPv6 address. (::ffff:a.b.c.d)
+    /// Converts the address to an IPv4-mapped IPv6 address. `(::ffff:a.b.c.d)`
     pub const fn to_v6_mapped(self) -> IPv6Address {
         let (a, b, c, d) = self.bytes();
         IPv6Address::new([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xFF, 0xFF, a, b, c, d])

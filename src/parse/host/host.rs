@@ -22,7 +22,7 @@ impl Host {
     }
 
     /// Parses a [Host] from the `text`.
-    pub(crate) fn parse_string(text: String) -> Result<Self, InvalidAddressError<String>> {
+    fn parse_string(text: String) -> Result<Self, InvalidAddressError<String>> {
         if let Ok(ip) = IPAddress::parse(text.as_bytes()) {
             Ok(ip.to_host())
         } else {
