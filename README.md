@@ -56,3 +56,9 @@ use std::net::SocketAddr;
 let socket: SocketAddr = socket.to_std();
 assert_eq!(socket, "127.0.0.1:80".parse().unwrap());
 ```
+
+## Issues & Contributing
+
+See [ISSUES.md](https://github.com/nikdeapen/address/blob/master/ISSUES.md) for issues,
+[FUTURE.md](https://github.com/nikdeapen/address/blob/master/FUTURE.md) for future work &
+[CONTRIBUTING.md](https://github.com/nikdeapen/address/blob/master/CONTRIBUTING.md) for guidelines.
