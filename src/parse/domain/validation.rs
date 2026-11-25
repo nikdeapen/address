@@ -11,19 +11,22 @@ impl Domain {
     /// The accepted bytes are ASCII, so a non-`Invalid` class proves the label is valid UTF-8. The
     /// parse impls rely on that to convert classified bytes without re-validating; widening the
     /// byte set here would make those conversions unsound.
-    fn classify_label(label: &[u8]) -> NameClass {
+    const fn classify_label(label: &[u8]) -> NameClass {
         if (label.is_empty() || label.len() > Self::MAX_LABEL_LEN)
             || (label[0] == b'-' || label[label.len() - 1] == b'-')
         {
             NameClass::Invalid
         } else {
             let mut class: NameClass = NameClass::Lowercase;
-            for c in label {
+            let mut i: usize = 0;
+            while i < label.len() {
+                let c: u8 = label[i];
                 if c.is_ascii_uppercase() {
                     class = NameClass::MixedCase;
-                } else if !(c.is_ascii_lowercase() || c.is_ascii_digit() || *c == b'-') {
+                } else if !(c.is_ascii_lowercase() || c.is_ascii_digit() || c == b'-') {
                     return NameClass::Invalid;
                 }
+                i += 1;
             }
             class
         }
@@ -70,24 +73,48 @@ impl Domain {
     /// The maximum length of a domain name.
     pub const MAX_NAME_LEN: usize = 253;
 
-    /// Gets the final label of the domain `name`.
-    fn final_label(name: &[u8]) -> &[u8] {
-        match name.iter().rposition(|c| *c == b'.') {
-            Some(dot) => &name[dot + 1..],
-            None => name,
+    /// Splits the first label from the domain `name`, returning `(label, name_after_dot)`.
+    const fn split_label(name: &[u8]) -> (&[u8], Option<&[u8]>) {
+        let mut dot: usize = 0;
+        while dot < name.len() && name[dot] != b'.' {
+            dot += 1;
         }
+        if dot == name.len() {
+            (name, None)
+        } else {
+            let (label, rest): (&[u8], &[u8]) = name.split_at(dot);
+            (label, Some(rest.split_at(1).1))
+        }
+    }
+
+    /// Gets the final label of the domain `name`.
+    const fn final_label(name: &[u8]) -> &[u8] {
+        let mut start: usize = name.len();
+        while start > 0 && name[start - 1] != b'.' {
+            start -= 1;
+        }
+        name.split_at(start).1
     }
 
     /// Checks if the domain `label` is numeric: all digits, or `0x` followed by hex digits.
-    fn is_numeric_label(label: &[u8]) -> bool {
-        match label {
-            [b'0', b'x' | b'X', hex @ ..] => hex.iter().all(|c| c.is_ascii_hexdigit()),
-            _ => label.iter().all(|c| c.is_ascii_digit()),
+    const fn is_numeric_label(label: &[u8]) -> bool {
+        let (digits, hex): (&[u8], bool) = match label {
+            [b'0', b'x' | b'X', digits @ ..] => (digits, true),
+            _ => (label, false),
+        };
+        let mut i: usize = 0;
+        while i < digits.len() {
+            let c: u8 = digits[i];
+            if !(c.is_ascii_digit() || (hex && c.is_ascii_hexdigit())) {
+                return false;
+            }
+            i += 1;
         }
+        true
     }
 
     /// Classifies the domain `name`.
-    pub(crate) fn classify_name(name: &[u8]) -> NameClass {
+    pub(crate) const fn classify_name(name: &[u8]) -> NameClass {
         if name.is_empty()
             || name.len() > Self::MAX_NAME_LEN
             || Self::is_numeric_label(Self::final_label(name))
@@ -95,12 +122,15 @@ impl Domain {
             NameClass::Invalid
         } else {
             let mut class: NameClass = NameClass::Lowercase;
-            for label in name.split(|c| *c == b'.') {
+            let mut rest: Option<&[u8]> = Some(name);
+            while let Some(name) = rest {
+                let (label, after): (&[u8], Option<&[u8]>) = Self::split_label(name);
                 match Self::classify_label(label) {
                     NameClass::Invalid => return NameClass::Invalid,
                     NameClass::MixedCase => class = NameClass::MixedCase,
                     NameClass::Lowercase => {}
                 }
+                rest = after;
             }
             class
         }
