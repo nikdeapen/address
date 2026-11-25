@@ -49,6 +49,7 @@ mod tests {
                 Ok(IPv6Address::from([0, 0, 0, 0, 0, 0, 0, 0xFFFF]).to_host_ref()),
             ),
             (b"[::1]", Err(InvalidHost)),
+            (b"127.0.0.0x1", Err(InvalidHost)),
             (b"local_host", Err(InvalidHost)),
             (b"local!host", Err(InvalidHost)),
             (b"\xFF", Err(InvalidHost)),

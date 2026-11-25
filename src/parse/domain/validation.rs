@@ -78,11 +78,19 @@ impl Domain {
         }
     }
 
+    /// Checks if the domain `label` is numeric: all digits, or `0x` followed by hex digits.
+    fn is_numeric_label(label: &[u8]) -> bool {
+        match label {
+            [b'0', b'x' | b'X', hex @ ..] => hex.iter().all(|c| c.is_ascii_hexdigit()),
+            _ => label.iter().all(|c| c.is_ascii_digit()),
+        }
+    }
+
     /// Classifies the domain `name`.
     pub(crate) fn classify_name(name: &[u8]) -> NameClass {
         if name.is_empty()
             || name.len() > Self::MAX_NAME_LEN
-            || Self::final_label(name).iter().all(|c| c.is_ascii_digit())
+            || Self::is_numeric_label(Self::final_label(name))
         {
             NameClass::Invalid
         } else {
@@ -112,12 +120,14 @@ impl Domain {
     /// `999.1.1.1` is not. Names are ASCII, so they are always valid UTF-8, and Unicode must first
     /// be converted to its [RFC 5890](https://www.rfc-editor.org/rfc/rfc5890) A-label form.
     ///
-    /// It diverges from those documents in three ways. Case is canonicalized rather than matched
+    /// It diverges from those documents in four ways. Case is canonicalized rather than matched
     /// case-insensitively ([RFC 4343](https://www.rfc-editor.org/rfc/rfc4343)): this function
     /// requires lowercase and [`Self::is_valid_name_ignore_case`] accepts either. The trailing root
     /// dot of a fully-qualified name is rejected. Underscores are rejected, so the service labels
     /// of [RFC 2782](https://www.rfc-editor.org/rfc/rfc2782) cannot be represented, even though
     /// [RFC 2181](https://www.rfc-editor.org/rfc/rfc2181#section-11) permits any octet in a label.
+    /// A final label of `0x` followed by hex digits is rejected, since resolvers read it as an IPv4
+    /// number, so `127.0.0.0x1` is not a name.
     #[must_use]
     pub fn is_valid_name(name: &[u8]) -> bool {
         Self::classify_name(name) == NameClass::Lowercase
@@ -226,6 +236,28 @@ mod tests {
         for (name, expected) in test_cases {
             let result: bool = Domain::is_valid_name_str(name);
             assert_eq!(result, *expected, "name={}", name);
+        }
+    }
+
+    #[test]
+    fn final_label_not_hex() {
+        let test_cases: &[(&str, bool, bool)] = &[
+            ("0x7f.com", true, true),
+            ("example.0xyz", true, true),
+            ("example.x7f", true, true),
+            ("0x7f000001", false, false),
+            ("127.0.0.0x1", false, false),
+            ("0x7f.0x0.0x0.0x1", false, false),
+            ("example.0x", false, false),
+            ("example.0X7F", false, false),
+        ];
+
+        for (name, expected, expected_ignore_case) in test_cases {
+            let result: bool = Domain::is_valid_name_str(name);
+            assert_eq!(result, *expected, "name={}", name);
+
+            let result: bool = Domain::is_valid_name_ignore_case_str(name);
+            assert_eq!(result, *expected_ignore_case, "name={}", name);
         }
     }
 
