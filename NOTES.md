@@ -14,3 +14,6 @@
 - Domains have no equality with strings by design. Names are lowercase, so it is ambiguous
   whether `domain == "Example.com"` should hold. Callers compare `Domain::name()` and handle
   case themselves.
+- Domains borrow as strings, so a map keyed by `Domain` can be searched without allocating. The
+  lookup matches the lowercase name exactly: `map.get("Example.com")` misses, so callers
+  normalize first.

@@ -9,6 +9,15 @@ impl Domain {
     /// # Notes
     /// - Unicode labels become A-labels: `Bücher.example` parses as `xn--bcher-kva.example`.
     /// - The name is normalized to lowercase.
+    ///
+    /// # Examples
+    /// ```
+    /// use address::Domain;
+    ///
+    /// let domain: Domain = Domain::parse_unicode("Bücher.example").unwrap();
+    /// assert_eq!(domain.name(), "xn--bcher-kva.example");
+    /// assert_eq!(domain.to_unicode().unwrap(), "bücher.example");
+    /// ```
     pub fn parse_unicode(text: &str) -> Result<Self, ParseError> {
         let name: String = idna::domain_to_ascii(text).map_err(|_| InvalidDomain)?;
         Self::try_from(name).map_err(ParseError::from)

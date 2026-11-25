@@ -1,6 +1,15 @@
 use std::fmt::{Display, Formatter};
 
 /// An error parsing an address.
+///
+/// # Examples
+/// ```
+/// use address::{Domain, ParseError};
+///
+/// let error: ParseError = "bad_name".parse::<Domain>().unwrap_err();
+/// assert_eq!(error, ParseError::InvalidDomain);
+/// assert_eq!(error.to_string(), "invalid domain");
+/// ```
 #[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Debug)]
 #[non_exhaustive]
 pub enum ParseError {

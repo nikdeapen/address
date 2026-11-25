@@ -1,6 +1,17 @@
 use crate::Domain;
 
 /// A [Domain] reference.
+///
+/// # Examples
+/// ```
+/// use address::DomainRef;
+///
+/// let domain: DomainRef = DomainRef::try_from("example.com").unwrap();
+/// assert_eq!(domain.name(), "example.com");
+///
+/// // The name is borrowed, so it must already be lowercase.
+/// assert!(DomainRef::try_from("Example.com").is_err());
+/// ```
 #[must_use]
 #[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
 pub struct DomainRef<'a> {

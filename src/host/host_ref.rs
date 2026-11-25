@@ -1,6 +1,17 @@
 use crate::{DomainRef, Host, IPAddress};
 
 /// A [Host] reference.
+///
+/// # Examples
+/// ```
+/// use address::HostRef;
+///
+/// let host: HostRef = HostRef::try_from("example.com").unwrap();
+/// assert!(host.is_domain());
+///
+/// let host: HostRef = HostRef::try_from("127.0.0.1").unwrap();
+/// assert!(host.is_ip());
+/// ```
 #[must_use]
 #[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
 pub enum HostRef<'a> {

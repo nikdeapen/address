@@ -1,6 +1,16 @@
 use crate::IPv4Address;
 
 /// An [IPv4Address] with an associated port.
+///
+/// # Examples
+/// ```
+/// use address::{IPv4Address, SocketAddressV4};
+///
+/// let socket: SocketAddressV4 = "127.0.0.1:80".parse().unwrap();
+/// assert_eq!(socket.ip(), IPv4Address::LOCALHOST);
+/// assert_eq!(socket.port(), 80);
+/// assert_eq!(socket.to_string(), "127.0.0.1:80");
+/// ```
 #[must_use]
 #[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
 pub struct SocketAddressV4 {

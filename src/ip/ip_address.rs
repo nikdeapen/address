@@ -1,6 +1,19 @@
 use crate::{IPv4Address, IPv6Address};
 
 /// Either an [IPv4Address] or an [IPv6Address].
+///
+/// # Examples
+/// ```
+/// use address::{IPAddress, IPv4Address, IPv6Address};
+///
+/// let ip: IPAddress = "127.0.0.1".parse().unwrap();
+/// assert!(ip.is_v4());
+/// assert_eq!(ip.to_v4(), Ok(IPv4Address::LOCALHOST));
+///
+/// let ip: IPAddress = "::1".parse().unwrap();
+/// assert!(ip.is_v6());
+/// assert_eq!(ip.to_v6(), Ok(IPv6Address::LOCALHOST));
+/// ```
 #[must_use]
 #[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
 pub enum IPAddress {

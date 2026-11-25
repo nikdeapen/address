@@ -1,4 +1,5 @@
 #![doc = include_str!("../README.md")]
+#![cfg_attr(feature = "serde", doc = include_str!("serde/WIRE_CONTRACT.md"))]
 #![cfg_attr(docsrs, feature(doc_cfg))]
 #![cfg_attr(docsrs, doc(auto_cfg))]
 
