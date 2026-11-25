@@ -69,6 +69,17 @@ mod tests {
             (b"", Err(InvalidIPv6Address)),
             (b"::", Ok(IPv6Address::UNSPECIFIED)),
             (b"::1", Ok(IPv6Address::LOCALHOST)),
+            (
+                b"::ffff:1.2.3.4",
+                Ok(IPv6Address::from([0, 0, 0, 0, 0, 0xFFFF, 0x0102, 0x0304])),
+            ),
+            (
+                b"ffff:ffff:ffff:ffff:ffff:ffff:255.255.255.255",
+                Ok(IPv6Address::from(u128::MAX)),
+            ),
+            (b" ::1", Err(InvalidIPv6Address)),
+            (b"::1 ", Err(InvalidIPv6Address)),
+            (b"127.0.0.1", Err(InvalidIPv6Address)),
             (b"[::1]", Err(InvalidIPv6Address)),
             (b"[fe80::1]", Err(InvalidIPv6Address)),
             (b"[fe80::1%1]", Err(InvalidIPv6Address)),

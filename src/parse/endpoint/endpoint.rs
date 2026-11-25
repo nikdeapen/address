@@ -100,4 +100,17 @@ mod tests {
             assert_eq!(value.to_string(), *input, "input={}", input);
         }
     }
+
+    #[test]
+    fn try_from_string_reuses_buffer() {
+        let text: String = String::from("WWW.Example.COM:443");
+        let ptr: *const u8 = text.as_ptr();
+
+        let endpoint: Endpoint = Endpoint::try_from(text).unwrap();
+        let (domain, port): (Domain, u16) = endpoint.into();
+        let name: String = domain.into();
+        assert_eq!(name, "www.example.com");
+        assert_eq!(port, 443);
+        assert_eq!(name.as_ptr(), ptr);
+    }
 }

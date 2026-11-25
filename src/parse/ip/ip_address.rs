@@ -44,6 +44,12 @@ mod tests {
                 b"::ffff:1.2.3.4",
                 Ok(IPv6Address::from([0, 0, 0, 0, 0, 0xFFFF, 0x0102, 0x0304]).to_ip()),
             ),
+            (
+                b"ffff:ffff:ffff:ffff:ffff:ffff:255.255.255.255",
+                Ok(IPv6Address::from(u128::MAX).to_ip()),
+            ),
+            (b" 127.0.0.1", Err(InvalidIPAddress)),
+            (b"127.0.0.1 ", Err(InvalidIPAddress)),
             (b"[::1]", Err(InvalidIPAddress)),
             (b"fe80::1%1", Err(InvalidIPAddress)),
             (b"localhost", Err(InvalidIPAddress)),

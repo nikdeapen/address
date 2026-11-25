@@ -42,13 +42,26 @@ mod tests {
 
     #[test]
     fn parse_unicode() {
+        let long_label: String = format!("{}.example", "ü".repeat(60));
         let test_cases: &[(&str, Result<Domain, ParseError>)] = &[
             (
                 "Bücher.example",
                 Ok(Domain::try_from("xn--bcher-kva.example").unwrap()),
             ),
+            (
+                "xn--bcher-kva.example",
+                Ok(Domain::try_from("xn--bcher-kva.example").unwrap()),
+            ),
             ("localhost", Ok(Domain::localhost())),
+            ("EXAMPLE.com", Ok(Domain::example())),
             ("", Err(InvalidDomain)),
+            ("example.com.", Err(InvalidDomain)),
+            ("a..example", Err(InvalidDomain)),
+            ("a_b.example", Err(InvalidDomain)),
+            ("xn--a.example", Err(InvalidDomain)),
+            ("１２７.０.０.１", Err(InvalidDomain)),
+            ("１２７.０.０.０ｘ１", Err(InvalidDomain)),
+            (long_label.as_str(), Err(InvalidDomain)),
         ];
 
         for (input, expected) in test_cases {

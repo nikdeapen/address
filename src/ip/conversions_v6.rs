@@ -74,6 +74,8 @@ mod tests {
                 IPv6Address::from([0, 0, 0, 0, 0, 0xFFFF, 0x7F00, 1]),
                 Ok(IPv4Address::LOCALHOST),
             ),
+            (IPv6Address::LOCALHOST, Ok(IPv4Address::from([0, 0, 0, 1]))),
+            (IPv6Address::UNSPECIFIED, Ok(IPv4Address::UNSPECIFIED)),
             (
                 IPv6Address::from([1, 0, 0, 0, 0, 0, 0, 0]),
                 Err(IPv6Address::from([1, 0, 0, 0, 0, 0, 0, 0])),
@@ -95,6 +97,11 @@ mod tests {
         assert_eq!(result, expected);
 
         let ip: IPv6Address = IPv6Address::from([0, 0, 0, 0, 0, 0, 0x7F00, 1]);
+        let result: Result<IPv4Address, IPv6Address> = ip.to_v4_mapped();
+        let expected: Result<IPv4Address, IPv6Address> = Err(ip);
+        assert_eq!(result, expected);
+
+        let ip: IPv6Address = IPv6Address::LOCALHOST;
         let result: Result<IPv4Address, IPv6Address> = ip.to_v4_mapped();
         let expected: Result<IPv4Address, IPv6Address> = Err(ip);
         assert_eq!(result, expected);

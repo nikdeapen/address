@@ -56,3 +56,43 @@ impl<T> Display for InvalidAddressError<T> {
 }
 
 impl<T: Debug> std::error::Error for InvalidAddressError<T> {}
+
+#[cfg(test)]
+mod tests {
+    use crate::ParseError::InvalidDomain;
+    use crate::{InvalidAddressError, ParseError};
+
+    fn invalid_domain() -> InvalidAddressError<String> {
+        InvalidAddressError::new(String::from("bad_name"), InvalidDomain)
+    }
+
+    #[test]
+    fn properties() {
+        let error: InvalidAddressError<String> = invalid_domain();
+        assert_eq!(error.value().as_str(), "bad_name");
+        assert_eq!(error.error(), InvalidDomain);
+    }
+
+    #[test]
+    fn deconstruction() {
+        let value: String = invalid_domain().into_value();
+        assert_eq!(value, "bad_name");
+
+        let error: ParseError = invalid_domain().into();
+        assert_eq!(error, InvalidDomain);
+    }
+
+    #[test]
+    fn display() {
+        let error: InvalidAddressError<String> = invalid_domain();
+        assert_eq!(error.to_string(), "invalid domain");
+        assert_eq!(format!("{:>16}", error), "  invalid domain");
+    }
+
+    #[test]
+    fn std_error() {
+        let error: Box<dyn std::error::Error> = Box::new(invalid_domain());
+        assert_eq!(error.to_string(), "invalid domain");
+        assert!(error.source().is_none());
+    }
+}

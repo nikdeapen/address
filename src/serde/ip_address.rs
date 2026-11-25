@@ -56,8 +56,11 @@ impl<'de> Deserialize<'de> for IPAddress {
 
 #[cfg(test)]
 mod tests {
+    use super::IPAddressBytesVisitor;
     use crate::serde::test_util::{assert_json, assert_postcard};
     use crate::{IPAddress, IPv4Address, IPv6Address};
+    use serde::Deserializer;
+    use serde::de::value::{BytesDeserializer, Error as ValueError};
     use std::net::IpAddr;
 
     #[test]
@@ -93,6 +96,70 @@ mod tests {
         for bytes in test_cases {
             let result: Result<IPAddress, postcard::Error> = postcard::from_bytes(bytes);
             assert!(result.is_err(), "bytes={:?}", bytes);
+        }
+    }
+
+    #[test]
+    fn visit_bytes() {
+        let deserializer: BytesDeserializer<ValueError> = BytesDeserializer::new(&[127, 0, 0, 1]);
+        let result: IPAddress = deserializer
+            .deserialize_bytes(IPAddressBytesVisitor)
+            .unwrap();
+        assert_eq!(result, IPv4Address::LOCALHOST.to_ip());
+
+        let bytes: [u8; 16] = IPv6Address::LOCALHOST.address();
+        let deserializer: BytesDeserializer<ValueError> = BytesDeserializer::new(&bytes);
+        let result: IPAddress = deserializer
+            .deserialize_bytes(IPAddressBytesVisitor)
+            .unwrap();
+        assert_eq!(result, IPv6Address::LOCALHOST.to_ip());
+
+        let deserializer: BytesDeserializer<ValueError> = BytesDeserializer::new(&[127, 0, 0]);
+        let error: String = deserializer
+            .deserialize_bytes(IPAddressBytesVisitor)
+            .unwrap_err()
+            .to_string();
+        assert!(
+            error.contains("a 4 or 16 byte IP address"),
+            "error={}",
+            error
+        );
+    }
+
+    #[test]
+    fn matches_std_json() {
+        let test_cases: &[IPAddress] = &[
+            IPv4Address::LOCALHOST.to_ip(),
+            IPv4Address::BROADCAST.to_ip(),
+            IPv6Address::LOCALHOST.to_ip(),
+            IPv4Address::LOCALHOST.to_v6_mapped().to_ip(),
+        ];
+
+        for ip in test_cases {
+            let json: String = serde_json::to_string(ip).unwrap();
+            let std_json: String = serde_json::to_string(&ip.to_std()).unwrap();
+            assert_eq!(json, std_json, "ip={}", ip);
+
+            let parsed: IpAddr = serde_json::from_str(json.as_str()).unwrap();
+            assert_eq!(parsed, ip.to_std(), "ip={}", ip);
+        }
+    }
+
+    #[test]
+    fn invalid_input() {
+        let test_cases: &[&str] = &[
+            "\"\"",
+            "\"256.0.0.1\"",
+            "\"127.0.0.01\"",
+            "\"[::1]\"",
+            "\"fe80::1%1\"",
+            "\"localhost\"",
+            "2130706433",
+        ];
+
+        for json in test_cases {
+            let result: Result<IPAddress, serde_json::Error> = serde_json::from_str(json);
+            assert!(result.is_err(), "json={}", json);
         }
     }
 }

@@ -229,5 +229,75 @@ mod tests {
             "error={}",
             error
         );
+
+        let error: String = serde_json::from_str::<DomainRef>("\"local\\u0068ost\"")
+            .unwrap_err()
+            .to_string();
+        assert!(
+            error.contains("expected a borrowed domain string"),
+            "error={}",
+            error
+        );
+    }
+
+    #[test]
+    fn postcard_refs() {
+        let domain: DomainRef = DomainRef::EXAMPLE;
+        let bytes: Vec<u8> = postcard::to_allocvec(&domain).unwrap();
+        let parsed: DomainRef = postcard::from_bytes(bytes.as_slice()).unwrap();
+        assert_eq!(parsed, domain);
+        assert_eq!(bytes, postcard::to_allocvec(&domain.to_domain()).unwrap());
+
+        let endpoint: EndpointRef = EndpointRef::new(DomainRef::EXAMPLE, 443);
+        let bytes: Vec<u8> = postcard::to_allocvec(&endpoint).unwrap();
+        let parsed: EndpointRef = postcard::from_bytes(bytes.as_slice()).unwrap();
+        assert_eq!(parsed, endpoint);
+        assert_eq!(
+            bytes,
+            postcard::to_allocvec(&endpoint.to_endpoint()).unwrap()
+        );
+
+        let host: HostRef = DomainRef::EXAMPLE.to_host_ref();
+        let bytes: Vec<u8> = postcard::to_allocvec(&host).unwrap();
+        let parsed: HostRef = postcard::from_bytes(bytes.as_slice()).unwrap();
+        assert_eq!(parsed, host);
+        assert_eq!(bytes, postcard::to_allocvec(&host.to_host()).unwrap());
+
+        let host: HostRef = IPv6Address::LOCALHOST.to_host_ref();
+        let bytes: Vec<u8> = postcard::to_allocvec(&host).unwrap();
+        let parsed: HostRef = postcard::from_bytes(bytes.as_slice()).unwrap();
+        assert_eq!(parsed, host);
+        assert_eq!(bytes, postcard::to_allocvec(&host.to_host()).unwrap());
+
+        let authority: AuthorityRef = IPv6Address::LOCALHOST.to_host_ref().to_authority_ref(443);
+        let bytes: Vec<u8> = postcard::to_allocvec(&authority).unwrap();
+        let parsed: AuthorityRef = postcard::from_bytes(bytes.as_slice()).unwrap();
+        assert_eq!(parsed, authority);
+        assert_eq!(
+            bytes,
+            postcard::to_allocvec(&authority.to_authority()).unwrap()
+        );
+    }
+
+    #[test]
+    fn zone() {
+        let expected: Authority = IPv6Address::from([0xFE80, 0, 0, 0, 0, 0, 0, 1])
+            .to_host()
+            .to_authority(80);
+        let json: &str = "\"[fe80::1%7]:80\"";
+
+        let authority: Authority = serde_json::from_str(json).unwrap();
+        assert_eq!(authority, expected);
+        assert_eq!(
+            serde_json::to_string(&authority).unwrap(),
+            "\"[fe80::1]:80\""
+        );
+
+        let authority: AuthorityRef = serde_json::from_str(json).unwrap();
+        assert_eq!(authority, expected);
+        assert_eq!(
+            serde_json::to_string(&authority).unwrap(),
+            "\"[fe80::1]:80\""
+        );
     }
 }

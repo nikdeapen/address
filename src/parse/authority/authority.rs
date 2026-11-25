@@ -50,7 +50,9 @@ impl_parse_string!(Authority);
 #[cfg(test)]
 mod tests {
     use crate::ParseError::{InvalidAuthority, InvalidHost, InvalidIPv6Address, InvalidPort};
-    use crate::{Authority, Domain, IPv4Address, IPv6Address, InvalidAddressError, ParseError};
+    use crate::{
+        Authority, Domain, Host, IPv4Address, IPv6Address, InvalidAddressError, ParseError,
+    };
     use std::str::FromStr;
 
     type TestCase<'a> = (&'a [u8], Result<Authority, ParseError>);
@@ -142,5 +144,19 @@ mod tests {
             let value: Authority = input.parse().unwrap();
             assert_eq!(value.to_string(), *input, "input={}", input);
         }
+    }
+
+    #[test]
+    fn try_from_string_reuses_buffer() {
+        let text: String = String::from("WWW.Example.COM:443");
+        let ptr: *const u8 = text.as_ptr();
+
+        let authority: Authority = Authority::try_from(text).unwrap();
+        let (host, port): (Host, u16) = authority.into();
+        let domain: Domain = host.to_domain().unwrap();
+        let name: String = domain.into();
+        assert_eq!(name, "www.example.com");
+        assert_eq!(port, 443);
+        assert_eq!(name.as_ptr(), ptr);
     }
 }
