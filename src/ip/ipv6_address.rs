@@ -1,4 +1,14 @@
 /// An IPv6 address. `(a:b:c:d:e:f:g:h)`
+///
+/// # Examples
+/// ```
+/// use address::IPv6Address;
+///
+/// let ip: IPv6Address = "::1".parse().unwrap();
+/// assert_eq!(ip, IPv6Address::LOCALHOST);
+/// assert_eq!(ip.segments(), [0, 0, 0, 0, 0, 0, 0, 1]);
+/// assert_eq!(ip.to_string(), "::1");
+/// ```
 #[must_use]
 #[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Default)]
 pub struct IPv6Address {

@@ -1,6 +1,16 @@
 use crate::IPv6Address;
 
 /// An [IPv6Address] with an associated port.
+///
+/// # Examples
+/// ```
+/// use address::{IPv6Address, SocketAddressV6};
+///
+/// let socket: SocketAddressV6 = "[::1]:80".parse().unwrap();
+/// assert_eq!(socket.ip(), IPv6Address::LOCALHOST);
+/// assert_eq!(socket.port(), 80);
+/// assert_eq!(socket.to_string(), "[::1]:80");
+/// ```
 #[must_use]
 #[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
 pub struct SocketAddressV6 {

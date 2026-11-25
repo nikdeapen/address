@@ -24,6 +24,16 @@ impl<'a> DomainRef<'a> {
 }
 
 /// An iterator over the labels of a domain name.
+///
+/// # Examples
+/// ```
+/// use address::Domain;
+///
+/// let domain: Domain = "www.example.com".parse().unwrap();
+/// let labels: Vec<&str> = domain.labels().collect();
+/// assert_eq!(labels, ["www", "example", "com"]);
+/// assert_eq!(domain.labels().next_back(), Some("com"));
+/// ```
 #[must_use]
 #[derive(Clone, Debug)]
 pub struct Labels<'a> {

@@ -1,6 +1,24 @@
 use crate::IPAddress;
 
 /// An [IPAddress] with an associated port.
+///
+/// # Examples
+/// ```
+/// use address::SocketAddress;
+/// use std::net::SocketAddr;
+///
+/// let socket: SocketAddress = "127.0.0.1:80".parse().unwrap();
+/// assert!(socket.is_v4());
+/// assert_eq!(socket.port(), 80);
+///
+/// // An IPv6 address is bracketed.
+/// let socket: SocketAddress = "[::1]:80".parse().unwrap();
+/// assert!(socket.is_v6());
+/// assert_eq!(socket.to_string(), "[::1]:80");
+///
+/// let socket: SocketAddr = socket.to_std();
+/// assert_eq!(socket, "[::1]:80".parse().unwrap());
+/// ```
 #[must_use]
 #[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
 pub struct SocketAddress {

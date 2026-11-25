@@ -128,6 +128,17 @@ impl Domain {
     /// [RFC 2181](https://www.rfc-editor.org/rfc/rfc2181#section-11) permits any octet in a label.
     /// A final label of `0x` followed by hex digits is rejected, since resolvers read it as an IPv4
     /// number, so `127.0.0.0x1` is not a name.
+    ///
+    /// # Examples
+    /// ```
+    /// use address::Domain;
+    ///
+    /// assert!(Domain::is_valid_name(b"www.example.com"));
+    /// assert!(!Domain::is_valid_name(b"Example.com"));
+    /// assert!(!Domain::is_valid_name(b"example.com."));
+    /// assert!(!Domain::is_valid_name(b"local_host"));
+    /// assert!(!Domain::is_valid_name(b"127.0.0.1"));
+    /// ```
     #[must_use]
     pub fn is_valid_name(name: &[u8]) -> bool {
         Self::classify_name(name) == NameClass::Lowercase

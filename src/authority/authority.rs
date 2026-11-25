@@ -1,6 +1,20 @@
 use crate::{AuthorityRef, Host, HostRef};
 
 /// A [Host] with an associated port.
+///
+/// # Examples
+/// ```
+/// use address::Authority;
+///
+/// let authority: Authority = "Example.com:443".parse().unwrap();
+/// assert!(authority.is_endpoint());
+/// assert_eq!(authority.to_string(), "example.com:443");
+///
+/// // An IPv6 host is bracketed.
+/// let authority: Authority = "[::1]:80".parse().unwrap();
+/// assert!(authority.is_socket());
+/// assert_eq!(authority.port(), 80);
+/// ```
 #[must_use]
 #[derive(Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
 pub struct Authority {

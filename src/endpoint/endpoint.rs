@@ -1,6 +1,19 @@
 use crate::{Domain, DomainRef, EndpointRef};
 
 /// A [Domain] with an associated port.
+///
+/// # Examples
+/// ```
+/// use address::Endpoint;
+///
+/// let endpoint: Endpoint = "Example.com:443".parse().unwrap();
+/// assert_eq!(endpoint.domain().name(), "example.com");
+/// assert_eq!(endpoint.port(), 443);
+/// assert_eq!(endpoint.to_string(), "example.com:443");
+///
+/// // An IP address is not a domain.
+/// assert!("127.0.0.1:443".parse::<Endpoint>().is_err());
+/// ```
 #[must_use]
 #[derive(Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
 pub struct Endpoint {

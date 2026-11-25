@@ -1,6 +1,15 @@
 use crate::{Authority, HostRef};
 
 /// An [Authority] reference.
+///
+/// # Examples
+/// ```
+/// use address::AuthorityRef;
+///
+/// let authority: AuthorityRef = AuthorityRef::try_from("example.com:443").unwrap();
+/// assert!(authority.is_endpoint());
+/// assert_eq!(authority.port(), 443);
+/// ```
 #[must_use]
 #[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
 pub struct AuthorityRef<'a> {

@@ -2,6 +2,16 @@ use crate::ParseError;
 use std::fmt::{Debug, Display, Formatter};
 
 /// An error parsing an address that preserves the owned `value`.
+///
+/// # Examples
+/// ```
+/// use address::{Domain, InvalidAddressError, ParseError};
+///
+/// let text: String = String::from("bad_name");
+/// let error: InvalidAddressError<String> = Domain::try_from(text).unwrap_err();
+/// assert_eq!(error.error(), ParseError::InvalidDomain);
+/// assert_eq!(error.into_value(), "bad_name");
+/// ```
 #[derive(Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Debug)]
 pub struct InvalidAddressError<T> {
     value: T,

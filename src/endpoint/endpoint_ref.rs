@@ -1,6 +1,15 @@
 use crate::{DomainRef, Endpoint};
 
 /// An [Endpoint] reference.
+///
+/// # Examples
+/// ```
+/// use address::EndpointRef;
+///
+/// let endpoint: EndpointRef = EndpointRef::try_from("example.com:443").unwrap();
+/// assert_eq!(endpoint.domain().name(), "example.com");
+/// assert_eq!(endpoint.port(), 443);
+/// ```
 #[must_use]
 #[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
 pub struct EndpointRef<'a> {

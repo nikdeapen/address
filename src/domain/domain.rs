@@ -1,6 +1,20 @@
 use crate::DomainRef;
 
 /// A domain name.
+///
+/// The name is always valid & lowercase. (see [`Domain::is_valid_name`])
+///
+/// # Examples
+/// ```
+/// use address::Domain;
+///
+/// // Parsing validates the name & normalizes it to lowercase.
+/// let domain: Domain = "WWW.Example.com".parse().unwrap();
+/// assert_eq!(domain.name(), "www.example.com");
+/// assert_eq!(domain.to_string(), "www.example.com");
+///
+/// assert!("example..com".parse::<Domain>().is_err());
+/// ```
 #[must_use]
 #[derive(Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
 pub struct Domain {

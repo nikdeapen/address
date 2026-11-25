@@ -1,4 +1,14 @@
 /// An IPv4 address. `(a.b.c.d)`
+///
+/// # Examples
+/// ```
+/// use address::IPv4Address;
+///
+/// let ip: IPv4Address = "127.0.0.1".parse().unwrap();
+/// assert_eq!(ip, IPv4Address::LOCALHOST);
+/// assert_eq!(ip.address(), [127, 0, 0, 1]);
+/// assert_eq!(ip.to_string(), "127.0.0.1");
+/// ```
 #[must_use]
 #[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Default)]
 pub struct IPv4Address {

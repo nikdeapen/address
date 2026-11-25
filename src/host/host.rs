@@ -1,6 +1,18 @@
 use crate::{Domain, HostRef, IPAddress};
 
 /// Either a [Domain] or an [IPAddress].
+///
+/// # Examples
+/// ```
+/// use address::Host;
+///
+/// let host: Host = "Example.com".parse().unwrap();
+/// assert!(host.is_domain());
+/// assert_eq!(host.to_string(), "example.com");
+///
+/// let host: Host = "::1".parse().unwrap();
+/// assert!(host.is_ip());
+/// ```
 #[must_use]
 #[derive(Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
 pub enum Host {
