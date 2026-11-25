@@ -1,4 +1,4 @@
-use crate::Domain;
+use crate::{Domain, NameClass};
 
 /// A [Domain] reference.
 ///
@@ -42,6 +42,36 @@ impl<'a> DomainRef<'a> {
 
         Self { name }
     }
+
+    /// Creates a new [DomainRef] from the static `name`.
+    ///
+    /// # Panics
+    /// The `name` must be valid and lowercase. See [`Domain::is_valid_name`].
+    ///
+    /// # Examples
+    /// ```
+    /// use address::{DomainRef, EndpointRef};
+    ///
+    /// const DOMAIN: DomainRef = DomainRef::from_static("api.example.com");
+    /// const ENDPOINT: EndpointRef = DOMAIN.to_endpoint_ref(443);
+    /// assert_eq!(DOMAIN.name(), "api.example.com");
+    /// assert_eq!(ENDPOINT.to_string(), "api.example.com:443");
+    /// ```
+    ///
+    /// An invalid `name` in a `const` fails to compile:
+    /// ```compile_fail
+    /// use address::DomainRef;
+    ///
+    /// const DOMAIN: DomainRef = DomainRef::from_static("API.example.com");
+    /// ```
+    pub const fn from_static(name: &'static str) -> DomainRef<'static> {
+        assert!(
+            matches!(Domain::classify_name(name.as_bytes()), NameClass::Lowercase),
+            "the domain name must be valid and lowercase"
+        );
+
+        DomainRef { name }
+    }
 }
 
 impl<'a> PartialEq<Domain> for DomainRef<'a> {
@@ -74,6 +104,34 @@ mod tests {
     fn construction() {
         let domain: DomainRef = unsafe { DomainRef::new_unchecked("localhost") };
         assert_eq!(domain.name, "localhost");
+    }
+
+    #[test]
+    fn from_static() {
+        const DOMAIN: DomainRef = DomainRef::from_static("www.example.com");
+        assert_eq!(DOMAIN.name, "www.example.com");
+
+        let domain: DomainRef = DomainRef::from_static("localhost");
+        assert_eq!(domain, DomainRef::LOCALHOST);
+    }
+
+    #[test]
+    fn from_static_invalid() {
+        let test_cases: &[&str] = &[
+            "",
+            "Example.com",
+            "example.com.",
+            "example..com",
+            "local_host",
+            "127.0.0.1",
+            "127.0.0.0x1",
+        ];
+
+        for name in test_cases {
+            let result: std::thread::Result<DomainRef> =
+                std::panic::catch_unwind(|| DomainRef::from_static(name));
+            assert!(result.is_err(), "name={}", name);
+        }
     }
 
     #[test]
