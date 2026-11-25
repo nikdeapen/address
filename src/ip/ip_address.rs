@@ -36,13 +36,6 @@ impl From<(u8, u8, u8, u8)> for IPAddress {
     }
 }
 
-impl From<u32> for IPAddress {
-    /// The `value` is treated as big-endian. (`0x7F000001` -> `127.0.0.1`)
-    fn from(value: u32) -> Self {
-        Self::from(IPv4Address::from(value))
-    }
-}
-
 impl From<[u8; 16]> for IPAddress {
     fn from(address: [u8; 16]) -> Self {
         Self::from(IPv6Address::from(address))
@@ -52,13 +45,6 @@ impl From<[u8; 16]> for IPAddress {
 impl From<[u16; 8]> for IPAddress {
     fn from(segments: [u16; 8]) -> Self {
         Self::from(IPv6Address::from(segments))
-    }
-}
-
-impl From<u128> for IPAddress {
-    /// The `value` is treated as big-endian. (`0x1` -> `::1`)
-    fn from(value: u128) -> Self {
-        Self::from(IPv6Address::from(value))
     }
 }
 
@@ -105,18 +91,12 @@ mod tests {
         let ip: IPAddress = (127, 0, 0, 1).into();
         assert_eq!(ip, expected);
 
-        let ip: IPAddress = 0x7F000001u32.into();
-        assert_eq!(ip, expected);
-
         let expected: IPAddress = IPAddress::V6(IPv6Address::LOCALHOST);
 
         let ip: IPAddress = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1].into();
         assert_eq!(ip, expected);
 
         let ip: IPAddress = [0, 0, 0, 0, 0, 0, 0, 1].into();
-        assert_eq!(ip, expected);
-
-        let ip: IPAddress = 1u128.into();
         assert_eq!(ip, expected);
     }
 
