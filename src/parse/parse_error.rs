@@ -25,9 +25,6 @@ pub enum ParseError {
     /// The IPv6 address is invalid.
     InvalidIPv6Address,
 
-    /// The socket address is invalid. (neither IPv4 nor bracketed IPv6)
-    InvalidSocketAddress,
-
     /// The IPv6 socket address is invalid. (the IPv6 address must be bracketed)
     InvalidSocketAddressV6,
 
@@ -48,7 +45,6 @@ impl Display for ParseError {
             Self::InvalidIPAddress => "invalid IP address",
             Self::InvalidIPv4Address => "invalid IPv4 address",
             Self::InvalidIPv6Address => "invalid IPv6 address",
-            Self::InvalidSocketAddress => "invalid socket address",
             Self::InvalidSocketAddressV6 => "invalid IPv6 socket address",
             Self::InvalidPort => "invalid port",
             Self::InvalidHost => "invalid host",
@@ -65,7 +61,7 @@ mod tests {
     use crate::ParseError;
     use crate::ParseError::{
         InvalidAuthority, InvalidDomain, InvalidHost, InvalidIPAddress, InvalidIPv4Address,
-        InvalidIPv6Address, InvalidPort, InvalidSocketAddress, InvalidSocketAddressV6,
+        InvalidIPv6Address, InvalidPort, InvalidSocketAddressV6,
     };
 
     #[test]
@@ -75,7 +71,6 @@ mod tests {
             (InvalidIPAddress, "invalid IP address"),
             (InvalidIPv4Address, "invalid IPv4 address"),
             (InvalidIPv6Address, "invalid IPv6 address"),
-            (InvalidSocketAddress, "invalid socket address"),
             (InvalidSocketAddressV6, "invalid IPv6 socket address"),
             (InvalidPort, "invalid port"),
             (InvalidHost, "invalid host"),
