@@ -122,4 +122,15 @@ mod tests {
             assert_eq!(value.to_string(), *input, "input={}", input);
         }
     }
+
+    #[test]
+    fn try_from_string_reuses_buffer() {
+        let text: String = String::from("WWW.Example.COM");
+        let ptr: *const u8 = text.as_ptr();
+
+        let domain: Domain = Domain::try_from(text).unwrap();
+        let name: String = domain.into();
+        assert_eq!(name, "www.example.com");
+        assert_eq!(name.as_ptr(), ptr);
+    }
 }

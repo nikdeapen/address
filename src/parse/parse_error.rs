@@ -50,3 +50,40 @@ impl Display for ParseError {
 }
 
 impl std::error::Error for ParseError {}
+
+#[cfg(test)]
+mod tests {
+    use crate::ParseError;
+    use crate::ParseError::{
+        InvalidAuthority, InvalidDomain, InvalidHost, InvalidIPAddress, InvalidIPv4Address,
+        InvalidIPv6Address, InvalidPort, InvalidSocketAddress, InvalidSocketAddressV6,
+    };
+
+    #[test]
+    fn display() {
+        let test_cases: &[(ParseError, &str)] = &[
+            (InvalidDomain, "invalid domain"),
+            (InvalidIPAddress, "invalid IP address"),
+            (InvalidIPv4Address, "invalid IPv4 address"),
+            (InvalidIPv6Address, "invalid IPv6 address"),
+            (InvalidSocketAddress, "invalid socket address"),
+            (InvalidSocketAddressV6, "invalid IPv6 socket address"),
+            (InvalidPort, "invalid port"),
+            (InvalidHost, "invalid host"),
+            (InvalidAuthority, "invalid authority"),
+        ];
+
+        for (error, expected) in test_cases {
+            assert_eq!(error.to_string(), *expected, "error={:?}", error);
+        }
+
+        assert_eq!(format!("{:>16}", InvalidPort), "    invalid port");
+    }
+
+    #[test]
+    fn std_error() {
+        let error: Box<dyn std::error::Error> = Box::new(InvalidPort);
+        assert_eq!(error.to_string(), "invalid port");
+        assert!(error.source().is_none());
+    }
+}

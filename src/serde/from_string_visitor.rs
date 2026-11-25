@@ -103,5 +103,8 @@ mod tests {
                 .visit_byte_buf::<ValueError>(Vec::from("Local!Host"))
                 .is_err()
         );
+
+        let visitor: FromStringVisitor<Domain> = FromStringVisitor::new("a domain string");
+        assert!(visitor.visit_byte_buf::<ValueError>(vec![0xFF]).is_err());
     }
 }

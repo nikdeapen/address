@@ -52,7 +52,27 @@ impl_serde_string_or_binary!(
 mod tests {
     use crate::serde::test_util::{assert_json, assert_postcard};
     use crate::{IPv4Address, IPv6Address, SocketAddress, SocketAddressV4, SocketAddressV6};
+    use serde::Serialize;
+    use serde::de::DeserializeOwned;
+    use std::fmt::Debug;
     use std::net::{Ipv4Addr, Ipv6Addr, SocketAddr, SocketAddrV4, SocketAddrV6};
+
+    /// Asserts the `value` & the `std` value write the same JSON & read each other's JSON.
+    fn assert_std_json<T, S>(value: T, std: S)
+    where
+        T: Serialize + DeserializeOwned + PartialEq + Debug,
+        S: Serialize + DeserializeOwned + PartialEq + Debug,
+    {
+        let json: String = serde_json::to_string(&value).unwrap();
+        let std_json: String = serde_json::to_string(&std).unwrap();
+        assert_eq!(json, std_json, "value={:?}", value);
+
+        let parsed: T = serde_json::from_str(std_json.as_str()).unwrap();
+        assert_eq!(parsed, value, "value={:?}", value);
+
+        let parsed: S = serde_json::from_str(json.as_str()).unwrap();
+        assert_eq!(parsed, std, "value={:?}", value);
+    }
 
     #[test]
     fn json() {
@@ -137,5 +157,51 @@ mod tests {
         assert_ne!(bytes, std_bytes);
         assert!(postcard::from_bytes::<SocketAddr>(&bytes).is_err());
         assert!(postcard::from_bytes::<SocketAddress>(&std_bytes).is_err());
+    }
+
+    #[test]
+    fn matches_std_json() {
+        let v4: IPv4Address = IPv4Address::LOCALHOST;
+        let v6: IPv6Address = IPv6Address::LOCALHOST;
+
+        assert_std_json(v4, v4.to_std());
+        assert_std_json(v6, v6.to_std());
+        assert_std_json(v4.to_socket(80), v4.to_socket(80).to_std());
+        assert_std_json(v6.to_socket(80), v6.to_socket(80).to_std());
+        assert_std_json(v4.to_ip().to_socket(80), v4.to_ip().to_socket(80).to_std());
+        assert_std_json(v6.to_ip().to_socket(80), v6.to_ip().to_socket(80).to_std());
+    }
+
+    #[test]
+    fn zone() {
+        let expected: SocketAddressV6 =
+            IPv6Address::from([0xFE80, 0, 0, 0, 0, 0, 0, 1]).to_socket(80);
+        let std_json: String = serde_json::to_string(&expected.to_std_with(0, 7)).unwrap();
+        assert_eq!(std_json, "\"[fe80::1%7]:80\"");
+
+        let socket: SocketAddressV6 = serde_json::from_str(std_json.as_str()).unwrap();
+        assert_eq!(socket, expected);
+        assert_eq!(serde_json::to_string(&socket).unwrap(), "\"[fe80::1]:80\"");
+
+        let socket: SocketAddress = serde_json::from_str(std_json.as_str()).unwrap();
+        assert_eq!(socket, expected.to_socket());
+        assert_eq!(serde_json::to_string(&socket).unwrap(), "\"[fe80::1]:80\"");
+    }
+
+    #[test]
+    fn invalid_input() {
+        assert!(serde_json::from_str::<IPv4Address>("\"256.0.0.1\"").is_err());
+        assert!(serde_json::from_str::<IPv4Address>("\"::1\"").is_err());
+        assert!(serde_json::from_str::<IPv4Address>("2130706433").is_err());
+        assert!(serde_json::from_str::<IPv6Address>("\"127.0.0.1\"").is_err());
+        assert!(serde_json::from_str::<IPv6Address>("\"[::1]\"").is_err());
+        assert!(serde_json::from_str::<SocketAddress>("\"::1:80\"").is_err());
+        assert!(serde_json::from_str::<SocketAddress>("\"127.0.0.1\"").is_err());
+        assert!(serde_json::from_str::<SocketAddressV4>("\"[::1]:80\"").is_err());
+        assert!(serde_json::from_str::<SocketAddressV6>("\"127.0.0.1:80\"").is_err());
+
+        assert!(postcard::from_bytes::<IPv4Address>(&[127, 0, 0]).is_err());
+        assert!(postcard::from_bytes::<IPv6Address>(&[0; 15]).is_err());
+        assert!(postcard::from_bytes::<SocketAddressV4>(&[127, 0, 0, 1]).is_err());
     }
 }
