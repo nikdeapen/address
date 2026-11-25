@@ -8,7 +8,7 @@ rust-version = "1.87"
 license = "MIT"
 keywords = ["address", "ip", "domain", "socket", "network"]
 categories = ["network-programming", "parser-implementations"]
-exclude = [".github/", ".idea/", ".gitignore", "ISSUES.md"]
+exclude = [".github/", ".idea/", ".gitignore", "CONTRIBUTING.md", "FUTURE.md", "ISSUES.md"]
 
 [package.metadata.docs.rs]
 all-features = true
